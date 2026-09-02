@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-
 <html lang="en" dir="ltr" id="html-tag" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Live football scores, match recaps, and AI-powered tactical analysis for top leagues.">
+    <meta name="description" content="Live football scores, match reports, and tactical analysis for top leagues.">
     <title id="meta-title">ScoreRecap | Football Scores & Schedule</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,12 +36,14 @@
         html[dir="rtl"] .drop-options { left: auto; right: 0; }
         html[dir="rtl"] .drop-opt { text-align: right; }
 
-        /* Typography for AI Article InnerHTML */
-        .ai-article-content h2 { font-size: 1.125rem; font-weight: 800; margin-top: 1rem; margin-bottom: 0.5rem; color: #10b981; }
-        .ai-article-content h3 { font-size: 1rem; font-weight: 700; margin-top: 0.75rem; margin-bottom: 0.5rem; }
-        .ai-article-content p { margin-bottom: 0.75rem; }
-        .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
-        .ai-article-content li { margin-bottom: 0.25rem; }
+        /* Typography for Article InnerHTML */
+        .ai-article-content h2 { font-size: 1.25rem; font-weight: 900; margin-top: 1rem; margin-bottom: 0.75rem; color: #2563eb; }
+        .dark .ai-article-content h2 { color: #60a5fa; }
+        .ai-article-content h3 { font-size: 1rem; font-weight: 800; margin-top: 1rem; margin-bottom: 0.5rem; color: #334155; }
+        .dark .ai-article-content h3 { color: #cbd5e1; }
+        .ai-article-content p { margin-bottom: 1rem; line-height: 1.7; font-size: 0.9rem; }
+        .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; }
+        .ai-article-content li { margin-bottom: 0.4rem; }
         
         /* Date Tabs Styling */
         .date-tab-active { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important; }
@@ -50,7 +51,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200">
 
-    <!-- Toast Notifications Container -->
     <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
     <header class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 shadow-sm">
@@ -93,16 +93,12 @@
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section class="lg:col-span-2 space-y-4">
             
-            <!-- Date Selector Tabs -->
             <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-none pb-1">
                 <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="-1" id="tab-yesterday">Yesterday</button>
-                
                 <button class="date-tab date-tab-active px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="0" id="tab-today">Today</button>
-                
                 <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="1" id="tab-tomorrow">Tomorrow</button>
             </div>
 
-            <!-- Filters & Search Bar -->
             <div class="flex flex-col md:flex-row gap-3 mb-4">
                 <div class="custom-dropdown w-full md:w-72">
                     <button id="btn-league-dropdown" class="drop-btn py-2.5" aria-haspopup="true" aria-expanded="false" aria-controls="league-options-menu">
@@ -121,7 +117,6 @@
                     </div>
                 </div>
 
-                <!-- Search Bar -->
                 <div class="relative w-full flex-grow">
                     <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                         <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -131,7 +126,6 @@
             </div>
 
             <div id="api-scores-container" class="space-y-4 min-h-[500px]" aria-live="polite">
-                <!-- Data will load here -->
             </div>
         </section>
 
@@ -164,11 +158,12 @@
         let allMatchesCached = []; 
         let currentDateOffset = 0; 
 
+        // تم تعديل النصوص هنا لإزالة أي إشارة للذكاء الاصطناعي وجعلها صحفية
         const translations = {
-            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "All Leagues", ucl: "UEFA Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", aiLoading: "Loading AI tactical recap...", aiError: "Could not fetch recap.", aiExclusive: "AI Match Recaps are exclusive to the Premier League.", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server" },
-            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "كل الدوريات", ucl: "دوري أبطال أوروبا", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", aiLoading: "جاري تحميل الملخص التكتيكي...", aiError: "تعذر جلب الملخص.", aiExclusive: "ملخصات الذكاء الاصطناعي متاحة حصرياً للدوري الإنجليزي.", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم" },
-            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Toutes les Ligues", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", aiLoading: "Chargement du résumé tactique IA...", aiError: "Échec du chargement.", aiExclusive: "Les résumés IA sont exclusifs à la Premier League.", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher une équipe...", toastSuccess: "Données mises à jour", toastError: "Échec de connexion" },
-            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Todas las Ligas", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", aiLoading: "Cargando el resumen táctico de IA...", aiError: "Error al cargar.", aiExclusive: "Los resúmenes de IA son exclusivos de la Premier League.", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión" }
+            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "All Leagues", ucl: "UEFA Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Writing match report...", reportError: "Could not load the report.", reportExclusive: "Match reports are exclusive to the Premier League.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server" },
+            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "كل الدوريات", ucl: "دوري أبطال أوروبا", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري كتابة تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportExclusive: "تقارير المباريات متاحة حصرياً للدوري الإنجليزي.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم" },
+            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Toutes les Ligues", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Rédaction du rapport de match...", reportError: "Échec du chargement du rapport.", reportExclusive: "Les rapports de match sont exclusifs à la Premier League.", reportTitle: "Rapport et Analyse du Match", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher une équipe...", toastSuccess: "Données mises à jour", toastError: "Échec de connexion" },
+            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Todas las Ligas", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Redactando informe del partido...", reportError: "Error al cargar el informe.", reportExclusive: "Los informes de partidos son exclusivos de la Premier League.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión" }
         };
 
         function initTheme() {
@@ -193,38 +188,20 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             const bgClass = type === 'error' ? 'bg-red-500' : (type === 'success' ? 'bg-emerald-500' : 'bg-slate-800 dark:bg-slate-700');
-            
             toast.className = `${bgClass} text-white px-4 py-2.5 rounded-lg shadow-lg text-xs font-bold transition-all duration-300 transform translate-y-full opacity-0 flex items-center gap-2`;
-            
-            const icon = type === 'error' 
-                ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
-                : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-            
+            const icon = type === 'error' ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>` : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
             toast.innerHTML = `${icon} ${message}`;
             container.appendChild(toast);
-            
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-full', 'opacity-0');
-            });
-
-            setTimeout(() => {
-                toast.classList.add('translate-y-full', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-full', 'opacity-0'));
+            setTimeout(() => { toast.classList.add('translate-y-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
         const fetchWithTimeout = async (resource, options = {}) => {
             const { timeout = 8000 } = options;
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
-            try {
-                const response = await fetch(resource, { ...options, signal: controller.signal });
-                clearTimeout(id);
-                return response;
-            } catch (error) {
-                clearTimeout(id);
-                throw error;
-            }
+            try { const response = await fetch(resource, { ...options, signal: controller.signal }); clearTimeout(id); return response; } 
+            catch (error) { clearTimeout(id); throw error; }
         };
 
         function safeSetText(id, value) { const el = document.getElementById(id); if (el) el.innerText = value; }
@@ -240,54 +217,31 @@
             currentLang = lang;
             const t = translations[lang] || translations['en'];
             document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
-            safeSetText('badge-live', t.live);
-            safeSetText('tab-yesterday', t.yesterday);
-            safeSetText('tab-today', t.todayTab);
-            safeSetText('tab-tomorrow', t.tomorrow);
-            safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl);
-            safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie);
+            safeSetText('badge-live', t.live); safeSetText('tab-yesterday', t.yesterday); safeSetText('tab-today', t.todayTab); safeSetText('tab-tomorrow', t.tomorrow);
+            safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl); safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie);
             safeSetText('ad-label', t.ad); safeSetText('ad-banner', t.adBanner); safeSetText('footer-rights', t.rights);
-            
             const searchInput = document.getElementById('search-input');
             if(searchInput) searchInput.placeholder = t.search;
-
             const leagueTextEl = document.getElementById('current-league-text');
             if(leagueTextEl) leagueTextEl.innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
-            
-            handleRoute();
-            filterAndRenderMatches();
+            handleRoute(); filterAndRenderMatches();
         }
 
         async function fetchLiveMatches(isManualRefresh = false) {
-            const d = new Date();
-            d.setDate(d.getDate() + currentDateOffset);
+            const d = new Date(); d.setDate(d.getDate() + currentDateOffset);
             const targetDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            
             const refreshBtn = document.getElementById('btn-refresh');
             if(refreshBtn) refreshBtn.classList.add('animate-spin');
-            
             const container = document.getElementById('api-scores-container');
             if(container && allMatchesCached.length === 0) container.innerHTML = `<div class="flex justify-center py-10"><div class="spinner"></div></div>`;
-
             try {
-                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/fixtures?date=${targetDateStr}`, { 
-                    headers: { "x-action": "fetch-matches" },
-                    timeout: 10000 
-                });
-                
+                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/fixtures?date=${targetDateStr}`, { headers: { "x-action": "fetch-matches" }, timeout: 10000 });
                 if (!res.ok) throw new Error("API Error");
-                
                 const data = await res.json();
-                if (data.response) {
-                    allMatchesCached = data.response;
-                    filterAndRenderMatches();
-                    if (isManualRefresh) showToast(translations[currentLang].toastSuccess, 'success');
-                }
+                if (data.response) { allMatchesCached = data.response; filterAndRenderMatches(); if (isManualRefresh) showToast(translations[currentLang].toastSuccess, 'success'); }
             } catch (error) {
                 if (isManualRefresh) showToast(translations[currentLang].toastError, 'error');
-                if(allMatchesCached.length === 0) {
-                    document.getElementById('api-scores-container').innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">${translations[currentLang].error}</p>`;
-                }
+                if(allMatchesCached.length === 0) { document.getElementById('api-scores-container').innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">${translations[currentLang].error}</p>`; }
             }
             if(refreshBtn) setTimeout(() => refreshBtn.classList.remove('animate-spin'), 500);
         }
@@ -296,83 +250,38 @@
             if(!container) return;
             container.innerHTML = `<div class="flex justify-center py-4"><div class="mini-spinner"></div></div>`;
             try {
-                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/events?fixture=${fixtureId}`, { 
-                    headers: { "x-action": "fetch-events" },
-                    timeout: 8000
-                });
+                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/events?fixture=${fixtureId}`, { headers: { "x-action": "fetch-events" }, timeout: 8000 });
                 const data = await res.json();
-                if (!data.response || data.response.length === 0) {
-                    container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`;
-                    return;
-                }
-                
+                if (!data.response || data.response.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
                 let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto scrollbar-none">`;
                 data.response.forEach(ev => { 
                     const icon = ev.type === 'Goal' ? '⚽' : (ev.type === 'Card' ? '🟨' : '🔄');
-                    html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1">
-                                <span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span>
-                                <span>${icon} ${ev.player.name} <span class="opacity-50">(${ev.team.name})</span></span>
-                             </div>`; 
+                    html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${ev.team.name})</span></span></div>`; 
                 });
                 container.innerHTML = html + `</div>`;
-            } catch (err) {
-                container.innerHTML = `<p class="text-center text-red-500 text-xs py-1">Error fetching events</p>`;
-            }
+            } catch (err) { container.innerHTML = `<p class="text-center text-red-500 text-xs py-1">Error fetching events</p>`; }
         }
 
         async function fetchMatchStats(fixtureId) {
             try {
-                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/statistics?fixture=${fixtureId}`, { 
-                    headers: { "x-action": "fetch-stats" },
-                    timeout: 8000
-                });
+                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/statistics?fixture=${fixtureId}`, { headers: { "x-action": "fetch-stats" }, timeout: 8000 });
                 const data = await res.json();
-                
                 if (data.response && data.response.length === 2) {
-                    const homeStats = data.response[0].statistics;
-                    const awayStats = data.response[1].statistics;
-                    
-                    const getStat = (stats, type) => {
-                        const s = stats.find(x => x.type === type);
-                        return s ? s.value : null;
-                    };
-
-                    let homePoss = getStat(homeStats, "Ball Possession") || "50%";
-                    let awayPoss = getStat(awayStats, "Ball Possession") || "50%";
-                    
-                    let homeShots = getStat(homeStats, "Total Shots") || 0;
-                    let awayShots = getStat(awayStats, "Total Shots") || 0;
-
-                    safeSetText(`poss-home-val-${fixtureId}`, homePoss);
-                    safeSetText(`poss-away-val-${fixtureId}`, awayPoss);
-                    
-                    const homePossBar = document.getElementById(`poss-home-bar-${fixtureId}`);
-                    const awayPossBar = document.getElementById(`poss-away-bar-${fixtureId}`);
-                    if (homePossBar) homePossBar.style.width = homePoss;
-                    if (awayPossBar) awayPossBar.style.width = awayPoss;
-
-                    safeSetText(`shots-home-val-${fixtureId}`, homeShots);
-                    safeSetText(`shots-away-val-${fixtureId}`, awayShots);
-
+                    const homeStats = data.response[0].statistics; const awayStats = data.response[1].statistics;
+                    const getStat = (stats, type) => { const s = stats.find(x => x.type === type); return s ? s.value : null; };
+                    let homePoss = getStat(homeStats, "Ball Possession") || "50%"; let awayPoss = getStat(awayStats, "Ball Possession") || "50%";
+                    let homeShots = getStat(homeStats, "Total Shots") || 0; let awayShots = getStat(awayStats, "Total Shots") || 0;
+                    safeSetText(`poss-home-val-${fixtureId}`, homePoss); safeSetText(`poss-away-val-${fixtureId}`, awayPoss);
+                    const homePossBar = document.getElementById(`poss-home-bar-${fixtureId}`); const awayPossBar = document.getElementById(`poss-away-bar-${fixtureId}`);
+                    if (homePossBar) homePossBar.style.width = homePoss; if (awayPossBar) awayPossBar.style.width = awayPoss;
+                    safeSetText(`shots-home-val-${fixtureId}`, homeShots); safeSetText(`shots-away-val-${fixtureId}`, awayShots);
                     const totalShots = (parseInt(homeShots) || 0) + (parseInt(awayShots) || 0);
-                    let homeShotsPct = "50%";
-                    let awayShotsPct = "50%";
-                    if (totalShots > 0) {
-                        homeShotsPct = `${Math.round((parseInt(homeShots) / totalShots) * 100)}%`;
-                        awayShotsPct = `${Math.round((parseInt(awayShots) / totalShots) * 100)}%`;
-                    } else if (totalShots === 0) {
-                        homeShotsPct = "0%";
-                        awayShotsPct = "0%";
-                    }
-                    
-                    const homeShotsBar = document.getElementById(`shots-home-bar-${fixtureId}`);
-                    const awayShotsBar = document.getElementById(`shots-away-bar-${fixtureId}`);
-                    if (homeShotsBar) homeShotsBar.style.width = homeShotsPct;
-                    if (awayShotsBar) awayShotsBar.style.width = awayShotsPct;
+                    let homeShotsPct = "50%"; let awayShotsPct = "50%";
+                    if (totalShots > 0) { homeShotsPct = `${Math.round((parseInt(homeShots) / totalShots) * 100)}%`; awayShotsPct = `${Math.round((parseInt(awayShots) / totalShots) * 100)}%`; } else if (totalShots === 0) { homeShotsPct = "0%"; awayShotsPct = "0%"; }
+                    const homeShotsBar = document.getElementById(`shots-home-bar-${fixtureId}`); const awayShotsBar = document.getElementById(`shots-away-bar-${fixtureId}`);
+                    if (homeShotsBar) homeShotsBar.style.width = homeShotsPct; if (awayShotsBar) awayShotsBar.style.width = awayShotsPct;
                 }
-            } catch (err) {
-                console.error("Error fetching match stats:", err);
-            }
+            } catch (err) { console.error("Error fetching stats:", err); }
         }
 
         async function autoLoadMatchArticle(fixtureId, matchCached) {
@@ -382,63 +291,44 @@
             aiBox.innerHTML = `
                 <div class="mt-4 p-5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm flex justify-center items-center gap-3">
                     <div class="mini-spinner"></div>
-                    <span class="text-xs font-bold text-slate-500">${translations[currentLang].aiLoading}</span>
+                    <span class="text-xs font-bold text-slate-500">${translations[currentLang].reportLoading}</span>
                 </div>`;
             
             try {
                 const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "x-action": "generate-article" },
-                    body: JSON.stringify({
-                        fixtureId: fixtureId,
-                        matchStr: `${matchCached.teams.home.name} vs ${matchCached.teams.away.name}`,
-                        score: `${matchCached.goals.home} - ${matchCached.goals.away}`,
-                        events: "Fetched from backend for cron operations.",
-                        language: currentLang
-                    }),
+                    method: "POST", headers: { "Content-Type": "application/json", "x-action": "generate-article" },
+                    body: JSON.stringify({ fixtureId: fixtureId, matchStr: `${matchCached.teams.home.name} vs ${matchCached.teams.away.name}`, score: `${matchCached.goals.home} - ${matchCached.goals.away}`, events: "Fetched from backend for cron operations.", language: currentLang }),
                     timeout: 20000 
                 });
                 
                 if (!response.ok) throw new Error("Network request failed");
-                
                 const data = await response.json();
                 aiBox.setAttribute('data-loaded', 'true'); 
-                
-                const sourceBadge = data.source === "KV_CACHE" 
-                    ? `<span class="bg-blue-500/10 text-blue-500 border border-blue-500/20 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ml-auto" title="Loaded instantly from server cache">Pre-computed AI</span>` 
-                    : `<span class="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ml-auto">Live AI</span>`;
 
+                // تم تغيير التصميم بالكامل ليصبح صحفياً وإزالة كل علامات الذكاء الاصطناعي
                 aiBox.innerHTML = `
-                    <div class="mt-4 p-5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-xl shadow-lg relative overflow-hidden">
-                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl"></div>
-                        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
-                        
+                    <div class="mt-5 p-6 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden">
                         <div class="relative z-10">
-                            <div class="flex items-center mb-3 border-b border-slate-200/50 dark:border-slate-700/50 pb-3">
+                            <div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 p-1.5 rounded-lg shadow-sm">
-                                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                                    <div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                                     </div>
-                                    <span class="text-sm font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 uppercase tracking-widest">ScoreRecap AI Analysis</span>
+                                    <span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${translations[currentLang].reportTitle}</span>
                                 </div>
-                                ${sourceBadge}
                             </div>
-                            <div class="text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-medium ai-article-content">
+                            <div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">
                                 ${data.result}
                             </div>
                         </div>
                     </div>`;
-                
             } catch (error) {
                 aiBox.removeAttribute('data-loaded'); 
-                aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 text-center">${translations[currentLang].aiError}</p>`;
+                aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 text-center">${translations[currentLang].reportError}</p>`;
             }
         }
 
-        function createMatchSlug(homeName, awayName) {
-            const formatStr = str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
-            return `${formatStr(homeName)}-vs-${formatStr(awayName)}`;
-        }
+        function createMatchSlug(homeName, awayName) { return `${str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()(homeName)}-vs-${str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()(awayName)}`; }
 
         function openMatch(fId, scrollToIt = false) {
             const match = allMatchesCached.find(m => String(m.fixture.id) === String(fId));
@@ -446,270 +336,94 @@
                 const titleStr = `${match.teams.home.name} vs ${match.teams.away.name} | ScoreRecap`;
                 document.title = titleStr;
                 const metaDesc = document.querySelector('meta[name="description"]');
-                if (metaDesc) metaDesc.setAttribute("content", `Live score, match events, and AI recap for ${match.teams.home.name} vs ${match.teams.away.name}.`);
+                if (metaDesc) metaDesc.setAttribute("content", `Live score, match events, and report for ${match.teams.home.name} vs ${match.teams.away.name}.`);
                 safeSetText('meta-title', titleStr);
             }
-
             const details = document.getElementById(`details-${fId}`);
             if (details) {
-                document.querySelectorAll('[id^="details-"]').forEach(el => {
-                    if (el.id !== `details-${fId}`) el.classList.add('hidden');
-                });
+                document.querySelectorAll('[id^="details-"]').forEach(el => { if (el.id !== `details-${fId}`) el.classList.add('hidden'); });
                 details.classList.remove('hidden');
                 fetchMatchEvents(fId, document.getElementById(`events-list-${fId}`));
                 fetchMatchStats(fId);
-                
-                if (scrollToIt) {
-                    setTimeout(() => {
-                        details.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                }
+                if (scrollToIt) { setTimeout(() => { details.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }
             }
         }
 
         function handleRoute() {
             const path = window.location.pathname;
-            if (path.startsWith('/match/')) {
-                const pathParts = path.split('/');
-                const fId = pathParts[2];
-                if (fId) {
-                    setTimeout(() => openMatch(fId, true), 100);
-                    return;
-                }
-            }
-            
+            if (path.startsWith('/match/')) { const pathParts = path.split('/'); const fId = pathParts[2]; if (fId) { setTimeout(() => openMatch(fId, true), 100); return; } }
             document.title = translations[currentLang].title;
             const metaDesc = document.querySelector('meta[name="description"]');
-            if (metaDesc) metaDesc.setAttribute("content", "Live football scores, match recaps, and AI-powered tactical analysis for top leagues.");
+            if (metaDesc) metaDesc.setAttribute("content", "Live football scores, match reports, and tactical analysis for top leagues.");
             document.querySelectorAll('[id^="details-"]').forEach(el => el.classList.add('hidden'));
         }
 
         function filterAndRenderMatches() {
             const container = document.getElementById('api-scores-container');
             const currentT = translations[currentLang] || translations['en'];
-            
             let filtered = selectedLeagueId === 'all' ? allMatchesCached : allMatchesCached.filter(m => String(m.league.id) === String(selectedLeagueId));
-            
-            if (currentSearchQuery) {
-                const query = currentSearchQuery.toLowerCase();
-                filtered = filtered.filter(m => 
-                    m.teams.home.name.toLowerCase().includes(query) || 
-                    m.teams.away.name.toLowerCase().includes(query)
-                );
-            }
-
-            if (!filtered || filtered.length === 0) {
-                container.innerHTML = `<div class="bg-white border rounded-xl p-8 text-center font-medium text-slate-500 shadow-sm">${currentT.noMatches}</div>`;
-                return;
-            }
+            if (currentSearchQuery) { const query = currentSearchQuery.toLowerCase(); filtered = filtered.filter(m => m.teams.home.name.toLowerCase().includes(query) || m.teams.away.name.toLowerCase().includes(query)); }
+            if (!filtered || filtered.length === 0) { container.innerHTML = `<div class="bg-white border rounded-xl p-8 text-center font-medium text-slate-500 shadow-sm">${currentT.noMatches}</div>`; return; }
             container.innerHTML = '';
-            
             const grouped = {};
-            filtered.forEach(m => {
-                if (!grouped[m.league.id]) grouped[m.league.id] = { id: m.league.id, name: m.league.name, logo: m.league.logo, fixtures: [] };
-                grouped[m.league.id].fixtures.push(m);
-            });
-
+            filtered.forEach(m => { if (!grouped[m.league.id]) grouped[m.league.id] = { id: m.league.id, name: m.league.name, logo: m.league.logo, fixtures: [] }; grouped[m.league.id].fixtures.push(m); });
             Object.values(grouped).forEach(league => {
                 let html = `<div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm mb-5 transition-colors">
                             <div class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/50 px-4 py-3 font-extrabold text-sm text-slate-800 dark:text-slate-200 flex gap-3 items-center">
-                                <img src="${league.logo}" class="w-6 h-6 object-contain drop-shadow-sm">
-                                ${league.name}
-                            </div>
-                            <div class="divide-y divide-slate-100 dark:divide-slate-800/50">`;
-                
+                                <img src="${league.logo}" class="w-6 h-6 object-contain drop-shadow-sm">${league.name}</div><div class="divide-y divide-slate-100 dark:divide-slate-800/50">`;
                 league.fixtures.forEach(match => {
-                    const fId = match.fixture.id;
-                    const hScore = match.goals.home !== null ? match.goals.home : '-';
-                    const aScore = match.goals.away !== null ? match.goals.away : '-';
+                    const fId = match.fixture.id; const hScore = match.goals.home !== null ? match.goals.home : '-'; const aScore = match.goals.away !== null ? match.goals.away : '-';
                     const isLive = match.fixture.status.short === '1H' || match.fixture.status.short === '2H' || match.fixture.status.short === 'HT';
                     const statusText = isLive ? `<span class="text-red-500 font-bold flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 live-dot"></span>${match.fixture.status.elapsed}'</span>` : (match.fixture.status.short === 'FT' ? currentT.ended : match.fixture.date.substring(11, 16));
-
-                    const aiSection = (String(league.id) === '39' && match.fixture.status.short === 'FT')
-                        ? `<div id="ai-article-${fId}" data-loaded="false"></div>`
-                        : `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.aiExclusive} (After Full Time)</div>`;
-
-                    const matchSlug = createMatchSlug(match.teams.home.name, match.teams.away.name);
+                    
+                    const aiSection = (String(league.id) === '39' && match.fixture.status.short === 'FT') ? `<div id="ai-article-${fId}" data-loaded="false"></div>` : `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.reportExclusive}</div>`;
+                    
+                    const formatStr = str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+                    const matchSlug = `${formatStr(match.teams.home.name)}-vs-${formatStr(match.teams.away.name)}`;
                     const matchUrl = `/match/${fId}/${matchSlug}`;
 
-                    html += `
-                        <div class="match-row-container group" data-fixture-id="${fId}">
-                            <!-- Collapsed Link Row -->
+                    html += `<div class="match-row-container group" data-fixture-id="${fId}">
                             <a href="${matchUrl}" class="match-row-header block p-3 md:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors" data-fixture-id="${fId}">
                                 <div class="flex justify-between items-center">
-                                    <div class="w-1/3 text-right font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-end md:items-center justify-end gap-2">
-                                        <span class="hidden md:inline">${match.teams.home.name}</span>
-                                        <img src="${match.teams.home.logo}" class="w-6 h-6">
-                                    </div>
-                                    <div class="w-1/3 text-center flex flex-col items-center">
-                                        <div class="text-[10px] text-slate-400 mb-1 font-semibold tracking-wider">${statusText}</div>
-                                        <div class="bg-slate-100 dark:bg-slate-950 px-3 py-1 rounded-md text-slate-800 dark:text-slate-100 font-black text-lg shadow-sm border border-slate-200 dark:border-slate-800/50">${hScore} - ${aScore}</div>
-                                    </div>
-                                    <div class="w-1/3 text-left font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-start md:items-center justify-start gap-2">
-                                        <img src="${match.teams.away.logo}" class="w-6 h-6">
-                                        <span class="hidden md:inline">${match.teams.away.name}</span>
-                                    </div>
-                                </div>
-                            </a>
-                            
-                            <!-- Expanded Match Details -->
+                                    <div class="w-1/3 text-right font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-end md:items-center justify-end gap-2"><span class="hidden md:inline">${match.teams.home.name}</span><img src="${match.teams.home.logo}" class="w-6 h-6"></div>
+                                    <div class="w-1/3 text-center flex flex-col items-center"><div class="text-[10px] text-slate-400 mb-1 font-semibold tracking-wider">${statusText}</div><div class="bg-slate-100 dark:bg-slate-950 px-3 py-1 rounded-md text-slate-800 dark:text-slate-100 font-black text-lg shadow-sm border border-slate-200 dark:border-slate-800/50">${hScore} - ${aScore}</div></div>
+                                    <div class="w-1/3 text-left font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-start md:items-center justify-start gap-2"><img src="${match.teams.away.logo}" class="w-6 h-6"><span class="hidden md:inline">${match.teams.away.name}</span></div>
+                                </div></a>
                             <div id="details-${fId}" class="hidden px-4 pb-5 pt-2 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
                                 <div class="max-w-2xl mx-auto mt-2">
-                                    <!-- Scoreboard Panel -->
                                     <div class="flex justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm mb-4">
-                                        <div class="text-center w-1/3">
-                                            <img src="${match.teams.home.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm">
-                                            <div class="font-bold text-sm dark:text-white">${match.teams.home.name}</div>
-                                        </div>
-                                        <div class="w-1/3 text-center">
-                                            <div class="inline-block bg-slate-100 dark:bg-slate-950 border-2 border-emerald-500/30 rounded-xl px-5 py-2 text-3xl font-black text-slate-800 dark:text-white shadow-inner mb-1">${hScore} - ${aScore}</div>
-                                        </div>
-                                        <div class="text-center w-1/3">
-                                            <img src="${match.teams.away.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm">
-                                            <div class="font-bold text-sm dark:text-white">${match.teams.away.name}</div>
-                                        </div>
+                                        <div class="text-center w-1/3"><img src="${match.teams.home.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm"><div class="font-bold text-sm dark:text-white">${match.teams.home.name}</div></div>
+                                        <div class="w-1/3 text-center"><div class="inline-block bg-slate-100 dark:bg-slate-950 border-2 border-emerald-500/30 rounded-xl px-5 py-2 text-3xl font-black text-slate-800 dark:text-white shadow-inner mb-1">${hScore} - ${aScore}</div></div>
+                                        <div class="text-center w-1/3"><img src="${match.teams.away.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm"><div class="font-bold text-sm dark:text-white">${match.teams.away.name}</div></div>
                                     </div>
-                                    
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <!-- Match Events -->
-                                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
-                                            <div class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">Match Events</div>
-                                            <div id="events-list-${fId}" class="min-h-[60px]"></div>
-                                        </div>
-                                        
-                                        <!-- Dynamic Statistics Bars -->
+                                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm"><div class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">Match Events</div><div id="events-list-${fId}" class="min-h-[60px]"></div></div>
                                         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-center space-y-4">
                                             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">${currentT.statsTitle}</div>
-                                            <!-- Possession -->
-                                            <div>
-                                                <div class="flex justify-between text-[11px] mb-1.5 font-bold">
-                                                    <span id="poss-home-val-${fId}" class="text-emerald-500">-</span>
-                                                    <span class="text-slate-500">${currentT.poss}</span>
-                                                    <span id="poss-away-val-${fId}" class="text-blue-500">-</span>
-                                                </div>
-                                                <div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                                                    <div id="poss-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div>
-                                                    <div id="poss-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div>
-                                                </div>
-                                            </div>
-                                            <!-- Shots -->
-                                            <div>
-                                                <div class="flex justify-between text-[11px] mb-1.5 font-bold">
-                                                    <span id="shots-home-val-${fId}" class="text-emerald-500">-</span>
-                                                    <span class="text-slate-500">${currentT.shots}</span>
-                                                    <span id="shots-away-val-${fId}" class="text-blue-500">-</span>
-                                                </div>
-                                                <div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                                                    <div id="shots-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div>
-                                                    <div id="shots-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div>
-                                                </div>
-                                            </div>
+                                            <div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="poss-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.poss}</span><span id="poss-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="poss-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="poss-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div>
+                                            <div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="shots-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.shots}</span><span id="shots-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="shots-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="shots-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div>
                                         </div>
                                     </div>
-                                    
                                     ${aiSection}
                                 </div>
-                            </div>
-                        </div>`;
+                            </div></div>`;
                 });
                 container.innerHTML += html + `</div></div>`;
             });
-
-            setTimeout(() => {
-                filtered.forEach(match => {
-                    if (String(match.league.id) === '39' && match.fixture.status.short === 'FT') {
-                        autoLoadMatchArticle(match.fixture.id, match);
-                    }
-                });
-                handleRoute();
-            }, 50);
+            setTimeout(() => { filtered.forEach(match => { if (String(match.league.id) === '39' && match.fixture.status.short === 'FT') { autoLoadMatchArticle(match.fixture.id, match); } }); handleRoute(); }, 50);
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            initTheme();
-            fetchLiveMatches(); 
-            
-            setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
-
-            document.querySelectorAll('.date-tab').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('date-tab-active'));
-                    e.currentTarget.classList.add('date-tab-active');
-                    currentDateOffset = parseInt(e.currentTarget.getAttribute('data-offset'));
-                    allMatchesCached = []; 
-                    fetchLiveMatches(true);
-                });
-            });
-
-            const searchInput = document.getElementById('search-input');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        currentSearchQuery = e.target.value.trim();
-                        filterAndRenderMatches();
-                    }, 300);
-                });
-            }
-
-            document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
-            document.getElementById('btn-refresh').addEventListener('click', () => {
-                allMatchesCached = []; 
-                fetchLiveMatches(true);
-            });
-            
+            initTheme(); fetchLiveMatches(); setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
+            document.querySelectorAll('.date-tab').forEach(btn => { btn.addEventListener('click', (e) => { document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('date-tab-active')); e.currentTarget.classList.add('date-tab-active'); currentDateOffset = parseInt(e.currentTarget.getAttribute('data-offset')); allMatchesCached = []; fetchLiveMatches(true); }); });
+            const searchInput = document.getElementById('search-input'); if (searchInput) { searchInput.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentSearchQuery = e.target.value.trim(); filterAndRenderMatches(); }, 300); }); }
+            document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme); document.getElementById('btn-refresh').addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
             document.getElementById('btn-lang-dropdown').addEventListener('click', () => toggleDropdown('lang-options-menu'));
-            document.querySelectorAll('.lang-opt').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag');
-                    document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name');
-                    changeLanguage(btn.getAttribute('data-lang'));
-                });
-            });
-
+            document.querySelectorAll('.lang-opt').forEach(btn => { btn.addEventListener('click', () => { document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag'); document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name'); changeLanguage(btn.getAttribute('data-lang')); }); });
             document.getElementById('btn-league-dropdown').addEventListener('click', () => toggleDropdown('league-options-menu'));
-            document.querySelectorAll('.league-opt').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    selectedLeagueId = btn.getAttribute('data-id');
-                    document.getElementById('current-league-flag').src = btn.getAttribute('data-flag');
-                    selectedLeagueTranslationKey = btn.getAttribute('data-key');
-                    const t = translations[currentLang] || translations['en'];
-                    document.getElementById('current-league-text').innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
-                    filterAndRenderMatches();
-                });
-            });
-
-            document.getElementById('api-scores-container').addEventListener('click', (e) => {
-                const link = e.target.closest('a.match-row-header');
-                if (link) {
-                    e.preventDefault();
-                    const fId = link.getAttribute('data-fixture-id');
-                    const href = link.getAttribute('href');
-                    
-                    if (window.location.pathname !== href) {
-                        history.pushState(null, '', href);
-                    }
-                    
-                    const details = document.getElementById(`details-${fId}`);
-                    if (details && !details.classList.contains('hidden')) {
-                        details.classList.add('hidden');
-                        history.pushState(null, '', '/');
-                        handleRoute();
-                    } else {
-                        openMatch(fId);
-                    }
-                }
-            });
-
-            const logoLink = document.getElementById('logo-link');
-            if(logoLink) {
-                logoLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    history.pushState(null, '', '/');
-                    handleRoute();
-                });
-            }
-
+            document.querySelectorAll('.league-opt').forEach(btn => { btn.addEventListener('click', () => { selectedLeagueId = btn.getAttribute('data-id'); document.getElementById('current-league-flag').src = btn.getAttribute('data-flag'); selectedLeagueTranslationKey = btn.getAttribute('data-key'); const t = translations[currentLang] || translations['en']; document.getElementById('current-league-text').innerText = t[selectedLeagueTranslationKey] || t['allLeagues']; filterAndRenderMatches(); }); });
+            document.getElementById('api-scores-container').addEventListener('click', (e) => { const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState(null, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState(null, '', '/'); handleRoute(); } else { openMatch(fId); } } });
+            const logoLink = document.getElementById('logo-link'); if(logoLink) { logoLink.addEventListener('click', (e) => { e.preventDefault(); history.pushState(null, '', '/'); handleRoute(); }); }
             window.addEventListener('popstate', handleRoute);
         });
     </script>
