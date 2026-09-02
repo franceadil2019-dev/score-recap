@@ -87,7 +87,16 @@ export async function onRequest(context) {
                  return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
             }
 
-            const prompt = `Write a short, engaging sports journalism recap (3-4 sentences) for the football match: ${matchStr}. The final score was ${score}. Key events: ${events}. Write the article entirely in the ${language} language. Return only the text without any introduction.`;
+            // هنا تم تعديل الأمر ليصبح مقالاً رياضياً طويلاً واحترافياً
+            const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging, and detailed match report for the football match: ${matchStr}. The final score was ${score}. 
+            Key events (goals, cards, substitutions): ${events}. 
+            The article MUST include:
+            1. A catchy headline wrapped in an <h2> HTML tag.
+            2. An exciting introduction summarizing the match and the final outcome wrapped in <p> tags.
+            3. A tactical analysis paragraph explaining how the match unfolded, focusing on the key events. Wrapped in <p> tags.
+            4. A "Turning Point" or "Key Moments" section using an <h3> tag, followed by a bulleted list <ul><li>...</li></ul> explaining the most important events.
+            5. A strong conclusion paragraph.
+            Write the ENTIRE article perfectly in the ${language} language. Return ONLY valid HTML code. Do NOT wrap the response in markdown blocks like \`\`\`html.`;
             
             const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST",
