@@ -42,6 +42,9 @@
         .ai-article-content p { margin-bottom: 0.75rem; }
         .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
         .ai-article-content li { margin-bottom: 0.25rem; }
+        
+        /* Date Tabs Styling */
+        .date-tab-active { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200">
@@ -55,7 +58,7 @@
                 <a href="/" class="text-2xl font-black text-emerald-500 tracking-tight" id="logo-link">SCORE<span class="text-slate-800 dark:text-white">RECAP</span></a>
                 <span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 hidden md:flex shadow-inner" aria-label="Live Matches Status">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 flex live-dot"></span>
-                    <span id="badge-live">TODAY</span>
+                    <span id="badge-live">LIVE</span>
                 </span>
                 <button id="btn-refresh" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-all active:scale-95" aria-label="Refresh matches">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -89,6 +92,15 @@
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section class="lg:col-span-2 space-y-4">
             
+            <!-- Date Selector Tabs -->
+            <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-none pb-1">
+                <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="-1" id="tab-yesterday">Yesterday</button>
+                
+                <button class="date-tab date-tab-active px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="0" id="tab-today">Today</button>
+                
+                <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="1" id="tab-tomorrow">Tomorrow</button>
+            </div>
+
             <!-- Filters & Search Bar -->
             <div class="flex flex-col md:flex-row gap-3 mb-4">
                 <div class="custom-dropdown w-full md:w-72">
@@ -138,9 +150,9 @@
 
     <script>
         const APP_CONFIG = {
-            workerUrl: "https://lucky-grass-1380.franceadil2019.workers.dev", 
+            workerUrl: "/api",
             cacheExpiryMinutes: 5,
-            autoRefreshInterval: 60000 
+            autoRefreshInterval: 300000 
         };
 
         let currentLang = 'en';
@@ -149,15 +161,15 @@
         let searchTimeout = null;
         let selectedLeagueTranslationKey = 'allLeagues';
         let allMatchesCached = []; 
+        let currentDateOffset = 0; 
 
         const translations = {
-            en: { title: "ScoreRecap | Scores", live: "TODAY", liveWord: "Live", allLeagues: "All Leagues", ucl: "UEFA Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", aiLoading: "Loading AI tactical recap...", aiError: "Could not fetch recap.", aiExclusive: "AI Match Recaps are exclusive to the Premier League.", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server" },
-            ar: { title: "سكور-ريكاب | النتائج المباشرة", live: "اليوم", liveWord: "مباشر", allLeagues: "كل الدوريات", ucl: "دوري أبطال أوروبا", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", aiLoading: "جاري تحميل الملخص التكتيكي...", aiError: "تعذر جلب الملخص.", aiExclusive: "ملخصات الذكاء الاصطناعي متاحة حصرياً للدوري الإنجليزي.", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم" },
-            fr: { title: "ScoreRecap | Résultats", live: "AUJOURD'HUI", liveWord: "Direct", allLeagues: "Toutes les Ligues", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", aiLoading: "Chargement du résumé tactique IA...", aiError: "Échec du chargement.", aiExclusive: "Les résumés IA sont exclusifs à la Premier League.", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher une équipe...", toastSuccess: "Données mises à jour", toastError: "Échec de connexion" },
-            es: { title: "ScoreRecap | Resultados", live: "HOY", liveWord: "Vivo", allLeagues: "Todas las Ligas", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", aiLoading: "Cargando el resumen táctico de IA...", aiError: "Error al cargar.", aiExclusive: "Los resúmenes de IA son exclusivos de la Premier League.", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión" }
+            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "All Leagues", ucl: "UEFA Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", aiLoading: "Loading AI tactical recap...", aiError: "Could not fetch recap.", aiExclusive: "AI Match Recaps are exclusive to the Premier League.", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server" },
+            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "كل الدوريات", ucl: "دوري أبطال أوروبا", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", aiLoading: "جاري تحميل الملخص التكتيكي...", aiError: "تعذر جلب الملخص.", aiExclusive: "ملخصات الذكاء الاصطناعي متاحة حصرياً للدوري الإنجليزي.", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم" },
+            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Toutes les Ligues", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", aiLoading: "Chargement du résumé tactique IA...", aiError: "Échec du chargement.", aiExclusive: "Les résumés IA sont exclusifs à la Premier League.", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher une équipe...", toastSuccess: "Données mises à jour", toastError: "Échec de connexion" },
+            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Todas las Ligas", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", aiLoading: "Cargando el resumen táctico de IA...", aiError: "Error al cargar.", aiExclusive: "Los resúmenes de IA son exclusivos de la Premier League.", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión" }
         };
 
-        // UI & Theme Initialization
         function initTheme() {
             const htmlTag = document.getElementById('html-tag');
             if (localStorage.getItem('app_theme') === 'dark') {
@@ -176,7 +188,6 @@
             document.getElementById('theme-icon-moon').classList.toggle('hidden', isDark);
         }
 
-        // Custom Toast Notifications
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -229,6 +240,9 @@
             const t = translations[lang] || translations['en'];
             document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
             safeSetText('badge-live', t.live);
+            safeSetText('tab-yesterday', t.yesterday);
+            safeSetText('tab-today', t.todayTab);
+            safeSetText('tab-tomorrow', t.tomorrow);
             safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl);
             safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie);
             safeSetText('ad-label', t.ad); safeSetText('ad-banner', t.adBanner); safeSetText('footer-rights', t.rights);
@@ -245,13 +259,17 @@
 
         async function fetchLiveMatches(isManualRefresh = false) {
             const d = new Date();
-            const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            d.setDate(d.getDate() + currentDateOffset);
+            const targetDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             
             const refreshBtn = document.getElementById('btn-refresh');
             if(refreshBtn) refreshBtn.classList.add('animate-spin');
+            
+            const container = document.getElementById('api-scores-container');
+            if(container && allMatchesCached.length === 0) container.innerHTML = `<div class="flex justify-center py-10"><div class="spinner"></div></div>`;
 
             try {
-                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/fixtures?date=${todayStr}`, { 
+                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/fixtures?date=${targetDateStr}`, { 
                     headers: { "x-action": "fetch-matches" },
                     timeout: 10000 
                 });
@@ -506,9 +524,9 @@
                     const isLive = match.fixture.status.short === '1H' || match.fixture.status.short === '2H' || match.fixture.status.short === 'HT';
                     const statusText = isLive ? `<span class="text-red-500 font-bold flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 live-dot"></span>${match.fixture.status.elapsed}'</span>` : (match.fixture.status.short === 'FT' ? currentT.ended : match.fixture.date.substring(11, 16));
 
-                    const aiSection = String(league.id) === '39' 
+                    const aiSection = (String(league.id) === '39' && match.fixture.status.short === 'FT')
                         ? `<div id="ai-article-${fId}" data-loaded="false"></div>`
-                        : `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.aiExclusive}</div>`;
+                        : `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.aiExclusive} (After Full Time)</div>`;
 
                     const matchSlug = createMatchSlug(match.teams.home.name, match.teams.away.name);
                     const matchUrl = `/match/${fId}/${matchSlug}`;
@@ -598,7 +616,7 @@
 
             setTimeout(() => {
                 filtered.forEach(match => {
-                    if (String(match.league.id) === '39') {
+                    if (String(match.league.id) === '39' && match.fixture.status.short === 'FT') {
                         autoLoadMatchArticle(match.fixture.id, match);
                     }
                 });
@@ -612,6 +630,16 @@
             
             setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
 
+            document.querySelectorAll('.date-tab').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('date-tab-active'));
+                    e.currentTarget.classList.add('date-tab-active');
+                    currentDateOffset = parseInt(e.currentTarget.getAttribute('data-offset'));
+                    allMatchesCached = []; 
+                    fetchLiveMatches(true);
+                });
+            });
+
             const searchInput = document.getElementById('search-input');
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
@@ -624,7 +652,10 @@
             }
 
             document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
-            document.getElementById('btn-refresh').addEventListener('click', () => fetchLiveMatches(true));
+            document.getElementById('btn-refresh').addEventListener('click', () => {
+                allMatchesCached = []; 
+                fetchLiveMatches(true);
+            });
             
             document.getElementById('btn-lang-dropdown').addEventListener('click', () => toggleDropdown('lang-options-menu'));
             document.querySelectorAll('.lang-opt').forEach(btn => {
@@ -660,7 +691,6 @@
                     
                     const details = document.getElementById(`details-${fId}`);
                     if (details && !details.classList.contains('hidden')) {
-                        // Already open, let's close it and clear URL
                         details.classList.add('hidden');
                         history.pushState(null, '', '/');
                         handleRoute();
