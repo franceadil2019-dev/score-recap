@@ -1,23 +1,19 @@
 <!DOCTYPE html>
-
 <html lang="en" dir="ltr" id="html-tag" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Live football scores, match reports, and tactical analysis for top leagues.">
+    <meta name="description" content="Live football scores, match reports, and AI tactical analysis.">
     <title id="meta-title">ScoreRecap | Football Scores & Schedule</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class', }
-    </script>
+    <script> tailwind.config = { darkMode: 'class', } </script>
     
     <style>
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .live-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         .scrollbar-none::-webkit-scrollbar { display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         .spinner { border: 3px solid rgba(0, 0, 0, 0.1); border-top: 3px solid #10b981; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         .dark .spinner { border: 3px solid rgba(255, 255, 255, 0.1); border-top: 3px solid #10b981; }
         .mini-spinner { border: 2px solid rgba(0, 0, 0, 0.1); border-top: 2px solid #10b981; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
@@ -37,7 +33,6 @@
         html[dir="rtl"] .drop-options { left: auto; right: 0; }
         html[dir="rtl"] .drop-opt { text-align: right; }
 
-        /* Typography for Article InnerHTML */
         .ai-article-content h2 { font-size: 1.25rem; font-weight: 900; margin-top: 1rem; margin-bottom: 0.75rem; color: #2563eb; }
         .dark .ai-article-content h2 { color: #60a5fa; }
         .ai-article-content h3 { font-size: 1rem; font-weight: 800; margin-top: 1rem; margin-bottom: 0.5rem; color: #334155; }
@@ -45,9 +40,12 @@
         .ai-article-content p { margin-bottom: 1rem; line-height: 1.7; font-size: 0.9rem; }
         .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; }
         .ai-article-content li { margin-bottom: 0.4rem; }
+        .ai-article-content strong { color: #10b981; }
         
-        /* Date Tabs Styling */
         .date-tab-active { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important; }
+        
+        .vote-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1em; }
+        html[dir="rtl"] .vote-select { background-position: left 0.5rem center; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200">
@@ -112,7 +110,9 @@
                     <div id="league-options-menu" class="drop-options">
                         <button class="drop-opt league-opt" data-id="all" data-flag="https://media.api-sports.io/football/leagues/2.png" data-key="allLeagues"><img src="https://media.api-sports.io/football/leagues/2.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-all">All Leagues</span></button>
                         <button class="drop-opt league-opt" data-id="2" data-flag="https://media.api-sports.io/football/leagues/2.png" data-key="ucl"><img src="https://media.api-sports.io/football/leagues/2.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-ucl">UEFA Champions League</span></button>
+                        <button class="drop-opt league-opt" data-id="12" data-flag="https://media.api-sports.io/football/leagues/12.png" data-key="caf"><img src="https://media.api-sports.io/football/leagues/12.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-caf">CAF Champions League</span></button>
                         <button class="drop-opt league-opt" data-id="39" data-flag="https://media.api-sports.io/football/leagues/39.png" data-key="pl"><img src="https://media.api-sports.io/football/leagues/39.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-pl">Premier League</span></button>
+                        <button class="drop-opt league-opt" data-id="40" data-flag="https://media.api-sports.io/football/leagues/40.png" data-key="champ"><img src="https://media.api-sports.io/football/leagues/40.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-champ">Championship</span></button>
                         <button class="drop-opt league-opt" data-id="140" data-flag="https://media.api-sports.io/football/leagues/140.png" data-key="liga"><img src="https://media.api-sports.io/football/leagues/140.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-liga">La Liga</span></button>
                         <button class="drop-opt league-opt" data-id="135" data-flag="https://media.api-sports.io/football/leagues/135.png" data-key="serie"><img src="https://media.api-sports.io/football/leagues/135.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-serie">Serie A</span></button>
                     </div>
@@ -145,100 +145,45 @@
     </footer>
 
     <script>
-        const APP_CONFIG = {
-            workerUrl: "/api",
-            cacheExpiryMinutes: 5,
-            autoRefreshInterval: 300000 
-        };
+        const APP_CONFIG = { workerUrl: "/api", cacheExpiryMinutes: 5, autoRefreshInterval: 300000 };
+        let currentLang = 'en', selectedLeagueId = 'all', currentSearchQuery = '', searchTimeout = null, selectedLeagueTranslationKey = 'allLeagues', allMatchesCached = [], currentDateOffset = 0; 
+        
+        // دوال التخزين المحلي للمتصفح (الدرع الأول)
+        function getFromCache(key) { const data = sessionStorage.getItem(key); return data ? JSON.parse(data) : null; }
+        function saveToCache(key, data) { sessionStorage.setItem(key, JSON.stringify(data)); }
 
-        let currentLang = 'en';
-        let selectedLeagueId = 'all';
-        let currentSearchQuery = ''; 
-        let searchTimeout = null;
-        let selectedLeagueTranslationKey = 'allLeagues';
-        let allMatchesCached = []; 
-        let currentDateOffset = 0; 
-
-        // تم تعديل النصوص هنا لإزالة أي إشارة للذكاء الاصطناعي وجعلها صحفية
         const translations = {
-            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "All Leagues", ucl: "UEFA Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Writing match report...", reportError: "Could not load the report.", reportExclusive: "Match reports are exclusive to the Premier League.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server" },
-            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "كل الدوريات", ucl: "دوري أبطال أوروبا", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري كتابة تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportExclusive: "تقارير المباريات متاحة حصرياً للدوري الإنجليزي.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم" },
-            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Toutes les Ligues", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Rédaction du rapport de match...", reportError: "Échec du chargement du rapport.", reportExclusive: "Les rapports de match sont exclusifs à la Premier League.", reportTitle: "Rapport et Analyse du Match", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher une équipe...", toastSuccess: "Données mises à jour", toastError: "Échec de connexion" },
-            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Todas las Ligas", ucl: "Champions League", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Redactando informe del partido...", reportError: "Error al cargar el informe.", reportExclusive: "Los informes de partidos son exclusivos de la Premier League.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión" }
+            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "All Leagues", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Writing match report...", reportError: "Could not load the report.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server", predictVote: "Your Prediction...", win: "Win", draw: "Draw", voteSaved: "Prediction saved successfully!", predictBtn: "Predict Winner 🔮", predictLoading: "Analyzing teams...", predictError: "Failed to generate prediction.", predictTitle: "Match Prediction", readReportBtn: "Read Match Report 📰" },
+            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "كل الدوريات", ucl: "دوري أبطال أوروبا", caf: "دوري أبطال أفريقيا", champ: "دوري البطولة الإنجليزية", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري كتابة تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم", predictVote: "توقع نتيجتك...", win: "فوز", draw: "تعادل", voteSaved: "تم حفظ توقعك بنجاح!", predictBtn: "توقع الفائز 🔮", predictLoading: "جاري تحليل الفريقين...", predictError: "تعذر توليد التوقع.", predictTitle: "توقع نتيجة المباراة", readReportBtn: "اقرأ تقرير المباراة 📰" },
+            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Toutes les Ligues", ucl: "Champions League", caf: "Ligue des Champions de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Rédaction du rapport de match...", reportError: "Échec du chargement du rapport.", reportTitle: "Rapport et Analyse du Match", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher une équipe...", toastSuccess: "Données mises à jour", toastError: "Échec de connexion", predictVote: "Votre Prédiction...", win: "Victoire", draw: "Nul", voteSaved: "Prédiction enregistrée !", predictBtn: "Prédire le Vainqueur 🔮", predictLoading: "Analyse des équipes...", predictError: "Échec de la prédiction.", predictTitle: "Prédiction du Match", readReportBtn: "Lire le Rapport du Match 📰" },
+            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Todas las Ligas", ucl: "Champions League", caf: "Liga de Campeones de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Redactando informe del partido...", reportError: "Error al cargar el informe.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión", predictVote: "Tu Predicción...", win: "Victoria", draw: "Empate", voteSaved: "¡Predicción guardada!", predictBtn: "Predecir Ganador 🔮", predictLoading: "Analizando equipos...", predictError: "Error en la predicción.", predictTitle: "Predicción del Partido", readReportBtn: "Leer Informe del Partido 📰" }
         };
 
-        function initTheme() {
-            const htmlTag = document.getElementById('html-tag');
-            if (localStorage.getItem('app_theme') === 'dark') {
-                htmlTag.classList.add('dark');
-                document.getElementById('theme-icon-sun').classList.remove('hidden');
-                document.getElementById('theme-icon-moon').classList.add('hidden');
-            }
-        }
-
-        function toggleTheme() {
-            const htmlTag = document.getElementById('html-tag');
-            htmlTag.classList.toggle('dark');
-            const isDark = htmlTag.classList.contains('dark');
-            localStorage.setItem('app_theme', isDark ? 'dark' : 'light');
-            document.getElementById('theme-icon-sun').classList.toggle('hidden', !isDark);
-            document.getElementById('theme-icon-moon').classList.toggle('hidden', isDark);
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const bgClass = type === 'error' ? 'bg-red-500' : (type === 'success' ? 'bg-emerald-500' : 'bg-slate-800 dark:bg-slate-700');
-            toast.className = `${bgClass} text-white px-4 py-2.5 rounded-lg shadow-lg text-xs font-bold transition-all duration-300 transform translate-y-full opacity-0 flex items-center gap-2`;
-            const icon = type === 'error' ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>` : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-            toast.innerHTML = `${icon} ${message}`;
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('translate-y-full', 'opacity-0'));
-            setTimeout(() => { toast.classList.add('translate-y-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        const fetchWithTimeout = async (resource, options = {}) => {
-            const { timeout = 8000 } = options;
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeout);
-            try { const response = await fetch(resource, { ...options, signal: controller.signal }); clearTimeout(id); return response; } 
-            catch (error) { clearTimeout(id); throw error; }
-        };
-
+        function initTheme() { const htmlTag = document.getElementById('html-tag'); if (localStorage.getItem('app_theme') === 'dark') { htmlTag.classList.add('dark'); document.getElementById('theme-icon-sun').classList.remove('hidden'); document.getElementById('theme-icon-moon').classList.add('hidden'); } }
+        function toggleTheme() { const htmlTag = document.getElementById('html-tag'); htmlTag.classList.toggle('dark'); const isDark = htmlTag.classList.contains('dark'); localStorage.setItem('app_theme', isDark ? 'dark' : 'light'); document.getElementById('theme-icon-sun').classList.toggle('hidden', !isDark); document.getElementById('theme-icon-moon').classList.toggle('hidden', isDark); }
+        function showToast(message, type = 'info') { const container = document.getElementById('toast-container'); const toast = document.createElement('div'); const bgClass = type === 'error' ? 'bg-red-500' : (type === 'success' ? 'bg-emerald-500' : 'bg-slate-800 dark:bg-slate-700'); toast.className = `${bgClass} text-white px-4 py-2.5 rounded-lg shadow-lg text-xs font-bold transition-all duration-300 transform translate-y-full opacity-0 flex items-center gap-2`; const icon = type === 'error' ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>` : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`; toast.innerHTML = `${icon} ${message}`; container.appendChild(toast); requestAnimationFrame(() => toast.classList.remove('translate-y-full', 'opacity-0')); setTimeout(() => { toast.classList.add('translate-y-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000); }
+        const fetchWithTimeout = async (resource, options = {}) => { const { timeout = 8000 } = options; const controller = new AbortController(); const id = setTimeout(() => controller.abort(), timeout); try { const response = await fetch(resource, { ...options, signal: controller.signal }); clearTimeout(id); return response; } catch (error) { clearTimeout(id); throw error; } };
         function safeSetText(id, value) { const el = document.getElementById(id); if (el) el.innerText = value; }
-
-        function toggleDropdown(menuId) {
-            const menu = document.getElementById(menuId);
-            const isShown = menu.classList.contains('show');
-            document.querySelectorAll('.drop-options').forEach(d => d.classList.remove('show'));
-            if (!isShown) menu.classList.add('show');
-        }
-
+        function toggleDropdown(menuId) { const menu = document.getElementById(menuId); const isShown = menu.classList.contains('show'); document.querySelectorAll('.drop-options').forEach(d => d.classList.remove('show')); if (!isShown) menu.classList.add('show'); }
+        
         function changeLanguage(lang) {
-            currentLang = lang;
-            const t = translations[lang] || translations['en'];
-            document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
+            currentLang = lang; const t = translations[lang] || translations['en']; document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
             safeSetText('badge-live', t.live); safeSetText('tab-yesterday', t.yesterday); safeSetText('tab-today', t.todayTab); safeSetText('tab-tomorrow', t.tomorrow);
-            safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl); safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie);
+            safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl); safeSetText('opt-caf', t.caf); safeSetText('opt-champ', t.champ); safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie);
             safeSetText('ad-label', t.ad); safeSetText('ad-banner', t.adBanner); safeSetText('footer-rights', t.rights);
-            const searchInput = document.getElementById('search-input');
-            if(searchInput) searchInput.placeholder = t.search;
-            const leagueTextEl = document.getElementById('current-league-text');
-            if(leagueTextEl) leagueTextEl.innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
+            const searchInput = document.getElementById('search-input'); if(searchInput) searchInput.placeholder = t.search;
+            const leagueTextEl = document.getElementById('current-league-text'); if(leagueTextEl) leagueTextEl.innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
             handleRoute(); filterAndRenderMatches();
         }
 
         async function fetchLiveMatches(isManualRefresh = false) {
             const d = new Date(); d.setDate(d.getDate() + currentDateOffset);
             const targetDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            const refreshBtn = document.getElementById('btn-refresh');
-            if(refreshBtn) refreshBtn.classList.add('animate-spin');
-            const container = document.getElementById('api-scores-container');
-            if(container && allMatchesCached.length === 0) container.innerHTML = `<div class="flex justify-center py-10"><div class="spinner"></div></div>`;
+            const refreshBtn = document.getElementById('btn-refresh'); if(refreshBtn) refreshBtn.classList.add('animate-spin');
+            const container = document.getElementById('api-scores-container'); if(container && allMatchesCached.length === 0) container.innerHTML = `<div class="flex justify-center py-10"><div class="spinner"></div></div>`;
             try {
                 const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/fixtures?date=${targetDateStr}`, { headers: { "x-action": "fetch-matches" }, timeout: 10000 });
-                if (!res.ok) throw new Error("API Error");
-                const data = await res.json();
+                if (!res.ok) throw new Error("API Error"); const data = await res.json();
                 if (data.response) { allMatchesCached = data.response; filterAndRenderMatches(); if (isManualRefresh) showToast(translations[currentLang].toastSuccess, 'success'); }
             } catch (error) {
                 if (isManualRefresh) showToast(translations[currentLang].toastError, 'error');
@@ -247,85 +192,107 @@
             if(refreshBtn) setTimeout(() => refreshBtn.classList.remove('animate-spin'), 500);
         }
 
+        // جلب الأحداث مع التخزين المحلي
         async function fetchMatchEvents(fixtureId, container) {
-            if(!container) return;
+            if(!container) return; 
+            const cachedEvents = getFromCache(`events_${fixtureId}`);
+            if (cachedEvents) { renderEvents(cachedEvents, container); return; }
+            
             container.innerHTML = `<div class="flex justify-center py-4"><div class="mini-spinner"></div></div>`;
             try {
                 const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/events?fixture=${fixtureId}`, { headers: { "x-action": "fetch-events" }, timeout: 8000 });
                 const data = await res.json();
-                if (!data.response || data.response.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
-                let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto scrollbar-none">`;
-                data.response.forEach(ev => { 
-                    const icon = ev.type === 'Goal' ? '⚽' : (ev.type === 'Card' ? '🟨' : '🔄');
-                    html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${ev.team.name})</span></span></div>`; 
-                });
-                container.innerHTML = html + `</div>`;
+                saveToCache(`events_${fixtureId}`, data.response || []);
+                renderEvents(data.response || [], container);
             } catch (err) { container.innerHTML = `<p class="text-center text-red-500 text-xs py-1">Error fetching events</p>`; }
         }
 
+        function renderEvents(events, container) {
+            if (!events || events.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
+            let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto scrollbar-none">`;
+            events.forEach(ev => { 
+                const icon = ev.type === 'Goal' ? '⚽' : (ev.type === 'Card' ? '🟨' : '🔄');
+                html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${ev.team.name})</span></span></div>`; 
+            }); container.innerHTML = html + `</div>`;
+        }
+
+        // جلب الإحصائيات مع التخزين المحلي
         async function fetchMatchStats(fixtureId) {
+            const cachedStats = getFromCache(`stats_${fixtureId}`);
+            if (cachedStats) { renderStats(fixtureId, cachedStats); return; }
             try {
                 const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/statistics?fixture=${fixtureId}`, { headers: { "x-action": "fetch-stats" }, timeout: 8000 });
                 const data = await res.json();
                 if (data.response && data.response.length === 2) {
-                    const homeStats = data.response[0].statistics; const awayStats = data.response[1].statistics;
-                    const getStat = (stats, type) => { const s = stats.find(x => x.type === type); return s ? s.value : null; };
-                    let homePoss = getStat(homeStats, "Ball Possession") || "50%"; let awayPoss = getStat(awayStats, "Ball Possession") || "50%";
-                    let homeShots = getStat(homeStats, "Total Shots") || 0; let awayShots = getStat(awayStats, "Total Shots") || 0;
-                    safeSetText(`poss-home-val-${fixtureId}`, homePoss); safeSetText(`poss-away-val-${fixtureId}`, awayPoss);
-                    const homePossBar = document.getElementById(`poss-home-bar-${fixtureId}`); const awayPossBar = document.getElementById(`poss-away-bar-${fixtureId}`);
-                    if (homePossBar) homePossBar.style.width = homePoss; if (awayPossBar) awayPossBar.style.width = awayPoss;
-                    safeSetText(`shots-home-val-${fixtureId}`, homeShots); safeSetText(`shots-away-val-${fixtureId}`, awayShots);
-                    const totalShots = (parseInt(homeShots) || 0) + (parseInt(awayShots) || 0);
-                    let homeShotsPct = "50%"; let awayShotsPct = "50%";
-                    if (totalShots > 0) { homeShotsPct = `${Math.round((parseInt(homeShots) / totalShots) * 100)}%`; awayShotsPct = `${Math.round((parseInt(awayShots) / totalShots) * 100)}%`; } else if (totalShots === 0) { homeShotsPct = "0%"; awayShotsPct = "0%"; }
-                    const homeShotsBar = document.getElementById(`shots-home-bar-${fixtureId}`); const awayShotsBar = document.getElementById(`shots-away-bar-${fixtureId}`);
-                    if (homeShotsBar) homeShotsBar.style.width = homeShotsPct; if (awayShotsBar) awayShotsBar.style.width = awayShotsPct;
+                    saveToCache(`stats_${fixtureId}`, data.response);
+                    renderStats(fixtureId, data.response);
                 }
             } catch (err) { console.error("Error fetching stats:", err); }
         }
 
-        async function autoLoadMatchArticle(fixtureId, matchCached) {
-            const aiBox = document.getElementById(`ai-article-${fixtureId}`);
-            if (!aiBox || aiBox.getAttribute('data-loaded') === 'true') return;
-            
-            aiBox.innerHTML = `
-                <div class="mt-4 p-5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm flex justify-center items-center gap-3">
-                    <div class="mini-spinner"></div>
-                    <span class="text-xs font-bold text-slate-500">${translations[currentLang].reportLoading}</span>
-                </div>`;
-            
-            try {
-                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article`, {
-                    method: "POST", headers: { "Content-Type": "application/json", "x-action": "generate-article" },
-                    body: JSON.stringify({ fixtureId: fixtureId, matchStr: `${matchCached.teams.home.name} vs ${matchCached.teams.away.name}`, score: `${matchCached.goals.home} - ${matchCached.goals.away}`, events: "Fetched from backend for cron operations.", language: currentLang }),
-                    timeout: 20000 
-                });
-                
-                if (!response.ok) throw new Error("Network request failed");
-                const data = await response.json();
-                aiBox.setAttribute('data-loaded', 'true'); 
+        function renderStats(fixtureId, responseData) {
+            const homeStats = responseData[0].statistics; const awayStats = responseData[1].statistics;
+            const getStat = (stats, type) => { const s = stats.find(x => x.type === type); return s ? s.value : null; };
+            let homePoss = getStat(homeStats, "Ball Possession") || "50%"; let awayPoss = getStat(awayStats, "Ball Possession") || "50%";
+            let homeShots = getStat(homeStats, "Total Shots") || 0; let awayShots = getStat(awayStats, "Total Shots") || 0;
+            safeSetText(`poss-home-val-${fixtureId}`, homePoss); safeSetText(`poss-away-val-${fixtureId}`, awayPoss);
+            const homePossBar = document.getElementById(`poss-home-bar-${fixtureId}`); const awayPossBar = document.getElementById(`poss-away-bar-${fixtureId}`);
+            if (homePossBar) homePossBar.style.width = homePoss; if (awayPossBar) awayPossBar.style.width = awayPoss;
+            safeSetText(`shots-home-val-${fixtureId}`, homeShots); safeSetText(`shots-away-val-${fixtureId}`, awayShots);
+            const totalShots = (parseInt(homeShots) || 0) + (parseInt(awayShots) || 0); let homeShotsPct = "50%"; let awayShotsPct = "50%";
+            if (totalShots > 0) { homeShotsPct = `${Math.round((parseInt(homeShots) / totalShots) * 100)}%`; awayShotsPct = `${Math.round((parseInt(awayShots) / totalShots) * 100)}%`; } else if (totalShots === 0) { homeShotsPct = "0%"; awayShotsPct = "0%"; }
+            const homeShotsBar = document.getElementById(`shots-home-bar-${fixtureId}`); const awayShotsBar = document.getElementById(`shots-away-bar-${fixtureId}`);
+            if (homeShotsBar) homeShotsBar.style.width = homeShotsPct; if (awayShotsBar) awayShotsBar.style.width = awayShotsPct;
+        }
 
-                // تم تغيير التصميم بالكامل ليصبح صحفياً وإزالة كل علامات الذكاء الاصطناعي
-                aiBox.innerHTML = `
-                    <div class="mt-5 p-6 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden">
-                        <div class="relative z-10">
-                            <div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400">
-                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-                                    </div>
-                                    <span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${translations[currentLang].reportTitle}</span>
-                                </div>
-                            </div>
-                            <div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">
-                                ${data.result}
-                            </div>
-                        </div>
-                    </div>`;
-            } catch (error) {
-                aiBox.removeAttribute('data-loaded'); 
-                aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 text-center">${translations[currentLang].reportError}</p>`;
+        // جلب التوقعات عبر GET (On-Demand)
+        async function loadPrediction(fixtureId, homeTeam, awayTeam, btnElement) {
+            btnElement.disabled = true; btnElement.classList.add('opacity-50', 'cursor-not-allowed');
+            btnElement.innerHTML = `<div class="flex justify-center items-center gap-2"><div class="mini-spinner"></div> ${translations[currentLang].predictLoading}</div>`;
+            const predictBox = document.getElementById(`predict-box-${fixtureId}`); predictBox.classList.remove('hidden');
+            try {
+                const params = new URLSearchParams({ fixtureId, homeTeam, awayTeam, language: currentLang });
+                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/predict-match?${params.toString()}`, {
+                    method: "GET", headers: { "x-action": "predict-match" }, timeout: 15000 
+                });
+                if (!response.ok) throw new Error("API Error"); const data = await response.json();
+                predictBox.innerHTML = `<div class="mt-4 p-5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-sm"><div class="flex items-center gap-2 mb-3 border-b border-emerald-200 dark:border-emerald-800/50 pb-2"><span class="text-lg">🔮</span><span class="text-sm font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">${translations[currentLang].predictTitle}</span></div><div class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium ai-article-content">${data.result}</div></div>`;
+                btnElement.style.display = 'none';
+            } catch (error) { predictBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${translations[currentLang].predictError}</p>`; btnElement.innerText = translations[currentLang].predictBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed'); }
+        }
+
+        // جلب المقال عبر GET (On-Demand)
+        async function loadMatchArticle(fixtureId, btnElement) {
+            const matchCached = allMatchesCached.find(m => String(m.fixture.id) === String(fixtureId));
+            if (!matchCached) return;
+
+            btnElement.disabled = true; btnElement.classList.add('opacity-50', 'cursor-not-allowed');
+            btnElement.innerHTML = `<div class="flex justify-center items-center gap-2"><div class="mini-spinner"></div> ${translations[currentLang].reportLoading}</div>`;
+            
+            const aiBox = document.getElementById(`ai-article-${fixtureId}`);
+            aiBox.classList.remove('hidden');
+
+            let eventsData = getFromCache(`events_${fixtureId}`);
+            let eventsStr = "No specific events";
+            if (eventsData && eventsData.length > 0) {
+                eventsStr = eventsData.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', ');
+            }
+
+            try {
+                const params = new URLSearchParams({
+                    fixtureId: fixtureId, matchStr: `${matchCached.teams.home.name} vs ${matchCached.teams.away.name}`, score: `${matchCached.goals.home} - ${matchCached.goals.away}`, events: eventsStr, language: currentLang
+                });
+
+                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article?${params.toString()}`, {
+                    method: "GET", headers: { "x-action": "generate-article" }, timeout: 20000 
+                });
+                if (!response.ok) throw new Error("Error"); const data = await response.json(); 
+                
+                aiBox.innerHTML = `<div class="mt-5 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden"><div class="relative w-full h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Stadium Background"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div><div class="relative z-10 flex items-center gap-6 sm:gap-10"><img src="${matchCached.teams.home.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"><span class="text-white font-black text-2xl sm:text-3xl italic opacity-90 drop-shadow-lg">VS</span><img src="${matchCached.teams.away.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"></div></div><div class="p-5 sm:p-6"><div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3"><div class="flex items-center gap-3"><div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div><span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${translations[currentLang].reportTitle}</span></div></div><div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">${data.result}</div></div></div>`;
+                btnElement.style.display = 'none';
+            } catch (error) { 
+                aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${translations[currentLang].reportError}</p>`; 
+                btnElement.innerText = translations[currentLang].readReportBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
 
@@ -334,84 +301,86 @@
         function openMatch(fId, scrollToIt = false) {
             const match = allMatchesCached.find(m => String(m.fixture.id) === String(fId));
             if (match) {
-                const titleStr = `${match.teams.home.name} vs ${match.teams.away.name} | ScoreRecap`;
-                document.title = titleStr;
-                const metaDesc = document.querySelector('meta[name="description"]');
-                if (metaDesc) metaDesc.setAttribute("content", `Live score, match events, and report for ${match.teams.home.name} vs ${match.teams.away.name}.`);
+                const titleStr = `${match.teams.home.name} vs ${match.teams.away.name} | ScoreRecap`; document.title = titleStr;
+                const metaDesc = document.querySelector('meta[name="description"]'); if (metaDesc) metaDesc.setAttribute("content", `Live score and match details for ${match.teams.home.name} vs ${match.teams.away.name}.`);
                 safeSetText('meta-title', titleStr);
             }
             const details = document.getElementById(`details-${fId}`);
             if (details) {
                 document.querySelectorAll('[id^="details-"]').forEach(el => { if (el.id !== `details-${fId}`) el.classList.add('hidden'); });
-                details.classList.remove('hidden');
-                fetchMatchEvents(fId, document.getElementById(`events-list-${fId}`));
+                details.classList.remove('hidden'); 
+                fetchMatchEvents(fId, document.getElementById(`events-list-${fId}`)); 
                 fetchMatchStats(fId);
                 if (scrollToIt) { setTimeout(() => { details.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }
             }
         }
 
         function handleRoute() {
-            const path = window.location.pathname;
-            if (path.startsWith('/match/')) { const pathParts = path.split('/'); const fId = pathParts[2]; if (fId) { setTimeout(() => openMatch(fId, true), 100); return; } }
-            document.title = translations[currentLang].title;
-            const metaDesc = document.querySelector('meta[name="description"]');
-            if (metaDesc) metaDesc.setAttribute("content", "Live football scores, match reports, and tactical analysis for top leagues.");
-            document.querySelectorAll('[id^="details-"]').forEach(el => el.classList.add('hidden'));
+            const path = window.location.pathname; if (path.startsWith('/match/')) { const pathParts = path.split('/'); const fId = pathParts[2]; if (fId) { setTimeout(() => openMatch(fId, true), 100); return; } }
+            document.title = translations[currentLang].title; document.querySelectorAll('[id^="details-"]').forEach(el => el.classList.add('hidden'));
         }
 
         function filterAndRenderMatches() {
-            const container = document.getElementById('api-scores-container');
-            const currentT = translations[currentLang] || translations['en'];
+            const container = document.getElementById('api-scores-container'); const currentT = translations[currentLang] || translations['en'];
             let filtered = selectedLeagueId === 'all' ? allMatchesCached : allMatchesCached.filter(m => String(m.league.id) === String(selectedLeagueId));
             if (currentSearchQuery) { const query = currentSearchQuery.toLowerCase(); filtered = filtered.filter(m => m.teams.home.name.toLowerCase().includes(query) || m.teams.away.name.toLowerCase().includes(query)); }
             if (!filtered || filtered.length === 0) { container.innerHTML = `<div class="bg-white border rounded-xl p-8 text-center font-medium text-slate-500 shadow-sm">${currentT.noMatches}</div>`; return; }
-            container.innerHTML = '';
-            const grouped = {};
+            container.innerHTML = ''; const grouped = {};
             filtered.forEach(m => { if (!grouped[m.league.id]) grouped[m.league.id] = { id: m.league.id, name: m.league.name, logo: m.league.logo, fixtures: [] }; grouped[m.league.id].fixtures.push(m); });
+            
             Object.values(grouped).forEach(league => {
-                let html = `<div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm mb-5 transition-colors">
-                            <div class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/50 px-4 py-3 font-extrabold text-sm text-slate-800 dark:text-slate-200 flex gap-3 items-center">
-                                <img src="${league.logo}" class="w-6 h-6 object-contain drop-shadow-sm">${league.name}</div><div class="divide-y divide-slate-100 dark:divide-slate-800/50">`;
+                let html = `<div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm mb-5 transition-colors"><div class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/50 px-4 py-3 font-extrabold text-sm text-slate-800 dark:text-slate-200 flex gap-3 items-center"><img src="${league.logo}" class="w-6 h-6 object-contain drop-shadow-sm">${league.name}</div><div class="divide-y divide-slate-100 dark:divide-slate-800/50">`;
+                
                 league.fixtures.forEach(match => {
                     const fId = match.fixture.id; const hScore = match.goals.home !== null ? match.goals.home : '-'; const aScore = match.goals.away !== null ? match.goals.away : '-';
                     const isLive = match.fixture.status.short === '1H' || match.fixture.status.short === '2H' || match.fixture.status.short === 'HT';
+                    const notStarted = match.fixture.status.short === 'NS' || match.fixture.status.short === 'TBD';
                     const statusText = isLive ? `<span class="text-red-500 font-bold flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 live-dot"></span>${match.fixture.status.elapsed}'</span>` : (match.fixture.status.short === 'FT' ? currentT.ended : match.fixture.date.substring(11, 16));
                     
-                    const aiSection = (String(league.id) === '39' && match.fixture.status.short === 'FT') ? `<div id="ai-article-${fId}" data-loaded="false"></div>` : `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.reportExclusive}</div>`;
-                    
-                    const formatStr = str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
-                    const matchSlug = `${formatStr(match.teams.home.name)}-vs-${formatStr(match.teams.away.name)}`;
-                    const matchUrl = `/match/${fId}/${matchSlug}`;
+                    let customSection = '';
+                    if (match.fixture.status.short === 'FT') {
+                        // إلغاء الاستدعاء التلقائي وإضافة زر (On-Demand)
+                        customSection = `<button class="article-btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-bold mt-4 shadow-sm transition-colors" data-fixture-id="${fId}">${currentT.readReportBtn}</button><div id="ai-article-${fId}" class="hidden"></div>`;
+                    } else if (notStarted) {
+                        const winHomeText = `${currentT.win} ${match.teams.home.name}`; const drawText = currentT.draw; const winAwayText = `${currentT.win} ${match.teams.away.name}`;
+                        const savedVote = localStorage.getItem(`vote_${fId}`) || "";
+                        customSection = `
+                            <div class="mt-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3" onclick="event.stopPropagation()">
+                                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end order-2 sm:order-1">
+                                    <span class="text-xs font-bold sm:text-right flex-grow">${match.teams.home.name}</span>
+                                    <img src="${match.teams.home.logo}" class="w-6 h-6 object-contain">
+                                </div>
+                                <div class="w-full sm:w-1/3 order-1 sm:order-2">
+                                    <select class="vote-select w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs rounded-lg py-2.5 px-3 text-center focus:outline-none focus:border-emerald-500 font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer" data-fixture-id="${fId}">
+                                        <option value="" disabled ${!savedVote ? 'selected' : ''}>${currentT.predictVote}</option>
+                                        <option value="home" ${savedVote === 'home' ? 'selected' : ''}>${winHomeText}</option>
+                                        <option value="draw" ${savedVote === 'draw' ? 'selected' : ''}>${drawText}</option>
+                                        <option value="away" ${savedVote === 'away' ? 'selected' : ''}>${winAwayText}</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start order-3">
+                                    <img src="${match.teams.away.logo}" class="w-6 h-6 object-contain">
+                                    <span class="text-xs font-bold sm:text-left flex-grow">${match.teams.away.name}</span>
+                                </div>
+                            </div>
+                            <button class="predict-btn w-full bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white py-2.5 rounded-lg text-xs font-bold mt-3 shadow-sm transition-colors" data-fixture-id="${fId}" data-home="${match.teams.home.name}" data-away="${match.teams.away.name}">${currentT.predictBtn}</button>
+                            <div id="predict-box-${fId}" class="hidden"></div>
+                        `;
+                    }
+
+                    const formatStr = str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase(); const matchSlug = `${formatStr(match.teams.home.name)}-vs-${formatStr(match.teams.away.name)}`; const matchUrl = `/match/${fId}/${matchSlug}`;
 
                     html += `<div class="match-row-container group" data-fixture-id="${fId}">
                             <a href="${matchUrl}" class="match-row-header block p-3 md:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors" data-fixture-id="${fId}">
-                                <div class="flex justify-between items-center">
-                                    <div class="w-1/3 text-right font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-end md:items-center justify-end gap-2"><span class="hidden md:inline">${match.teams.home.name}</span><img src="${match.teams.home.logo}" class="w-6 h-6"></div>
-                                    <div class="w-1/3 text-center flex flex-col items-center"><div class="text-[10px] text-slate-400 mb-1 font-semibold tracking-wider">${statusText}</div><div class="bg-slate-100 dark:bg-slate-950 px-3 py-1 rounded-md text-slate-800 dark:text-slate-100 font-black text-lg shadow-sm border border-slate-200 dark:border-slate-800/50">${hScore} - ${aScore}</div></div>
-                                    <div class="w-1/3 text-left font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-start md:items-center justify-start gap-2"><img src="${match.teams.away.logo}" class="w-6 h-6"><span class="hidden md:inline">${match.teams.away.name}</span></div>
-                                </div></a>
-                            <div id="details-${fId}" class="hidden px-4 pb-5 pt-2 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
-                                <div class="max-w-2xl mx-auto mt-2">
-                                    <div class="flex justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm mb-4">
-                                        <div class="text-center w-1/3"><img src="${match.teams.home.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm"><div class="font-bold text-sm dark:text-white">${match.teams.home.name}</div></div>
-                                        <div class="w-1/3 text-center"><div class="inline-block bg-slate-100 dark:bg-slate-950 border-2 border-emerald-500/30 rounded-xl px-5 py-2 text-3xl font-black text-slate-800 dark:text-white shadow-inner mb-1">${hScore} - ${aScore}</div></div>
-                                        <div class="text-center w-1/3"><img src="${match.teams.away.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm"><div class="font-bold text-sm dark:text-white">${match.teams.away.name}</div></div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm"><div class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">Match Events</div><div id="events-list-${fId}" class="min-h-[60px]"></div></div>
-                                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-center space-y-4">
-                                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">${currentT.statsTitle}</div>
-                                            <div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="poss-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.poss}</span><span id="poss-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="poss-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="poss-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div>
-                                            <div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="shots-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.shots}</span><span id="shots-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="shots-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="shots-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div>
-                                        </div>
-                                    </div>
-                                    ${aiSection}
-                                </div>
-                            </div></div>`;
-                });
-                container.innerHTML += html + `</div></div>`;
+                                <div class="flex justify-between items-center"><div class="w-1/3 text-right font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-end md:items-center justify-end gap-2"><span class="hidden md:inline">${match.teams.home.name}</span><img src="${match.teams.home.logo}" class="w-6 h-6"></div><div class="w-1/3 text-center flex flex-col items-center"><div class="text-[10px] text-slate-400 mb-1 font-semibold tracking-wider">${statusText}</div><div class="bg-slate-100 dark:bg-slate-950 px-3 py-1 rounded-md text-slate-800 dark:text-slate-100 font-black text-lg shadow-sm border border-slate-200 dark:border-slate-800/50">${hScore} - ${aScore}</div></div><div class="w-1/3 text-left font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-start md:items-center justify-start gap-2"><img src="${match.teams.away.logo}" class="w-6 h-6"><span class="hidden md:inline">${match.teams.away.name}</span></div></div></a>
+                            <div id="details-${fId}" class="hidden px-4 pb-5 pt-2 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800"><div class="max-w-2xl mx-auto mt-2"><div class="flex justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm mb-4"><div class="text-center w-1/3"><img src="${match.teams.home.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm"><div class="font-bold text-sm dark:text-white">${match.teams.home.name}</div></div><div class="w-1/3 text-center"><div class="inline-block bg-slate-100 dark:bg-slate-950 border-2 border-emerald-500/30 rounded-xl px-5 py-2 text-3xl font-black text-slate-800 dark:text-white shadow-inner mb-1">${hScore} - ${aScore}</div></div><div class="text-center w-1/3"><img src="${match.teams.away.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm"><div class="font-bold text-sm dark:text-white">${match.teams.away.name}</div></div></div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm"><div class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">Match Events</div><div id="events-list-${fId}" class="min-h-[60px]"></div></div>
+                                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-center space-y-4"><div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">${currentT.statsTitle}</div><div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="poss-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.poss}</span><span id="poss-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="poss-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="poss-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div><div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="shots-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.shots}</span><span id="shots-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="shots-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="shots-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div></div></div>
+                                    ${customSection}
+                                </div></div></div>`;
+                }); container.innerHTML += html + `</div></div>`;
             });
-            setTimeout(() => { filtered.forEach(match => { if (String(match.league.id) === '39' && match.fixture.status.short === 'FT') { autoLoadMatchArticle(match.fixture.id, match); } }); handleRoute(); }, 50);
+            handleRoute(); // تم إزالة الاستدعاء التلقائي للمقالات من هنا
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -423,7 +392,14 @@
             document.querySelectorAll('.lang-opt').forEach(btn => { btn.addEventListener('click', () => { document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag'); document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name'); changeLanguage(btn.getAttribute('data-lang')); }); });
             document.getElementById('btn-league-dropdown').addEventListener('click', () => toggleDropdown('league-options-menu'));
             document.querySelectorAll('.league-opt').forEach(btn => { btn.addEventListener('click', () => { selectedLeagueId = btn.getAttribute('data-id'); document.getElementById('current-league-flag').src = btn.getAttribute('data-flag'); selectedLeagueTranslationKey = btn.getAttribute('data-key'); const t = translations[currentLang] || translations['en']; document.getElementById('current-league-text').innerText = t[selectedLeagueTranslationKey] || t['allLeagues']; filterAndRenderMatches(); }); });
-            document.getElementById('api-scores-container').addEventListener('click', (e) => { const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState(null, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState(null, '', '/'); handleRoute(); } else { openMatch(fId); } } });
+            
+            document.getElementById('api-scores-container').addEventListener('change', (e) => { if (e.target.classList.contains('vote-select')) { const fId = e.target.getAttribute('data-fixture-id'); const vote = e.target.value; localStorage.setItem(`vote_${fId}`, vote); showToast(translations[currentLang].voteSaved, 'success'); } });
+
+            document.getElementById('api-scores-container').addEventListener('click', (e) => { 
+                if (e.target.closest('.predict-btn')) { const btn = e.target.closest('.predict-btn'); loadPrediction(btn.getAttribute('data-fixture-id'), btn.getAttribute('data-home'), btn.getAttribute('data-away'), btn); return; }
+                if (e.target.closest('.article-btn')) { const btn = e.target.closest('.article-btn'); loadMatchArticle(btn.getAttribute('data-fixture-id'), btn); return; }
+                const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState(null, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState(null, '', '/'); handleRoute(); } else { openMatch(fId); } } 
+            });
             const logoLink = document.getElementById('logo-link'); if(logoLink) { logoLink.addEventListener('click', (e) => { e.preventDefault(); history.pushState(null, '', '/'); handleRoute(); }); }
             window.addEventListener('popstate', handleRoute);
         });
