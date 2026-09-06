@@ -148,15 +148,15 @@
         const APP_CONFIG = { workerUrl: "/api", cacheExpiryMinutes: 5, autoRefreshInterval: 300000 };
         let currentLang = 'en', selectedLeagueId = 'all', currentSearchQuery = '', searchTimeout = null, selectedLeagueTranslationKey = 'allLeagues', allMatchesCached = [], currentDateOffset = 0; 
         
-        // دوال التخزين المحلي للمتصفح (الدرع الأول)
         function getFromCache(key) { const data = sessionStorage.getItem(key); return data ? JSON.parse(data) : null; }
         function saveToCache(key, data) { sessionStorage.setItem(key, JSON.stringify(data)); }
+        let loadedDetails = new Set();
 
         const translations = {
-            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "All Leagues", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Writing match report...", reportError: "Could not load the report.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server", predictVote: "Your Prediction...", win: "Win", draw: "Draw", voteSaved: "Prediction saved successfully!", predictBtn: "Predict Winner 🔮", predictLoading: "Analyzing teams...", predictError: "Failed to generate prediction.", predictTitle: "Match Prediction", readReportBtn: "Read Match Report 📰" },
-            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "كل الدوريات", ucl: "دوري أبطال أوروبا", caf: "دوري أبطال أفريقيا", champ: "دوري البطولة الإنجليزية", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري كتابة تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم", predictVote: "توقع نتيجتك...", win: "فوز", draw: "تعادل", voteSaved: "تم حفظ توقعك بنجاح!", predictBtn: "توقع الفائز 🔮", predictLoading: "جاري تحليل الفريقين...", predictError: "تعذر توليد التوقع.", predictTitle: "توقع نتيجة المباراة", readReportBtn: "اقرأ تقرير المباراة 📰" },
-            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Toutes les Ligues", ucl: "Champions League", caf: "Ligue des Champions de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Rédaction du rapport de match...", reportError: "Échec du chargement du rapport.", reportTitle: "Rapport et Analyse du Match", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher une équipe...", toastSuccess: "Données mises à jour", toastError: "Échec de connexion", predictVote: "Votre Prédiction...", win: "Victoire", draw: "Nul", voteSaved: "Prédiction enregistrée !", predictBtn: "Prédire le Vainqueur 🔮", predictLoading: "Analyse des équipes...", predictError: "Échec de la prédiction.", predictTitle: "Prédiction du Match", readReportBtn: "Lire le Rapport du Match 📰" },
-            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Todas las Ligas", ucl: "Champions League", caf: "Liga de Campeones de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Redactando informe del partido...", reportError: "Error al cargar el informe.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión", predictVote: "Tu Predicción...", win: "Victoria", draw: "Empate", voteSaved: "¡Predicción guardada!", predictBtn: "Predecir Ganador 🔮", predictLoading: "Analizando equipos...", predictError: "Error en la predicción.", predictTitle: "Predicción del Partido", readReportBtn: "Leer Informe del Partido 📰" }
+            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "All Leagues", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Writing match report...", reportError: "Could not load the report.", reportExclusive: "Match reports are exclusive to the Premier League.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server", predictVote: "Your Prediction...", win: "Win", draw: "Draw", voteSaved: "Prediction saved successfully!", predictBtn: "Predict Winner 🔮", predictLoading: "Analyzing teams...", predictError: "Failed to generate prediction.", predictTitle: "Match Prediction", readReportBtn: "Read Match Report 📰" },
+            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "كل الدوريات", ucl: "دوري أبطال أوروبا", caf: "دوري أبطال أفريقيا", champ: "دوري البطولة الإنجليزية", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري كتابة تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportExclusive: "تقارير المباريات متاحة حصرياً للدوري الإنجليزي.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم", predictVote: "توقع نتيجتك...", win: "فوز", draw: "تعادل", voteSaved: "تم حفظ توقعك بنجاح!", predictBtn: "توقع الفائز 🔮", predictLoading: "جاري تحليل الفريقين...", predictError: "تعذر توليد التوقع.", predictTitle: "توقع نتيجة المباراة", readReportBtn: "اقرأ تقرير المباراة 📰" },
+            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Toutes les Ligues", ucl: "Champions League", caf: "Ligue des Champions de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Rédaction du rapport de match...", reportError: "Échec du chargement du rapport.", reportExclusive: "Les rapports de match sont exclusifs à la Premier League.", reportTitle: "Rapport et Analyse du Match", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher une équipe...", toastSuccess: "Données mises à jour", toastError: "Échec de connexion", predictVote: "Votre Prédiction...", win: "Victoire", draw: "Nul", voteSaved: "Prédiction enregistrée !", predictBtn: "Prédire le Vainqueur 🔮", predictLoading: "Analyse des équipes...", predictError: "Échec de la prédiction.", predictTitle: "Prédiction du Match", readReportBtn: "Lire le Rapport du Match 📰" },
+            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Todas las Ligas", ucl: "Champions League", caf: "Liga de Campeones de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Redactando informe del partido...", reportError: "Error al cargar el informe.", reportExclusive: "Los informes de partidos son exclusivos de la Premier League.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión", predictVote: "Tu Predicción...", win: "Victoria", draw: "Empate", voteSaved: "¡Predicción guardada!", predictBtn: "Predecir Ganador 🔮", predictLoading: "Analizando equipos...", predictError: "Error en la predicción.", predictTitle: "Predicción del Partido", readReportBtn: "Leer Informe del Partido 📰" }
         };
 
         function initTheme() { const htmlTag = document.getElementById('html-tag'); if (localStorage.getItem('app_theme') === 'dark') { htmlTag.classList.add('dark'); document.getElementById('theme-icon-sun').classList.remove('hidden'); document.getElementById('theme-icon-moon').classList.add('hidden'); } }
@@ -184,6 +184,11 @@
             try {
                 const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/fixtures?date=${targetDateStr}`, { headers: { "x-action": "fetch-matches" }, timeout: 10000 });
                 if (!res.ok) throw new Error("API Error"); const data = await res.json();
+                if (data.errors && data.errors.requests) {
+                    if (isManualRefresh) showToast("API Limit Reached", 'error');
+                    container.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8 text-center font-medium text-red-500 shadow-sm">API Limit Reached. Please wait until midnight.</div>`;
+                    if(refreshBtn) setTimeout(() => refreshBtn.classList.remove('animate-spin'), 500); return;
+                }
                 if (data.response) { allMatchesCached = data.response; filterAndRenderMatches(); if (isManualRefresh) showToast(translations[currentLang].toastSuccess, 'success'); }
             } catch (error) {
                 if (isManualRefresh) showToast(translations[currentLang].toastError, 'error');
@@ -192,41 +197,29 @@
             if(refreshBtn) setTimeout(() => refreshBtn.classList.remove('animate-spin'), 500);
         }
 
-        // جلب الأحداث مع التخزين المحلي
         async function fetchMatchEvents(fixtureId, container) {
-            if(!container) return; 
-            const cachedEvents = getFromCache(`events_${fixtureId}`);
+            if(!container) return; const cachedEvents = getFromCache(`events_${fixtureId}`);
             if (cachedEvents) { renderEvents(cachedEvents, container); return; }
-            
             container.innerHTML = `<div class="flex justify-center py-4"><div class="mini-spinner"></div></div>`;
             try {
                 const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/events?fixture=${fixtureId}`, { headers: { "x-action": "fetch-events" }, timeout: 8000 });
-                const data = await res.json();
-                saveToCache(`events_${fixtureId}`, data.response || []);
-                renderEvents(data.response || [], container);
+                const data = await res.json(); saveToCache(`events_${fixtureId}`, data.response || []); renderEvents(data.response || [], container);
             } catch (err) { container.innerHTML = `<p class="text-center text-red-500 text-xs py-1">Error fetching events</p>`; }
         }
 
         function renderEvents(events, container) {
             if (!events || events.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
             let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto scrollbar-none">`;
-            events.forEach(ev => { 
-                const icon = ev.type === 'Goal' ? '⚽' : (ev.type === 'Card' ? '🟨' : '🔄');
+            events.forEach(ev => { const icon = ev.type === 'Goal' ? '⚽' : (ev.type === 'Card' ? '🟨' : '🔄');
                 html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${ev.team.name})</span></span></div>`; 
             }); container.innerHTML = html + `</div>`;
         }
 
-        // جلب الإحصائيات مع التخزين المحلي
         async function fetchMatchStats(fixtureId) {
-            const cachedStats = getFromCache(`stats_${fixtureId}`);
-            if (cachedStats) { renderStats(fixtureId, cachedStats); return; }
+            const cachedStats = getFromCache(`stats_${fixtureId}`); if (cachedStats) { renderStats(fixtureId, cachedStats); return; }
             try {
                 const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/statistics?fixture=${fixtureId}`, { headers: { "x-action": "fetch-stats" }, timeout: 8000 });
-                const data = await res.json();
-                if (data.response && data.response.length === 2) {
-                    saveToCache(`stats_${fixtureId}`, data.response);
-                    renderStats(fixtureId, data.response);
-                }
+                const data = await res.json(); if (data.response && data.response.length === 2) { saveToCache(`stats_${fixtureId}`, data.response); renderStats(fixtureId, data.response); }
             } catch (err) { console.error("Error fetching stats:", err); }
         }
 
@@ -245,55 +238,35 @@
             if (homeShotsBar) homeShotsBar.style.width = homeShotsPct; if (awayShotsBar) awayShotsBar.style.width = awayShotsPct;
         }
 
-        // جلب التوقعات عبر GET (On-Demand)
-        async function loadPrediction(fixtureId, homeTeam, awayTeam, btnElement) {
+        async function loadPrediction(fixtureId, leagueId, homeTeam, awayTeam, btnElement) {
             btnElement.disabled = true; btnElement.classList.add('opacity-50', 'cursor-not-allowed');
             btnElement.innerHTML = `<div class="flex justify-center items-center gap-2"><div class="mini-spinner"></div> ${translations[currentLang].predictLoading}</div>`;
             const predictBox = document.getElementById(`predict-box-${fixtureId}`); predictBox.classList.remove('hidden');
             try {
-                const params = new URLSearchParams({ fixtureId, homeTeam, awayTeam, language: currentLang });
-                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/predict-match?${params.toString()}`, {
-                    method: "GET", headers: { "x-action": "predict-match" }, timeout: 15000 
-                });
-                if (!response.ok) throw new Error("API Error"); const data = await response.json();
+                const params = new URLSearchParams({ fixtureId, leagueId, homeTeam, awayTeam, language: currentLang });
+                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/predict-match?${params.toString()}`, { method: "GET", headers: { "x-action": "predict-match" }, timeout: 15000 });
+                if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || "API Error"); } 
+                const data = await response.json();
                 predictBox.innerHTML = `<div class="mt-4 p-5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-sm"><div class="flex items-center gap-2 mb-3 border-b border-emerald-200 dark:border-emerald-800/50 pb-2"><span class="text-lg">🔮</span><span class="text-sm font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">${translations[currentLang].predictTitle}</span></div><div class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium ai-article-content">${data.result}</div></div>`;
                 btnElement.style.display = 'none';
-            } catch (error) { predictBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${translations[currentLang].predictError}</p>`; btnElement.innerText = translations[currentLang].predictBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed'); }
+            } catch (error) { predictBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${error.message || translations[currentLang].predictError}</p>`; btnElement.innerText = translations[currentLang].predictBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed'); }
         }
 
-        // جلب المقال عبر GET (On-Demand)
-        async function loadMatchArticle(fixtureId, btnElement) {
-            const matchCached = allMatchesCached.find(m => String(m.fixture.id) === String(fixtureId));
-            if (!matchCached) return;
-
+        async function loadMatchArticle(fixtureId, leagueId, btnElement) {
+            const matchCached = allMatchesCached.find(m => String(m.fixture.id) === String(fixtureId)); if (!matchCached) return;
             btnElement.disabled = true; btnElement.classList.add('opacity-50', 'cursor-not-allowed');
             btnElement.innerHTML = `<div class="flex justify-center items-center gap-2"><div class="mini-spinner"></div> ${translations[currentLang].reportLoading}</div>`;
-            
-            const aiBox = document.getElementById(`ai-article-${fixtureId}`);
-            aiBox.classList.remove('hidden');
-
-            let eventsData = getFromCache(`events_${fixtureId}`);
-            let eventsStr = "No specific events";
-            if (eventsData && eventsData.length > 0) {
-                eventsStr = eventsData.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', ');
-            }
-
+            const aiBox = document.getElementById(`ai-article-${fixtureId}`); aiBox.classList.remove('hidden');
+            let eventsData = getFromCache(`events_${fixtureId}`); let eventsStr = "No specific events";
+            if (eventsData && eventsData.length > 0) { eventsStr = eventsData.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', '); }
             try {
-                const params = new URLSearchParams({
-                    fixtureId: fixtureId, matchStr: `${matchCached.teams.home.name} vs ${matchCached.teams.away.name}`, score: `${matchCached.goals.home} - ${matchCached.goals.away}`, events: eventsStr, language: currentLang
-                });
-
-                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article?${params.toString()}`, {
-                    method: "GET", headers: { "x-action": "generate-article" }, timeout: 20000 
-                });
-                if (!response.ok) throw new Error("Error"); const data = await response.json(); 
-                
+                const params = new URLSearchParams({ fixtureId: fixtureId, leagueId: leagueId, matchStr: `${matchCached.teams.home.name} vs ${matchCached.teams.away.name}`, score: `${matchCached.goals.home} - ${matchCached.goals.away}`, events: eventsStr, language: currentLang });
+                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article?${params.toString()}`, { method: "GET", headers: { "x-action": "generate-article" }, timeout: 20000 });
+                if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || "Error"); } 
+                const data = await response.json(); 
                 aiBox.innerHTML = `<div class="mt-5 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden"><div class="relative w-full h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Stadium Background"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div><div class="relative z-10 flex items-center gap-6 sm:gap-10"><img src="${matchCached.teams.home.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"><span class="text-white font-black text-2xl sm:text-3xl italic opacity-90 drop-shadow-lg">VS</span><img src="${matchCached.teams.away.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"></div></div><div class="p-5 sm:p-6"><div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3"><div class="flex items-center gap-3"><div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div><span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${translations[currentLang].reportTitle}</span></div></div><div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">${data.result}</div></div></div>`;
                 btnElement.style.display = 'none';
-            } catch (error) { 
-                aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${translations[currentLang].reportError}</p>`; 
-                btnElement.innerText = translations[currentLang].readReportBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+            } catch (error) { aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${error.message || translations[currentLang].reportError}</p>`; btnElement.innerText = translations[currentLang].readReportBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed'); }
         }
 
         function createMatchSlug(homeName, awayName) { return `${str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()(homeName)}-vs-${str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()(awayName)}`; }
@@ -309,8 +282,7 @@
             if (details) {
                 document.querySelectorAll('[id^="details-"]').forEach(el => { if (el.id !== `details-${fId}`) el.classList.add('hidden'); });
                 details.classList.remove('hidden'); 
-                fetchMatchEvents(fId, document.getElementById(`events-list-${fId}`)); 
-                fetchMatchStats(fId);
+                if (!loadedDetails.has(fId)) { fetchMatchEvents(fId, document.getElementById(`events-list-${fId}`)); fetchMatchStats(fId); loadedDetails.add(fId); }
                 if (scrollToIt) { setTimeout(() => { details.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }
             }
         }
@@ -339,33 +311,14 @@
                     
                     let customSection = '';
                     if (match.fixture.status.short === 'FT') {
-                        // إلغاء الاستدعاء التلقائي وإضافة زر (On-Demand)
-                        customSection = `<button class="article-btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-bold mt-4 shadow-sm transition-colors" data-fixture-id="${fId}">${currentT.readReportBtn}</button><div id="ai-article-${fId}" class="hidden"></div>`;
+                        if (String(league.id) === '39') { customSection = `<button class="article-btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-bold mt-4 shadow-sm transition-colors" data-fixture-id="${fId}" data-league-id="${league.id}">${currentT.readReportBtn}</button><div id="ai-article-${fId}" class="hidden"></div>`; } 
+                        else { customSection = `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.reportExclusive}</div>`; }
                     } else if (notStarted) {
-                        const winHomeText = `${currentT.win} ${match.teams.home.name}`; const drawText = currentT.draw; const winAwayText = `${currentT.win} ${match.teams.away.name}`;
-                        const savedVote = localStorage.getItem(`vote_${fId}`) || "";
-                        customSection = `
-                            <div class="mt-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3" onclick="event.stopPropagation()">
-                                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end order-2 sm:order-1">
-                                    <span class="text-xs font-bold sm:text-right flex-grow">${match.teams.home.name}</span>
-                                    <img src="${match.teams.home.logo}" class="w-6 h-6 object-contain">
-                                </div>
-                                <div class="w-full sm:w-1/3 order-1 sm:order-2">
-                                    <select class="vote-select w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs rounded-lg py-2.5 px-3 text-center focus:outline-none focus:border-emerald-500 font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer" data-fixture-id="${fId}">
-                                        <option value="" disabled ${!savedVote ? 'selected' : ''}>${currentT.predictVote}</option>
-                                        <option value="home" ${savedVote === 'home' ? 'selected' : ''}>${winHomeText}</option>
-                                        <option value="draw" ${savedVote === 'draw' ? 'selected' : ''}>${drawText}</option>
-                                        <option value="away" ${savedVote === 'away' ? 'selected' : ''}>${winAwayText}</option>
-                                    </select>
-                                </div>
-                                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start order-3">
-                                    <img src="${match.teams.away.logo}" class="w-6 h-6 object-contain">
-                                    <span class="text-xs font-bold sm:text-left flex-grow">${match.teams.away.name}</span>
-                                </div>
-                            </div>
-                            <button class="predict-btn w-full bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white py-2.5 rounded-lg text-xs font-bold mt-3 shadow-sm transition-colors" data-fixture-id="${fId}" data-home="${match.teams.home.name}" data-away="${match.teams.away.name}">${currentT.predictBtn}</button>
-                            <div id="predict-box-${fId}" class="hidden"></div>
-                        `;
+                        if (String(league.id) === '39') {
+                            const winHomeText = `${currentT.win} ${match.teams.home.name}`; const drawText = currentT.draw; const winAwayText = `${currentT.win} ${match.teams.away.name}`;
+                            const savedVote = localStorage.getItem(`vote_${fId}`) || "";
+                            customSection = `<div class="mt-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3" onclick="event.stopPropagation()"><div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end order-2 sm:order-1"><span class="text-xs font-bold sm:text-right flex-grow">${match.teams.home.name}</span><img src="${match.teams.home.logo}" class="w-6 h-6 object-contain"></div><div class="w-full sm:w-1/3 order-1 sm:order-2"><select class="vote-select w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs rounded-lg py-2.5 px-3 text-center focus:outline-none focus:border-emerald-500 font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer" data-fixture-id="${fId}"><option value="" disabled ${!savedVote ? 'selected' : ''}>${currentT.predictVote}</option><option value="home" ${savedVote === 'home' ? 'selected' : ''}>${winHomeText}</option><option value="draw" ${savedVote === 'draw' ? 'selected' : ''}>${drawText}</option><option value="away" ${savedVote === 'away' ? 'selected' : ''}>${winAwayText}</option></select></div><div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start order-3"><img src="${match.teams.away.logo}" class="w-6 h-6 object-contain"><span class="text-xs font-bold sm:text-left flex-grow">${match.teams.away.name}</span></div></div><button class="predict-btn w-full bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white py-2.5 rounded-lg text-xs font-bold mt-3 shadow-sm transition-colors" data-fixture-id="${fId}" data-league-id="${league.id}" data-home="${match.teams.home.name}" data-away="${match.teams.away.name}">${currentT.predictBtn}</button><div id="predict-box-${fId}" class="hidden"></div>`;
+                        } else { customSection = `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.reportExclusive}</div>`; }
                     }
 
                     const formatStr = str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase(); const matchSlug = `${formatStr(match.teams.home.name)}-vs-${formatStr(match.teams.away.name)}`; const matchUrl = `/match/${fId}/${matchSlug}`;
@@ -380,7 +333,7 @@
                                 </div></div></div>`;
                 }); container.innerHTML += html + `</div></div>`;
             });
-            handleRoute(); // تم إزالة الاستدعاء التلقائي للمقالات من هنا
+            setTimeout(() => { handleRoute(); }, 50);
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -388,16 +341,24 @@
             document.querySelectorAll('.date-tab').forEach(btn => { btn.addEventListener('click', (e) => { document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('date-tab-active')); e.currentTarget.classList.add('date-tab-active'); currentDateOffset = parseInt(e.currentTarget.getAttribute('data-offset')); allMatchesCached = []; fetchLiveMatches(true); }); });
             const searchInput = document.getElementById('search-input'); if (searchInput) { searchInput.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentSearchQuery = e.target.value.trim(); filterAndRenderMatches(); }, 300); }); }
             document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme); document.getElementById('btn-refresh').addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
-            document.getElementById('btn-lang-dropdown').addEventListener('click', () => toggleDropdown('lang-options-menu'));
+            
+            // إغلاق القوائم المنسدلة عند النقر في أي مكان فارغ
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.custom-dropdown')) {
+                    document.querySelectorAll('.drop-options').forEach(d => d.classList.remove('show'));
+                }
+            });
+
+            document.getElementById('btn-lang-dropdown').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('lang-options-menu'); });
             document.querySelectorAll('.lang-opt').forEach(btn => { btn.addEventListener('click', () => { document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag'); document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name'); changeLanguage(btn.getAttribute('data-lang')); }); });
-            document.getElementById('btn-league-dropdown').addEventListener('click', () => toggleDropdown('league-options-menu'));
+            document.getElementById('btn-league-dropdown').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('league-options-menu'); });
             document.querySelectorAll('.league-opt').forEach(btn => { btn.addEventListener('click', () => { selectedLeagueId = btn.getAttribute('data-id'); document.getElementById('current-league-flag').src = btn.getAttribute('data-flag'); selectedLeagueTranslationKey = btn.getAttribute('data-key'); const t = translations[currentLang] || translations['en']; document.getElementById('current-league-text').innerText = t[selectedLeagueTranslationKey] || t['allLeagues']; filterAndRenderMatches(); }); });
             
             document.getElementById('api-scores-container').addEventListener('change', (e) => { if (e.target.classList.contains('vote-select')) { const fId = e.target.getAttribute('data-fixture-id'); const vote = e.target.value; localStorage.setItem(`vote_${fId}`, vote); showToast(translations[currentLang].voteSaved, 'success'); } });
 
             document.getElementById('api-scores-container').addEventListener('click', (e) => { 
-                if (e.target.closest('.predict-btn')) { const btn = e.target.closest('.predict-btn'); loadPrediction(btn.getAttribute('data-fixture-id'), btn.getAttribute('data-home'), btn.getAttribute('data-away'), btn); return; }
-                if (e.target.closest('.article-btn')) { const btn = e.target.closest('.article-btn'); loadMatchArticle(btn.getAttribute('data-fixture-id'), btn); return; }
+                if (e.target.closest('.predict-btn')) { const btn = e.target.closest('.predict-btn'); loadPrediction(btn.getAttribute('data-fixture-id'), btn.getAttribute('data-league-id'), btn.getAttribute('data-home'), btn.getAttribute('data-away'), btn); return; }
+                if (e.target.closest('.article-btn')) { const btn = e.target.closest('.article-btn'); loadMatchArticle(btn.getAttribute('data-fixture-id'), btn.getAttribute('data-league-id'), btn); return; }
                 const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState(null, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState(null, '', '/'); handleRoute(); } else { openMatch(fId); } } 
             });
             const logoLink = document.getElementById('logo-link'); if(logoLink) { logoLink.addEventListener('click', (e) => { e.preventDefault(); history.pushState(null, '', '/'); handleRoute(); }); }
