@@ -80,13 +80,13 @@ export async function onRequest(context) {
 
             const prompt = `Act as an expert football analyst. Write a short, exciting prediction for the upcoming Premier League match between ${homeTeam} and ${awayTeam}. Give a brief reason analyzing their current form, and give a final predicted scoreline. Write it ENTIRELY in English. Return ONLY valid HTML code (use <p> and <strong> tags for the score). Do NOT wrap the response in markdown blocks.`;
             
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+            // 🚨 التعديل هنا: إضافة -latest لاسم النسخة
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
             const aiData = await aiRes.json();
             
-            // 🚨 التعديل هنا: طباعة الخطأ الحقيقي من جوجل
             if (!aiRes.ok || !aiData.candidates) {
                 const googleError = aiData.error?.message || "Unknown Google Error";
                 return new Response(JSON.stringify({ error: `Gemini Error: ${googleError}` }), { status: 500, headers: corsHeaders });
@@ -130,13 +130,13 @@ export async function onRequest(context) {
             5. A strong conclusion paragraph. 
             Write the ENTIRE article perfectly in English. Return ONLY valid clean HTML code. Do NOT wrap the response in markdown blocks.`;
             
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+            // 🚨 التعديل هنا: إضافة -latest لاسم النسخة
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
             const aiData = await aiRes.json();
             
-            // 🚨 التعديل هنا: طباعة الخطأ الحقيقي من جوجل
             if (!aiRes.ok || !aiData.candidates) {
                 const googleError = aiData.error?.message || "Unknown Google Error";
                 return new Response(JSON.stringify({ error: `Gemini Error: ${googleError}` }), { status: 500, headers: corsHeaders });
