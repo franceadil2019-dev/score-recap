@@ -20,7 +20,8 @@ export async function onRequest(context) {
     const cacheKey = new Request(url.toString(), request);
 
     try {
-        if (action === "fetch-matches" || action === "/fixtures") {
+        // 1. جلب المباريات
+        if (action === "fetch-fixtures" || action === "/fixtures") {
             let response = await cache.match(cacheKey);
             if (!response) {
                 const date = url.searchParams.get("date");
@@ -32,6 +33,7 @@ export async function onRequest(context) {
             return response;
         }
 
+        // 2. جلب الأحداث
         if (action === "fetch-events" || action === "/events") {
             let response = await cache.match(cacheKey);
             if (!response) {
@@ -44,6 +46,7 @@ export async function onRequest(context) {
             return response;
         }
 
+        // 3. جلب الإحصائيات
         if (action === "fetch-stats" || action === "/statistics") {
             let response = await cache.match(cacheKey);
             if (!response) {
@@ -56,14 +59,19 @@ export async function onRequest(context) {
             return response;
         }
 
-        // تحويل التوقعات إلى GET مع تفعيل الكاش لمدة 24 ساعة
+        // 4. توقع المباراة (الدوري الإنجليزي - بالإنجليزية - Gemini 2.0)
         if (action === "predict-match") {
+            let leagueId = url.searchParams.get("leagueId");
+            if (leagueId !== "39") {
+                return new Response(JSON.stringify({ error: "Predictions are only available for the Premier League." }), { status: 403, headers: corsHeaders });
+            }
+
             let fixtureId = url.searchParams.get("fixtureId");
             let homeTeam = url.searchParams.get("homeTeam");
             let awayTeam = url.searchParams.get("awayTeam");
-            let language = url.searchParams.get("language");
-
-            const kvKey = `predict_${fixtureId}_${language}`;
+            
+            const lang = "en";
+            const kvKey = `predict_${fixtureId}_${lang}`;
 
             if (env.SPORTS_KV) {
                 const cachedPrediction = await env.SPORTS_KV.get(kvKey);
@@ -72,30 +80,38 @@ export async function onRequest(context) {
                 }
             }
 
-            if (!env.GEMINI_API_KEY) { return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders }); }
+            if (!env.GEMINI_API_KEY) return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
 
-            const prompt = `Act as an expert football analyst. Write a short, exciting prediction for the upcoming match between ${homeTeam} and ${awayTeam}. Give a brief reason analyzing their current form, and give a final predicted scoreline. Write it entirely in the ${language} language. Return ONLY valid HTML code (use <p> and <strong> tags for the score). Do NOT wrap the response in markdown blocks.`;
+            const prompt = `Act as an expert football analyst. Write a short, exciting prediction for the upcoming Premier League match between ${homeTeam} and ${awayTeam}. Give a brief reason analyzing their current form, and give a final predicted scoreline. Write it ENTIRELY in English. Return ONLY valid HTML code (use <p> and <strong> tags for the score). Do NOT wrap the response in markdown blocks.`;
             
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+            // استخدام النسخة الأحدث Gemini 2.0 Flash
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
             const aiData = await aiRes.json();
+            if (!aiRes.ok || !aiData.candidates) return new Response(JSON.stringify({ error: "Failed to generate prediction" }), { status: 500, headers: corsHeaders });
+            
             const predictionText = aiData.candidates[0].content.parts[0].text;
 
-            if (env.SPORTS_KV) { await env.SPORTS_KV.put(kvKey, predictionText); }
+            if (env.SPORTS_KV) { waitUntil(env.SPORTS_KV.put(kvKey, predictionText)); }
             return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" } });
         }
 
-        // تحويل المقالات إلى GET مع تفعيل الكاش لمدة 24 ساعة
+        // 5. إنشاء المقالة (الدوري الإنجليزي - بالإنجليزية - Gemini 2.0)
         if (action === "generate-article" || action === "/generate-article") {
+            let leagueId = url.searchParams.get("leagueId");
+            if (leagueId !== "39") {
+                return new Response(JSON.stringify({ error: "Match reports are only available for the Premier League." }), { status: 403, headers: corsHeaders });
+            }
+
             let fixtureId = url.searchParams.get("fixtureId");
             let matchStr = url.searchParams.get("matchStr");
             let score = url.searchParams.get("score");
             let events = url.searchParams.get("events");
-            let language = url.searchParams.get("language");
-
-            const kvKey = `recap_${fixtureId}_${language}`;
+            
+            const lang = "en";
+            const kvKey = `recap_${fixtureId}_${lang}`;
 
             if (env.SPORTS_KV) {
                 const cachedArticle = await env.SPORTS_KV.get(kvKey);
@@ -104,24 +120,34 @@ export async function onRequest(context) {
                 }
             }
 
-            if (!env.GEMINI_API_KEY) { return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders }); }
+            if (!env.GEMINI_API_KEY) return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
 
-            const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging, and detailed match report for the football match: ${matchStr}. The final score was ${score}. Key events: ${events}. The article MUST include: 1. A catchy headline wrapped in an <h2> HTML tag. 2. An exciting introduction wrapped in <p> tags. 3. A tactical analysis paragraph wrapped in <p> tags. 4. A "Turning Point" section using an <h3> tag, followed by a bulleted list <ul><li>...</li></ul>. 5. A strong conclusion paragraph. Write the ENTIRE article perfectly in the ${language} language. Return ONLY valid HTML code. Do NOT wrap the response in markdown blocks.`;
+            const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging, and detailed match report for the Premier League fixture: ${matchStr}. Final score: ${score}. Key events: ${events}. 
+            The article MUST include: 
+            1. A catchy headline wrapped in an <h2> HTML tag. 
+            2. An exciting introduction wrapped in <p> tags. 
+            3. A tactical analysis paragraph wrapped in <p> tags. 
+            4. A "Turning Point" section using an <h3> tag, followed by a bulleted list <ul><li>...</li></ul>. 
+            5. A strong conclusion paragraph. 
+            Write the ENTIRE article perfectly in English. Return ONLY valid clean HTML code. Do NOT wrap the response in markdown blocks.`;
             
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+            // استخدام النسخة الأحدث Gemini 2.0 Flash
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
             const aiData = await aiRes.json();
+            if (!aiRes.ok || !aiData.candidates) return new Response(JSON.stringify({ error: "Failed to generate article" }), { status: 500, headers: corsHeaders });
+            
             const articleText = aiData.candidates[0].content.parts[0].text;
 
-            if (env.SPORTS_KV) { await env.SPORTS_KV.put(kvKey, articleText); }
+            if (env.SPORTS_KV) { waitUntil(env.SPORTS_KV.put(kvKey, articleText)); }
             return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" } });
         }
 
-        return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
 
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
     }
 }
