@@ -42,6 +42,9 @@
         .ai-article-content li { margin-bottom: 0.4rem; }
         .ai-article-content strong { color: #10b981; }
         
+        /* جعل المقال الإنجليزي يظهر من اليسار لليمين دائماً */
+        .ai-article-content { text-align: left !important; direction: ltr !important; }
+        
         .date-tab-active { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important; }
         
         .vote-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1em; }
@@ -55,7 +58,8 @@
     <header class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="/" class="text-2xl font-black text-emerald-500 tracking-tight" id="logo-link">SCORE<span class="text-slate-800 dark:text-white">RECAP</span></a>
+                <!-- الشعار تم تثبيته ليبقى في سطر واحد -->
+                <a href="/" class="text-xl md:text-2xl font-black text-emerald-500 tracking-tight whitespace-nowrap" id="logo-link">SCORE<span class="text-slate-800 dark:text-white">RECAP</span></a>
                 <span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 hidden md:flex shadow-inner" aria-label="Live Matches Status">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 flex live-dot"></span>
                     <span id="badge-live">LIVE</span>
@@ -65,12 +69,12 @@
                 </button>
             </div>
             
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 md:gap-3">
                 <button id="btn-theme-toggle" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-all text-slate-600 dark:text-emerald-400" aria-label="Toggle dark mode">
                     <svg id="theme-icon-sun" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
                     <svg id="theme-icon-moon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                 </button>
-                <div class="custom-dropdown w-36 md:w-48">
+                <div class="custom-dropdown w-32 md:w-40">
                     <button id="btn-lang-dropdown" class="drop-btn" aria-haspopup="true" aria-expanded="false" aria-controls="lang-options-menu">
                         <div class="flex items-center gap-2">
                             <img id="current-lang-flag" src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm shadow-sm" alt="">
@@ -78,13 +82,14 @@
                         </div>
                         <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <div id="lang-options-menu" class="drop-options w-48">
-                        <button class="drop-opt lang-opt" data-lang="en" data-flag="us.png" data-name="English"><img src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm" alt=""> English</button>
-                        <button class="drop-opt lang-opt" data-lang="ar" data-flag="ma.png" data-name="العربية"><img src="https://flagcdn.com/16x12/ma.png" class="w-4 h-3 object-cover rounded-sm" alt=""> العربية</button>
-                        <button class="drop-opt lang-opt" data-lang="fr" data-flag="fr.png" data-name="Français"><img src="https://flagcdn.com/16x12/fr.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Français</button>
-                        <button class="drop-opt lang-opt" data-lang="es" data-flag="es.png" data-name="Español"><img src="https://flagcdn.com/16x12/es.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Español</button>
-                        <button class="drop-opt lang-opt" data-lang="de" data-flag="de.png" data-name="Deutsch"><img src="https://flagcdn.com/16x12/de.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Deutsch</button>
-                        <button class="drop-opt lang-opt" data-lang="it" data-flag="it.png" data-name="Italiano"><img src="https://flagcdn.com/16x12/it.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Italiano</button>
+                    <div id="lang-options-menu" class="drop-options w-40">
+                        <!-- تم إصلاح مسارات الأعلام هنا لتكون كاملة -->
+                        <button class="drop-opt lang-opt" data-lang="en" data-flag="https://flagcdn.com/16x12/us.png" data-name="English"><img src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm" alt=""> English</button>
+                        <button class="drop-opt lang-opt" data-lang="ar" data-flag="https://flagcdn.com/16x12/ma.png" data-name="العربية"><img src="https://flagcdn.com/16x12/ma.png" class="w-4 h-3 object-cover rounded-sm" alt=""> العربية</button>
+                        <button class="drop-opt lang-opt" data-lang="fr" data-flag="https://flagcdn.com/16x12/fr.png" data-name="Français"><img src="https://flagcdn.com/16x12/fr.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Français</button>
+                        <button class="drop-opt lang-opt" data-lang="es" data-flag="https://flagcdn.com/16x12/es.png" data-name="Español"><img src="https://flagcdn.com/16x12/es.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Español</button>
+                        <button class="drop-opt lang-opt" data-lang="de" data-flag="https://flagcdn.com/16x12/de.png" data-name="Deutsch"><img src="https://flagcdn.com/16x12/de.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Deutsch</button>
+                        <button class="drop-opt lang-opt" data-lang="it" data-flag="https://flagcdn.com/16x12/it.png" data-name="Italiano"><img src="https://flagcdn.com/16x12/it.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Italiano</button>
                     </div>
                 </div>
             </div>
@@ -114,11 +119,11 @@
                         <button class="drop-opt league-opt" data-id="2" data-flag="https://media.api-sports.io/football/leagues/2.png" data-key="ucl"><img src="https://media.api-sports.io/football/leagues/2.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-ucl">UEFA Champions League</span></button>
                         <button class="drop-opt league-opt" data-id="12" data-flag="https://media.api-sports.io/football/leagues/12.png" data-key="caf"><img src="https://media.api-sports.io/football/leagues/12.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-caf">CAF Champions League</span></button>
                         <button class="drop-opt league-opt" data-id="39" data-flag="https://media.api-sports.io/football/leagues/39.png" data-key="pl"><img src="https://media.api-sports.io/football/leagues/39.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-pl">Premier League</span></button>
+                        <button class="drop-opt league-opt" data-id="40" data-flag="https://media.api-sports.io/football/leagues/40.png" data-key="champ"><img src="https://media.api-sports.io/football/leagues/40.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-champ">Championship</span></button>
                         <button class="drop-opt league-opt" data-id="140" data-flag="https://media.api-sports.io/football/leagues/140.png" data-key="liga"><img src="https://media.api-sports.io/football/leagues/140.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-liga">La Liga</span></button>
                         <button class="drop-opt league-opt" data-id="135" data-flag="https://media.api-sports.io/football/leagues/135.png" data-key="serie"><img src="https://media.api-sports.io/football/leagues/135.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-serie">Serie A</span></button>
                         <button class="drop-opt league-opt" data-id="61" data-flag="https://media.api-sports.io/football/leagues/61.png" data-key="ligue1"><img src="https://media.api-sports.io/football/leagues/61.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-ligue1">Ligue 1</span></button>
                         <button class="drop-opt league-opt" data-id="78" data-flag="https://media.api-sports.io/football/leagues/78.png" data-key="bundes"><img src="https://media.api-sports.io/football/leagues/78.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-bundes">Bundesliga</span></button>
-                        <!-- الدوريات الجديدة المضافة -->
                         <button class="drop-opt league-opt" data-id="307" data-flag="https://media.api-sports.io/football/leagues/307.png" data-key="saudi"><img src="https://media.api-sports.io/football/leagues/307.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-saudi">Saudi Pro League</span></button>
                         <button class="drop-opt league-opt" data-id="253" data-flag="https://media.api-sports.io/football/leagues/253.png" data-key="mls"><img src="https://media.api-sports.io/football/leagues/253.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-mls">MLS</span></button>
                         <button class="drop-opt league-opt" data-id="200" data-flag="https://media.api-sports.io/football/leagues/200.png" data-key="botola"><img src="https://media.api-sports.io/football/leagues/200.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-botola">Botola Pro</span></button>
@@ -162,7 +167,6 @@
         function saveToCache(key, data) { sessionStorage.setItem(key, JSON.stringify(data)); }
         let loadedDetails = new Set();
 
-        // 🏆 الدوريات الكبرى + الدوريات الجديدة المضافة
         const TOP_LEAGUES = ["2", "12", "39", "40", "61", "78", "135", "140", "307", "253", "200", "113", "69", "119"];
 
         const translations = {
@@ -201,6 +205,7 @@
             const langToUse = savedLang || (translations[browserLang] ? browserLang : 'en');
             const btn = document.querySelector(`.lang-opt[data-lang="${langToUse}"]`);
             if (btn) {
+                // استخدام الرابط المباشر من الزر لتجنب اختفاء العلم
                 document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag');
                 document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name');
             }
@@ -397,7 +402,6 @@
 
             document.getElementById('btn-lang-dropdown').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('lang-options-menu'); });
             
-            // ✅ تم استخدام الرابط المباشر من data-flag هنا
             document.querySelectorAll('.lang-opt').forEach(btn => { 
                 btn.addEventListener('click', () => { 
                     document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag'); 
