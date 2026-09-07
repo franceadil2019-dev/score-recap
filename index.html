@@ -79,12 +79,12 @@
                         <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div id="lang-options-menu" class="drop-options w-48">
-                        <button class="drop-opt lang-opt" data-lang="en" data-flag="https://flagcdn.com/16x12/us.png" data-name="English"><img src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm" alt=""> English</button>
-                        <button class="drop-opt lang-opt" data-lang="ar" data-flag="https://flagcdn.com/16x12/ma.png" data-name="العربية"><img src="https://flagcdn.com/16x12/ma.png" class="w-4 h-3 object-cover rounded-sm" alt=""> العربية</button>
-                        <button class="drop-opt lang-opt" data-lang="fr" data-flag="https://flagcdn.com/16x12/fr.png" data-name="Français"><img src="https://flagcdn.com/16x12/fr.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Français</button>
-                        <button class="drop-opt lang-opt" data-lang="es" data-flag="https://flagcdn.com/16x12/es.png" data-name="Español"><img src="https://flagcdn.com/16x12/es.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Español</button>
-                        <button class="drop-opt lang-opt" data-lang="de" data-flag="https://flagcdn.com/16x12/de.png" data-name="Deutsch"><img src="https://flagcdn.com/16x12/de.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Deutsch</button>
-                        <button class="drop-opt lang-opt" data-lang="it" data-flag="https://flagcdn.com/16x12/it.png" data-name="Italiano"><img src="https://flagcdn.com/16x12/it.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Italiano</button>
+                        <button class="drop-opt lang-opt" data-lang="en" data-flag="us.png" data-name="English"><img src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm" alt=""> English</button>
+                        <button class="drop-opt lang-opt" data-lang="ar" data-flag="ma.png" data-name="العربية"><img src="https://flagcdn.com/16x12/ma.png" class="w-4 h-3 object-cover rounded-sm" alt=""> العربية</button>
+                        <button class="drop-opt lang-opt" data-lang="fr" data-flag="fr.png" data-name="Français"><img src="https://flagcdn.com/16x12/fr.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Français</button>
+                        <button class="drop-opt lang-opt" data-lang="es" data-flag="es.png" data-name="Español"><img src="https://flagcdn.com/16x12/es.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Español</button>
+                        <button class="drop-opt lang-opt" data-lang="de" data-flag="de.png" data-name="Deutsch"><img src="https://flagcdn.com/16x12/de.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Deutsch</button>
+                        <button class="drop-opt lang-opt" data-lang="it" data-flag="it.png" data-name="Italiano"><img src="https://flagcdn.com/16x12/it.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Italiano</button>
                     </div>
                 </div>
             </div>
@@ -175,13 +175,30 @@
         function toggleDropdown(menuId) { const menu = document.getElementById(menuId); const isShown = menu.classList.contains('show'); document.querySelectorAll('.drop-options').forEach(d => d.classList.remove('show')); if (!isShown) menu.classList.add('show'); }
         
         function changeLanguage(lang) {
-            currentLang = lang; const t = translations[lang] || translations['en']; document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
+            currentLang = lang; 
+            localStorage.setItem('site_lang', lang); // حفظ اللغة المختارة
+            const t = translations[lang] || translations['en']; 
+            document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
             safeSetText('badge-live', t.live); safeSetText('tab-yesterday', t.yesterday); safeSetText('tab-today', t.todayTab); safeSetText('tab-tomorrow', t.tomorrow);
             safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl); safeSetText('opt-caf', t.caf); safeSetText('opt-champ', t.champ); safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie); safeSetText('opt-ligue1', t.ligue1); safeSetText('opt-bundes', t.bundes);
             safeSetText('ad-label', t.ad); safeSetText('ad-banner', t.adBanner); safeSetText('footer-rights', t.rights);
             const searchInput = document.getElementById('search-input'); if(searchInput) searchInput.placeholder = t.search;
             const leagueTextEl = document.getElementById('current-league-text'); if(leagueTextEl) leagueTextEl.innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
             handleRoute(); filterAndRenderMatches();
+        }
+
+        // 🧠 الدالة الذكية للتعرف على اللغة عند فتح الموقع
+        function initLanguage() {
+            const savedLang = localStorage.getItem('site_lang');
+            const browserLang = (navigator.language || navigator.userLanguage).substring(0, 2).toLowerCase();
+            const langToUse = savedLang || (translations[browserLang] ? browserLang : 'en');
+            
+            const btn = document.querySelector(`.lang-opt[data-lang="${langToUse}"]`);
+            if (btn) {
+                document.getElementById('current-lang-flag').src = 'https://flagcdn.com/16x12/' + btn.getAttribute('data-flag');
+                document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name');
+            }
+            changeLanguage(langToUse);
         }
 
         async function fetchLiveMatches(isManualRefresh = false) {
@@ -357,7 +374,11 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            initTheme(); fetchLiveMatches(); setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
+            initTheme(); 
+            initLanguage(); // 🧠 تشغيل الدالة الذكية لاكتشاف لغة الزائر فوراً
+            fetchLiveMatches(); 
+            setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
+            
             document.querySelectorAll('.date-tab').forEach(btn => { btn.addEventListener('click', (e) => { document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('date-tab-active')); e.currentTarget.classList.add('date-tab-active'); currentDateOffset = parseInt(e.currentTarget.getAttribute('data-offset')); allMatchesCached = []; fetchLiveMatches(true); }); });
             const searchInput = document.getElementById('search-input'); if (searchInput) { searchInput.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentSearchQuery = e.target.value.trim(); filterAndRenderMatches(); }, 300); }); }
             document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme); document.getElementById('btn-refresh').addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
@@ -370,10 +391,9 @@
 
             document.getElementById('btn-lang-dropdown').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('lang-options-menu'); });
             
-            // ✅ الإصلاح هنا: استخدام الرابط المباشر من data-flag بدلاً من إضافة الرابط مرتين
             document.querySelectorAll('.lang-opt').forEach(btn => { 
                 btn.addEventListener('click', () => { 
-                    document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag'); 
+                    document.getElementById('current-lang-flag').src = 'https://flagcdn.com/16x12/' + btn.getAttribute('data-flag'); 
                     document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name'); 
                     changeLanguage(btn.getAttribute('data-lang')); 
                     document.getElementById('lang-options-menu').classList.remove('show');
