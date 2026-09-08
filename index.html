@@ -174,14 +174,14 @@
 
         const TOP_LEAGUES = ["2", "12", "39", "40", "61", "78", "135", "140", "307", "253", "200", "113", "69", "119"];
 
-        // 🏆 القاموس الذكي المحدث لأسماء الأندية (يغطي كل الاحتمالات والشرطات)
+        // 🏆 القاموس الذكي الشامل للفرق
         const teamNamesAR = {
             "Arsenal": "أرسنال", "Aston Villa": "أستون فيلا", "Bournemouth": "بورنموث", "Brentford": "برينتفورد", "Brighton": "برايتون", "Chelsea": "تشيلسي", "Crystal Palace": "كريستال بالاس", "Everton": "إيفرتون", "Fulham": "فولهام", "Liverpool": "ليفربول", "Luton": "لوتون تاون", "Manchester City": "مانشستر سيتي", "Manchester United": "مانشستر يونايتد", "Newcastle": "نيوكاسل", "Nottingham Forest": "نوتينغهام فورست", "Sheffield Utd": "شيفيلد", "Tottenham": "توتنهام", "West Ham": "وست هام", "Wolverhampton": "وولفرهامبتون",
             "Real Madrid": "ريال مدريد", "Barcelona": "برشلونة", "Atletico Madrid": "أتلتيكو مدريد", "Sevilla": "إشبيلية", "Valencia": "فالنسيا", "Villarreal": "فياريال", "Real Sociedad": "ريال سوسيداد", "Athletic Club": "أتلتيك بيلباو", "Real Betis": "ريال بيتيس", "Girona": "جيرونا",
             "Juventus": "يوفنتوس", "AC Milan": "ميلان", "Inter": "إنتر ميلان", "Napoli": "نابولي", "Roma": "روما", "Lazio": "لاتسيو", "Atalanta": "أتالانتا", "Fiorentina": "فيورنتينا",
             "Bayern Munich": "بايرن ميونخ", "Borussia Dortmund": "دورتموند", "Bayer Leverkusen": "ليفركوزن", "RB Leipzig": "لايبزيغ", "Stuttgart": "شتوتغارت",
             "Paris Saint Germain": "باريس سان جيرمان", "Marseille": "مارسيليا", "Lyon": "ليون", "Monaco": "موناكو", "Lille": "ليل",
-            "Al Hilal": "الهلال", "Al Nassr": "النصر", "Al Ittihad": "الاتحاد", "Al Ahli": "الأهلي", "Al Shabab": "الشباب", "Al Ettifaq": "الاتفاق", "Al-Ettifaq": "الاتفاق", "Al Faisaly": "الفيصلي", "Al-Faisaly FC": "الفيصلي", "Al-Faisaly": "الفيصلي", "Al Taawoun": "التعاون", "Al Taawon": "التعاون", "Al Wehda": "الوحدة", "Al Raed": "الرائد", "Al Fayha": "الفيحاء", "Damac FC": "ضمك", "Abha": "أبها", "Al Khaleej": "الخليج", "Al Hazem": "الحزم", "Al-Hazm": "الحزم", "Al Okhdood": "الأخدود", "Al Riyadh": "الرياض", "Al Fateh": "الفتح",
+            "Al Hilal": "الهلال", "Al Nassr": "النصر", "Al Ittihad": "الاتحاد", "Al-Ittihad FC": "الاتحاد", "Al Ahli": "الأهلي", "Al Shabab": "الشباب", "Al Ettifaq": "الاتفاق", "Al-Ettifaq": "الاتفاق", "Al Faisaly": "الفيصلي", "Al-Faisaly FC": "الفيصلي", "Al-Faisaly": "الفيصلي", "Al Taawoun": "التعاون", "Al Taawon": "التعاون", "Al Wehda": "الوحدة", "Al Raed": "الرائد", "Al Fayha": "الفيحاء", "Al-Fayha": "الفيحاء", "Damac FC": "ضمك", "Abha": "أبها", "Al Khaleej": "الخليج", "Al Hazem": "الحزم", "Al-Hazm": "الحزم", "Al Okhdood": "الأخدود", "Al Riyadh": "الرياض", "Al Fateh": "الفتح",
             "Wydad AC": "الوداد الرياضي", "Raja Casablanca": "الرجاء الرياضي", "AS FAR Rabat": "الجيش الملكي", "RSB Berkane": "نهضة بركان",
             "Al Ahly": "الأهلي", "Zamalek SC": "الزمالك", "Esperance Tunis": "الترجي", "Mamelodi Sundowns": "صن داونز",
             "Inter Miami": "إنتر ميامي", "LA Galaxy": "لوس أنجلوس جالاكسي", "New York City FC": "نيويورك سيتي"
@@ -247,6 +247,23 @@
                 document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name');
             }
             changeLanguage(langToUse);
+        }
+
+        // ⏱️ دالة الساعة المحلية الذكية لمحاكاة الوقت الحي
+        function startLocalClock() {
+            setInterval(() => {
+                document.querySelectorAll('.live-timer').forEach(timer => {
+                    const status = timer.getAttribute('data-status');
+                    if (status === '1H' || status === '2H' || status === 'ET') {
+                        let currentMinute = parseInt(timer.innerText);
+                        if (!isNaN(currentMinute)) {
+                            if ((status === '1H' && currentMinute < 45) || (status === '2H' && currentMinute < 90)) {
+                                timer.innerText = currentMinute + 1;
+                            }
+                        }
+                    }
+                });
+            }, 60000);
         }
 
         async function fetchLiveMatches(isManualRefresh = false) {
@@ -394,7 +411,9 @@
                     const fId = match.fixture.id; const hScore = match.goals.home !== null ? match.goals.home : '-'; const aScore = match.goals.away !== null ? match.goals.away : '-';
                     const isLive = match.fixture.status.short === '1H' || match.fixture.status.short === '2H' || match.fixture.status.short === 'HT';
                     const notStarted = match.fixture.status.short === 'NS' || match.fixture.status.short === 'TBD';
-                    const statusText = isLive ? `<span class="text-red-500 font-bold flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 live-dot"></span>${match.fixture.status.elapsed}'</span>` : (match.fixture.status.short === 'FT' ? currentT.ended : match.fixture.date.substring(11, 16));
+                    
+                    // ⏱️ التعديل هنا: إضافة class="live-timer" للأرقام الحية
+                    const statusText = isLive ? `<span class="text-red-500 font-bold flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 live-dot"></span><span class="live-timer" data-status="${match.fixture.status.short}">${match.fixture.status.elapsed}</span>'</span>` : (match.fixture.status.short === 'FT' ? currentT.ended : match.fixture.date.substring(11, 16));
                     
                     const homeName = getTeamName(match.teams.home.name, currentLang);
                     const awayName = getTeamName(match.teams.away.name, currentLang);
@@ -447,6 +466,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             initTheme(); 
             initLanguage(); 
+            startLocalClock(); // ⏱️ تشغيل الساعة المحلية
             fetchLiveMatches(); 
             setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
             
