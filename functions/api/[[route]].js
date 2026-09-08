@@ -16,46 +16,51 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "API_SPORTS_KEY is missing" }), { status: 500, headers: corsHeaders });
     }
 
-    const cache = caches.default;
-    const cacheKey = new Request(url.toString(), request);
+    // 🛡️ دالة سحرية لحفظ بيانات API-Sports في خزانة KV العالمية
+    async function getFromApiSports(endpoint, kvKey, ttlSeconds) {
+        if (env.SPORTS_KV) {
+            const cachedData = await env.SPORTS_KV.get(kvKey);
+            if (cachedData) {
+                return new Response(cachedData, { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            }
+        }
+
+        const res = await fetch(`https://v3.football.api-sports.io/${endpoint}`, { 
+            headers: { "x-apisports-key": env.API_SPORTS_KEY } 
+        });
+        const dataText = await res.text();
+
+        try {
+            const dataObj = JSON.parse(dataText);
+            // نحفظ البيانات فقط إذا كانت صحيحة ولا تحتوي على أخطاء نفاذ الرصيد
+            if (env.SPORTS_KV && res.ok && (!dataObj.errors || Object.keys(dataObj.errors).length === 0)) {
+                waitUntil(env.SPORTS_KV.put(kvKey, dataText, { expirationTtl: ttlSeconds }));
+            }
+        } catch(e) {}
+
+        return new Response(dataText, { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     try {
+        // 1. جلب المباريات (كاش عالمي في KV لمدة 5 دقائق)
         if (action === "fetch-matches" || action === "fetch-fixtures" || action === "/fixtures") {
-            let response = await cache.match(cacheKey);
-            if (!response) {
-                const date = url.searchParams.get("date");
-                const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${date}`, { headers: { "x-apisports-key": env.API_SPORTS_KEY } });
-                const data = await res.json();
-                response = new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=300" } });
-                waitUntil(cache.put(cacheKey, response.clone()));
-            }
-            return response;
+            const date = url.searchParams.get("date");
+            return await getFromApiSports(`fixtures?date=${date}`, `api_fixtures_${date}`, 300);
         }
 
+        // 2. جلب الأحداث (كاش عالمي في KV لمدة 5 دقائق)
         if (action === "fetch-events" || action === "/events") {
-            let response = await cache.match(cacheKey);
-            if (!response) {
-                const fixtureId = url.searchParams.get("fixture");
-                const res = await fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`, { headers: { "x-apisports-key": env.API_SPORTS_KEY } });
-                const data = await res.json();
-                response = new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=300" } });
-                waitUntil(cache.put(cacheKey, response.clone()));
-            }
-            return response;
+            const fixtureId = url.searchParams.get("fixture");
+            return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, 300);
         }
 
+        // 3. جلب الإحصائيات (كاش عالمي في KV لمدة 5 دقائق)
         if (action === "fetch-stats" || action === "/statistics") {
-            let response = await cache.match(cacheKey);
-            if (!response) {
-                const fixtureId = url.searchParams.get("fixture");
-                const res = await fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${fixtureId}`, { headers: { "x-apisports-key": env.API_SPORTS_KEY } });
-                const data = await res.json();
-                response = new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=300" } });
-                waitUntil(cache.put(cacheKey, response.clone()));
-            }
-            return response;
+            const fixtureId = url.searchParams.get("fixture");
+            return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 300);
         }
 
+        // 4. توقع المباراة (Gemini 1.5 Flash)
         if (action === "predict-match") {
             let leagueId = url.searchParams.get("leagueId");
             if (leagueId !== "39") {
@@ -72,7 +77,7 @@ export async function onRequest(context) {
             if (env.SPORTS_KV) {
                 const cachedPrediction = await env.SPORTS_KV.get(kvKey);
                 if (cachedPrediction) { 
-                    return new Response(JSON.stringify({ result: cachedPrediction, source: "KV_CACHE" }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" } }); 
+                    return new Response(JSON.stringify({ result: cachedPrediction, source: "KV_CACHE" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } }); 
                 }
             }
 
@@ -80,8 +85,7 @@ export async function onRequest(context) {
 
             const prompt = `Act as an expert football analyst. Write a short, exciting prediction for the upcoming Premier League match between ${homeTeam} and ${awayTeam}. Give a brief reason analyzing their current form, and give a final predicted scoreline. Write it ENTIRELY in English. Return ONLY valid HTML code (use <p> and <strong> tags for the score). Do NOT wrap the response in markdown blocks.`;
             
-            // 🚨 التعديل هنا: استخدام النسخة الحديثة gemini-3.1-pro-preview
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
@@ -95,9 +99,10 @@ export async function onRequest(context) {
             const predictionText = aiData.candidates[0].content.parts[0].text;
 
             if (env.SPORTS_KV) { waitUntil(env.SPORTS_KV.put(kvKey, predictionText)); }
-            return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" } });
+            return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
 
+        // 5. تقرير المباراة (Gemini 1.5 Flash)
         if (action === "generate-article" || action === "/generate-article") {
             let leagueId = url.searchParams.get("leagueId");
             if (leagueId !== "39") {
@@ -115,7 +120,7 @@ export async function onRequest(context) {
             if (env.SPORTS_KV) {
                 const cachedArticle = await env.SPORTS_KV.get(kvKey);
                 if (cachedArticle) { 
-                    return new Response(JSON.stringify({ result: cachedArticle, source: "KV_CACHE" }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" } }); 
+                    return new Response(JSON.stringify({ result: cachedArticle, source: "KV_CACHE" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } }); 
                 }
             }
 
@@ -130,8 +135,7 @@ export async function onRequest(context) {
             5. A strong conclusion paragraph. 
             Write the ENTIRE article perfectly in English. Return ONLY valid clean HTML code. Do NOT wrap the response in markdown blocks.`;
             
-            // 🚨 التعديل هنا: استخدام النسخة الحديثة gemini-3.1-pro-preview
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
@@ -145,7 +149,7 @@ export async function onRequest(context) {
             const articleText = aiData.candidates[0].content.parts[0].text;
 
             if (env.SPORTS_KV) { waitUntil(env.SPORTS_KV.put(kvKey, articleText)); }
-            return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" } });
+            return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
 
         return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
