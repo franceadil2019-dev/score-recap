@@ -16,7 +16,7 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "API_SPORTS_KEY is missing" }), { status: 500, headers: corsHeaders });
     }
 
-    // 🛡️ دالة سحرية لحفظ بيانات API-Sports في خزانة KV العالمية
+    // 🛡️ دالة سحرية لحفظ البيانات في KV
     async function getFromApiSports(endpoint, kvKey, ttlSeconds) {
         if (env.SPORTS_KV) {
             const cachedData = await env.SPORTS_KV.get(kvKey);
@@ -32,9 +32,10 @@ export async function onRequest(context) {
 
         try {
             const dataObj = JSON.parse(dataText);
-            // نحفظ البيانات فقط إذا كانت صحيحة ولا تحتوي على أخطاء نفاذ الرصيد
             if (env.SPORTS_KV && res.ok && (!dataObj.errors || Object.keys(dataObj.errors).length === 0)) {
-                waitUntil(env.SPORTS_KV.put(kvKey, dataText, { expirationTtl: ttlSeconds }));
+                // Cloudflare KV يفضل ألا يقل الـ TTL عن 60 ثانية لتنظيف الذاكرة بشكل مستقر
+                const safeTtl = Math.max(ttlSeconds, 60);
+                waitUntil(env.SPORTS_KV.put(kvKey, dataText, { expirationTtl: safeTtl }));
             }
         } catch(e) {}
 
@@ -42,25 +43,29 @@ export async function onRequest(context) {
     }
 
     try {
-        // 1. جلب المباريات (كاش عالمي في KV لمدة 5 دقائق)
+        // 1. جلب المباريات (الكاش الذكي: 60 ثانية لليوم، و24 ساعة للأمس والغد)
         if (action === "fetch-matches" || action === "fetch-fixtures" || action === "/fixtures") {
             const date = url.searchParams.get("date");
-            return await getFromApiSports(`fixtures?date=${date}`, `api_fixtures_${date}`, 300);
+            const today = new Date().toISOString().split('T')[0];
+            
+            const ttl = (date === today) ? 60 : 86400;
+            
+            return await getFromApiSports(`fixtures?date=${date}`, `api_fixtures_${date}`, ttl);
         }
 
-        // 2. جلب الأحداث (كاش عالمي في KV لمدة 5 دقائق)
+        // 2. جلب الأحداث (60 ثانية للمباريات الحية)
         if (action === "fetch-events" || action === "/events") {
             const fixtureId = url.searchParams.get("fixture");
-            return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, 300);
+            return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, 60);
         }
 
-        // 3. جلب الإحصائيات (كاش عالمي في KV لمدة 5 دقائق)
+        // 3. جلب الإحصائيات (60 ثانية للمباريات الحية)
         if (action === "fetch-stats" || action === "/statistics") {
             const fixtureId = url.searchParams.get("fixture");
-            return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 300);
+            return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 60);
         }
 
-        // 4. توقع المباراة (Gemini 1.5 Flash)
+        // 4. توقع المباراة (الدوري الإنجليزي - بالإنجليزية)
         if (action === "predict-match") {
             let leagueId = url.searchParams.get("leagueId");
             if (leagueId !== "39") {
@@ -85,7 +90,8 @@ export async function onRequest(context) {
 
             const prompt = `Act as an expert football analyst. Write a short, exciting prediction for the upcoming Premier League match between ${homeTeam} and ${awayTeam}. Give a brief reason analyzing their current form, and give a final predicted scoreline. Write it ENTIRELY in English. Return ONLY valid HTML code (use <p> and <strong> tags for the score). Do NOT wrap the response in markdown blocks.`;
             
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+            // ✅ التعديل هنا: استخدام النسخة المتوافقة مع حسابك gemini-3.1-pro-preview
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
@@ -102,7 +108,7 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
 
-        // 5. تقرير المباراة (Gemini 1.5 Flash)
+        // 5. تقرير المباراة (الدوري الإنجليزي - بالإنجليزية)
         if (action === "generate-article" || action === "/generate-article") {
             let leagueId = url.searchParams.get("leagueId");
             if (leagueId !== "39") {
@@ -135,7 +141,8 @@ export async function onRequest(context) {
             5. A strong conclusion paragraph. 
             Write the ENTIRE article perfectly in English. Return ONLY valid clean HTML code. Do NOT wrap the response in markdown blocks.`;
             
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+            // ✅ التعديل هنا: استخدام النسخة المتوافقة مع حسابك gemini-3.1-pro-preview
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
