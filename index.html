@@ -42,13 +42,18 @@
         .ai-article-content li { margin-bottom: 0.4rem; }
         .ai-article-content strong { color: #10b981; }
         
-        /* جعل المقال الإنجليزي يظهر من اليسار لليمين دائماً */
         .ai-article-content { text-align: left !important; direction: ltr !important; }
         
         .date-tab-active { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important; }
         
         .vote-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1em; }
         html[dir="rtl"] .vote-select { background-position: left 0.5rem center; }
+
+        /* شريط التمرير الأنيق للأحداث */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200">
@@ -117,9 +122,7 @@
                     </button>
                     <div id="league-options-menu" class="drop-options">
                         <button class="drop-opt league-opt" data-id="all" data-flag="https://media.api-sports.io/football/leagues/2.png" data-key="allLeagues"><img src="https://media.api-sports.io/football/leagues/2.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-all">Top Leagues</span></button>
-                        <!-- الدوري الأمريكي تمت إضافته في البداية هنا -->
                         <button class="drop-opt league-opt" data-id="253" data-flag="https://media.api-sports.io/football/leagues/253.png" data-key="mls"><img src="https://media.api-sports.io/football/leagues/253.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-mls">MLS</span></button>
-                        
                         <button class="drop-opt league-opt" data-id="2" data-flag="https://media.api-sports.io/football/leagues/2.png" data-key="ucl"><img src="https://media.api-sports.io/football/leagues/2.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-ucl">UEFA Champions League</span></button>
                         <button class="drop-opt league-opt" data-id="12" data-flag="https://media.api-sports.io/football/leagues/12.png" data-key="caf"><img src="https://media.api-sports.io/football/leagues/12.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-caf">CAF Champions League</span></button>
                         <button class="drop-opt league-opt" data-id="39" data-flag="https://media.api-sports.io/football/leagues/39.png" data-key="pl"><img src="https://media.api-sports.io/football/leagues/39.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-pl">Premier League</span></button>
@@ -250,7 +253,7 @@
 
         function renderEvents(events, container) {
             if (!events || events.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
-            let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto scrollbar-none">`;
+            let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">`;
             events.forEach(ev => { const icon = ev.type === 'Goal' ? '⚽' : (ev.type === 'Card' ? '🟨' : '🔄');
                 html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${ev.team.name})</span></span></div>`; 
             }); container.innerHTML = html + `</div>`;
@@ -373,9 +376,24 @@
 
                     const formatStr = str => str.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase(); const matchSlug = `${formatStr(match.teams.home.name)}-vs-${formatStr(match.teams.away.name)}`; const matchUrl = `/match/${fId}/${matchSlug}`;
 
+                    // 🚨 التعديل السحري لتصحيح أسماء الفرق على الهاتف 🚨
                     html += `<div class="match-row-container group" data-fixture-id="${fId}">
                             <a href="${matchUrl}" class="match-row-header block p-3 md:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors" data-fixture-id="${fId}">
-                                <div class="flex justify-between items-center"><div class="w-1/3 text-right font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-end md:items-center justify-end gap-2"><span class="hidden md:inline">${match.teams.home.name}</span><img src="${match.teams.home.logo}" class="w-6 h-6"></div><div class="w-1/3 text-center flex flex-col items-center"><div class="text-[10px] text-slate-400 mb-1 font-semibold tracking-wider">${statusText}</div><div class="bg-slate-100 dark:bg-slate-950 px-3 py-1 rounded-md text-slate-800 dark:text-slate-100 font-black text-lg shadow-sm border border-slate-200 dark:border-slate-800/50">${hScore} - ${aScore}</div></div><div class="w-1/3 text-left font-bold text-sm text-slate-700 dark:text-slate-200 flex flex-col md:flex-row items-start md:items-center justify-start gap-2"><img src="${match.teams.away.logo}" class="w-6 h-6"><span class="hidden md:inline">${match.teams.away.name}</span></div></div></a>
+                                <div class="flex justify-between items-center">
+                                    <div class="w-[40%] text-right font-bold text-slate-700 dark:text-slate-200 flex items-center justify-end gap-1.5 sm:gap-2">
+                                        <span class="text-[11px] sm:text-sm truncate">${match.teams.home.name}</span>
+                                        <img src="${match.teams.home.logo}" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0">
+                                    </div>
+                                    <div class="w-[20%] text-center flex flex-col items-center px-1">
+                                        <div class="text-[9px] sm:text-[10px] text-slate-400 mb-0.5 font-semibold tracking-wider">${statusText}</div>
+                                        <div class="bg-slate-100 dark:bg-slate-950 px-2 sm:px-3 py-1 rounded-md text-slate-800 dark:text-slate-100 font-black text-sm sm:text-lg shadow-sm border border-slate-200 dark:border-slate-800/50 w-full whitespace-nowrap">${hScore} - ${aScore}</div>
+                                    </div>
+                                    <div class="w-[40%] text-left font-bold text-slate-700 dark:text-slate-200 flex items-center justify-start gap-1.5 sm:gap-2">
+                                        <img src="${match.teams.away.logo}" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0">
+                                        <span class="text-[11px] sm:text-sm truncate">${match.teams.away.name}</span>
+                                    </div>
+                                </div>
+                            </a>
                             <div id="details-${fId}" class="hidden px-4 pb-5 pt-2 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800"><div class="max-w-2xl mx-auto mt-2"><div class="flex justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm mb-4"><div class="text-center w-1/3"><img src="${match.teams.home.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm"><div class="font-bold text-sm dark:text-white">${match.teams.home.name}</div></div><div class="w-1/3 text-center"><div class="inline-block bg-slate-100 dark:bg-slate-950 border-2 border-emerald-500/30 rounded-xl px-5 py-2 text-3xl font-black text-slate-800 dark:text-white shadow-inner mb-1">${hScore} - ${aScore}</div></div><div class="text-center w-1/3"><img src="${match.teams.away.logo}" class="w-12 h-12 mx-auto mb-2 drop-shadow-sm"><div class="font-bold text-sm dark:text-white">${match.teams.away.name}</div></div></div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm"><div class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">Match Events</div><div id="events-list-${fId}" class="min-h-[60px]"></div></div>
                                         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-center space-y-4"><div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">${currentT.statsTitle}</div><div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="poss-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.poss}</span><span id="poss-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="poss-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="poss-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div><div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="shots-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.shots}</span><span id="shots-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="shots-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="shots-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div></div></div>
