@@ -1,5 +1,5 @@
 export async function onRequest(context) {
-const { requête, environnement, attendre jusqu'à } = contexte;
+const { requete, environnement, attendre jusqu'à } = contexte;
 const url = new URL(request.url);
 
 const corsHeaders = {
