@@ -41,6 +41,7 @@
         .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; }
         .ai-article-content li { margin-bottom: 0.4rem; }
         .ai-article-content strong { color: #10b981; }
+        
         .ai-article-content { text-align: left !important; direction: ltr !important; }
         
         .date-tab-active { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important; }
@@ -53,7 +54,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
 
-        /* 📊 تصميم مربعات آخر 5 مباريات في جدول الترتيب */
         .form-w { background-color: #10b981; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: bold; margin: 0 1px; display: inline-block; }
         .form-d { background-color: #94a3b8; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: bold; margin: 0 1px; display: inline-block; }
         .form-l { background-color: #ef4444; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: bold; margin: 0 1px; display: inline-block; }
@@ -332,19 +332,28 @@
             if (homeShotsBar) homeShotsBar.style.width = homeShotsPct; if (awayShotsBar) awayShotsBar.style.width = awayShotsPct;
         }
 
-        // 📊 دالة جلب جدول الترتيب الذكية (مع دعم سنة الموسم ونظام المجموعات)
+        // 🚨 دالة جلب جدول الترتيب مع معالجة الأخطاء الذكية
         async function loadStandings(leagueId, season, containerId, btnElement) {
             const container = document.getElementById(containerId);
             if (!container.classList.contains('hidden')) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden');
-            if (container.innerHTML.trim() !== '') return;
+            if (container.innerHTML.trim() !== '') return; 
 
             container.innerHTML = `<div class="flex justify-center py-4"><div class="mini-spinner"></div></div>`;
             try {
-                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/standings?league=${leagueId}&season=${season}`, { headers: { "x-action": "fetch-standings" }, timeout: 15000 });
+                // استخدام fallback للسنة الحالية في حال كانت season غير موجودة
+                const safeSeason = season || new Date().getFullYear();
+                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/standings?league=${leagueId}&season=${safeSeason}`, { headers: { "x-action": "fetch-standings" }, timeout: 15000 });
                 if (!res.ok) throw new Error("Error");
                 const data = await res.json();
                 
+                // 🚨 التحقق من نفاذ رصيد الـ API
+                if (data.errors && data.errors.requests) {
+                    container.innerHTML = `<p class="text-center text-red-500 text-xs py-4">API Limit Reached.</p>`;
+                    return;
+                }
+
+                // 🚨 التحقق من عدم وجود ترتيب (للكؤوس أو المواسم الجديدة)
                 if (!data.response || data.response.length === 0) {
                     container.innerHTML = `<p class="text-center text-slate-500 text-xs py-4">${translations[currentLang].noStandings}</p>`;
                     return;
@@ -354,7 +363,6 @@
                 const t = translations[currentLang];
                 let fullHtml = '';
 
-                // التكرار على المجموعات (مهم لدوري الأبطال والكؤوس)
                 allStandings.forEach(group => {
                     let groupName = group[0].group;
                     if(allStandings.length > 1) {
@@ -479,19 +487,20 @@
             
             let finalHTML = ''; 
             const grouped = {};
-            // 🚨 التعديل هنا: تخزين سنة الموسم (season) لكل دوري لكي نستخدمها في زر الترتيب
             filtered.forEach(m => { if (!grouped[m.league.id]) grouped[m.league.id] = { id: m.league.id, name: m.league.name, logo: m.league.logo, season: m.league.season, fixtures: [] }; grouped[m.league.id].fixtures.push(m); });
             
             Object.values(grouped).forEach(league => {
                 const leagueName = getLeagueNameLocal(String(league.id), league.name, currentLang);
                 
-                // 📊 زر جدول الترتيب مع تمرير سنة الموسم (season)
+                // 🚨 استخدام fallback للسنة الحالية في حال لم تأتِ من الـ API
+                const safeSeason = league.season || new Date().getFullYear();
+
                 let html = `<div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm mb-5 transition-colors">
                                 <div class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/50 px-4 py-3 flex justify-between items-center">
                                     <div class="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex gap-3 items-center">
                                         <img src="${league.logo}" class="w-6 h-6 object-contain drop-shadow-sm">${leagueName}
                                     </div>
-                                    <button class="standings-btn text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg font-bold text-slate-600 dark:text-slate-300 transition-colors shadow-sm" data-league-id="${league.id}" data-season="${league.season}">📊 ${currentT.standingsBtn}</button>
+                                    <button class="standings-btn text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg font-bold text-slate-600 dark:text-slate-300 transition-colors shadow-sm" data-league-id="${league.id}" data-season="${safeSeason}">📊 ${currentT.standingsBtn}</button>
                                 </div>
                                 <div id="standings-container-${league.id}" class="hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-2 overflow-x-auto custom-scrollbar"></div>
                                 <div class="divide-y divide-slate-100 dark:divide-slate-800/50">`;
@@ -593,7 +602,6 @@
             document.getElementById('api-scores-container').addEventListener('change', (e) => { if (e.target.classList.contains('vote-select')) { const fId = e.target.getAttribute('data-fixture-id'); const vote = e.target.value; localStorage.setItem(`vote_${fId}`, vote); showToast(translations[currentLang].voteSaved, 'success'); } });
 
             document.getElementById('api-scores-container').addEventListener('click', (e) => { 
-                // 📊 مستمع الزر الجديد لجدول الترتيب (تم تحديثه ليدعم سنة الموسم)
                 if (e.target.closest('.standings-btn')) { 
                     const btn = e.target.closest('.standings-btn'); 
                     loadStandings(btn.getAttribute('data-league-id'), btn.getAttribute('data-season'), `standings-container-${btn.getAttribute('data-league-id')}`, btn); 
