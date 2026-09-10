@@ -20,6 +20,7 @@ export async function onRequest(context) {
     return new Response(JSON.stringify({ error: "API_SPORTS_KEY is missing" }), { status: 500, headers: corsHeaders });
   }
 
+  // 🛡️ دالة جلب البيانات مع الكاش المضمون (KV Cache)
   async function getFromApiSports(endpoint, kvKey, ttlSeconds) {
     if (env.SPORTS_KV) {
       try {
@@ -47,6 +48,7 @@ export async function onRequest(context) {
   }
 
   try {
+    // 1. جلب قائمة المباريات
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const date = url.searchParams.get("date") || new Date().toISOString().split('T')[0];
       const today = new Date().toISOString().split('T')[0];
@@ -54,25 +56,31 @@ export async function onRequest(context) {
       return await getFromApiSports(`fixtures?date=${date}`, `api_fixtures_${date}`, ttl);
     }
 
+    // 2. جلب الأحداث
     if (action.includes("fetch-events") || action.includes("events")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
       return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, 60);
     }
 
+    // 3. جلب الإحصائيات
     if (action.includes("fetch-stats") || action.includes("statistics")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
       return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 60);
     }
 
+    // 📊 4. جلب جدول الترتيب (Standings) - الميزة التي أضفناها الآن!
     if (action.includes("fetch-standings") || action.includes("standings")) {
       const leagueId = url.searchParams.get("league");
       const season = url.searchParams.get("season") || new Date().getFullYear();
       if (!leagueId) return new Response(JSON.stringify({ error: "League ID is required" }), { status: 400, headers: corsHeaders });
+      
+      // نحفظ الترتيب لمدة 24 ساعة (86400 ثانية) لتوفير الرصيد
       return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, `api_standings_${leagueId}_${season}`, 86400);
     }
 
+    // 5. التوقعات الذكية
     if (action.includes("predict-match") || action.includes("predict")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -98,7 +106,9 @@ export async function onRequest(context) {
       const prompt = `Act as an expert football analyst. Write a short, engaging prediction for the upcoming Premier League match between ${homeTeam} and ${awayTeam}. Provide a brief reason analyzing both teams' current form, and predict the final score. Return ONLY valid HTML (use <p> and <strong> for the result). Do not wrap inside markdown code blocks.`;
 
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       });
 
       const aiData = await aiRes.json();
@@ -108,11 +118,14 @@ export async function onRequest(context) {
       }
 
       const predictionText = aiData.candidates[0].content.parts[0].text;
-      if (env.SPORTS_KV) { waitUntil(env.SPORTS_KV.put(kvKey, predictionText, { expirationTtl: 86400 })); }
+      if (env.SPORTS_KV) {
+        waitUntil(env.SPORTS_KV.put(kvKey, predictionText, { expirationTtl: 86400 }));
+      }
 
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
+    // 6. تقرير المباراة
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -139,7 +152,9 @@ export async function onRequest(context) {
       const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging match report for the Premier League match: ${matchStr}. Final Score: ${score}. Key Events: ${events}. Include: <h2>Title</h2>, <p>Introduction</p>, <p>Tactical Analysis</p>, <h3>Turning Point</h3> with <ul><li>...</li></ul>, and a strong conclusion. Return ONLY clean HTML code without markdown wrappers.`;
 
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       });
 
       const aiData = await aiRes.json();
@@ -149,7 +164,9 @@ export async function onRequest(context) {
       }
 
       const articleText = aiData.candidates[0].content.parts[0].text;
-      if (env.SPORTS_KV) { waitUntil(env.SPORTS_KV.put(kvKey, articleText, { expirationTtl: 604800 })); }
+      if (env.SPORTS_KV) {
+        waitUntil(env.SPORTS_KV.put(kvKey, articleText, { expirationTtl: 604800 })); 
+      }
 
       return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
