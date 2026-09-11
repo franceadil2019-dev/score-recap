@@ -73,7 +73,6 @@
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <a href="/" class="text-xl md:text-2xl font-black text-emerald-500 tracking-tight whitespace-nowrap" id="logo-link">SCORE<span class="text-slate-800 dark:text-white">RECAP</span></a>
-                <!-- تم حذف كلمة LIVE الزائدة من هنا -->
                 <button id="btn-refresh" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-all active:scale-95" aria-label="Refresh matches">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 </button>
@@ -110,6 +109,7 @@
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
+        <!-- القسم الرئيسي (المباريات) -->
         <section id="home-section" class="lg:col-span-2 space-y-4">
             <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-none pb-1">
                 <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="-1" id="tab-yesterday">Yesterday</button>
@@ -403,11 +403,18 @@
             } catch (err) { container.innerHTML = `<p class="text-center text-red-500 text-xs py-1">Error fetching events</p>`; }
         }
 
+        // 🚨 التعديل هنا: التفريق بين البطاقة الصفراء والحمراء
         function renderEvents(events, container) {
             if (!events || events.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
             let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">`;
             events.forEach(ev => {
-                const icon = ev.type === 'Goal' ? '⚽' : (ev.type === 'Card' ? '🟨' : '🔄');
+                let icon = '🔹';
+                if (ev.type === 'Goal') icon = '⚽';
+                else if (ev.type === 'Card') {
+                    icon = (ev.detail && ev.detail.includes('Red')) ? '🟥' : '🟨';
+                }
+                else if (ev.type === 'subst') icon = '🔄';
+                
                 const teamName = getTeamName(ev.team.name, currentLang);
                 html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${teamName})</span></span></div>`;
             }); container.innerHTML = html + `</div>`;
