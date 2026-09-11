@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Live football scores, match reports, and AI tactical analysis.">
     <title id="meta-title">ScoreRecap | Football Scores & Schedule</title>
-    
+   
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class', } </script>
-    
+   
     <style>
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .live-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
@@ -18,7 +18,7 @@
         .dark .spinner { border: 3px solid rgba(255, 255, 255, 0.1); border-top: 3px solid #10b981; }
         .mini-spinner { border: 2px solid rgba(0, 0, 0, 0.1); border-top: 2px solid #10b981; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         .dark .mini-spinner { border: 2px solid rgba(255, 255, 255, 0.1); border-top: 2px solid #10b981; }
-        
+       
         .custom-dropdown { position: relative; display: inline-block; }
         .drop-btn { background-color: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; border-radius: 0.75rem; padding: 0.6rem 1.2rem; font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; cursor: pointer; transition: all 0.2s; font-weight: 600; width: 100%; justify-content: space-between; }
         .dark .drop-btn { background-color: #0f172a; border: 1px solid #334155; color: white; }
@@ -41,12 +41,12 @@
         .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; }
         .ai-article-content li { margin-bottom: 0.4rem; }
         .ai-article-content strong { color: #10b981; }
-        
+       
         /* جعل المقال الإنجليزي يظهر من اليسار لليمين دائماً */
         .ai-article-content { text-align: left !important; direction: ltr !important; }
-        
+       
         .date-tab-active { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important; }
-        
+       
         .vote-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1em; }
         html[dir="rtl"] .vote-select { background-position: left 0.5rem center; }
 
@@ -73,7 +73,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 </button>
             </div>
-            
+           
             <div class="flex items-center gap-2 md:gap-3">
                 <button id="btn-theme-toggle" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-all text-slate-600 dark:text-emerald-400" aria-label="Toggle dark mode">
                     <svg id="theme-icon-sun" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
@@ -105,7 +105,7 @@
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section class="lg:col-span-2 space-y-4">
-            
+           
             <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-none pb-1">
                 <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="-1" id="tab-yesterday">Yesterday</button>
                 <button class="date-tab date-tab-active px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="0" id="tab-today">Today</button>
@@ -168,8 +168,8 @@
 
     <script>
         const APP_CONFIG = { workerUrl: "/api", cacheExpiryMinutes: 5, autoRefreshInterval: 300000 };
-        let currentLang = 'en', selectedLeagueId = 'all', currentSearchQuery = '', searchTimeout = null, selectedLeagueTranslationKey = 'allLeagues', allMatchesCached = [], currentDateOffset = 0; 
-        
+        let currentLang = 'en', selectedLeagueId = 'all', currentSearchQuery = '', searchTimeout = null, selectedLeagueTranslationKey = 'allLeagues', allMatchesCached = [], currentDateOffset = 0;
+       
         function getFromCache(key) { const data = sessionStorage.getItem(key); return data ? JSON.parse(data) : null; }
         function saveToCache(key, data) { sessionStorage.setItem(key, JSON.stringify(data)); }
         let loadedDetails = new Set();
@@ -223,11 +223,11 @@
         const fetchWithTimeout = async (resource, options = {}) => { const { timeout = 8000 } = options; const controller = new AbortController(); const id = setTimeout(() => controller.abort(), timeout); try { const response = await fetch(resource, { ...options, signal: controller.signal }); clearTimeout(id); return response; } catch (error) { clearTimeout(id); throw error; } };
         function safeSetText(id, value) { const el = document.getElementById(id); if (el) el.innerText = value; }
         function toggleDropdown(menuId) { const menu = document.getElementById(menuId); const isShown = menu.classList.contains('show'); document.querySelectorAll('.drop-options').forEach(d => d.classList.remove('show')); if (!isShown) menu.classList.add('show'); }
-        
+       
         function changeLanguage(lang) {
-            currentLang = lang; 
+            currentLang = lang;
             localStorage.setItem('site_lang', lang);
-            const t = translations[lang] || translations['en']; 
+            const t = translations[lang] || translations['en'];
             document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
             safeSetText('badge-live', t.live); safeSetText('tab-yesterday', t.yesterday); safeSetText('tab-today', t.todayTab); safeSetText('tab-tomorrow', t.tomorrow);
             safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl); safeSetText('opt-caf', t.caf); safeSetText('opt-champ', t.champ); safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie); safeSetText('opt-ligue1', t.ligue1); safeSetText('opt-bundes', t.bundes);
@@ -300,10 +300,10 @@
         function renderEvents(events, container) {
             if (!events || events.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
             let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">`;
-            events.forEach(ev => { 
+            events.forEach(ev => {
                 const icon = ev.type === 'Goal' ? '⚽' : (ev.type === 'Card' ? '🟨' : '🔄');
                 const teamName = getTeamName(ev.team.name, currentLang);
-                html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${teamName})</span></span></div>`; 
+                html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${teamName})</span></span></div>`;
             }); container.innerHTML = html + `</div>`;
         }
 
@@ -336,8 +336,9 @@
             const predictBox = document.getElementById(`predict-box-${fixtureId}`); predictBox.classList.remove('hidden');
             try {
                 const params = new URLSearchParams({ fixtureId, leagueId, homeTeam, awayTeam, language: currentLang });
-                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/predict-match?${params.toString()}`, { method: "GET", headers: { "x-action": "predict-match" }, timeout: 15000 });
-                if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || "API Error"); } 
+                // تم رفع الـ Timeout إلى 35 ثانية
+                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/predict-match?${params.toString()}`, { method: "GET", headers: { "x-action": "predict-match" }, timeout: 35000 });
+                if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || "API Error"); }
                 const data = await response.json();
                 predictBox.innerHTML = `<div class="mt-4 p-5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-sm"><div class="flex items-center gap-2 mb-3 border-b border-emerald-200 dark:border-emerald-800/50 pb-2"><span class="text-lg">🔮</span><span class="text-sm font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">${translations[currentLang].predictTitle}</span></div><div class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium ai-article-content">${data.result}</div></div>`;
                 btnElement.style.display = 'none';
@@ -353,10 +354,11 @@
             if (eventsData && eventsData.length > 0) { eventsStr = eventsData.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', '); }
             try {
                 const params = new URLSearchParams({ fixtureId: fixtureId, leagueId: leagueId, matchStr: `${matchCached.teams.home.name} vs ${matchCached.teams.away.name}`, score: `${matchCached.goals.home} - ${matchCached.goals.away}`, events: eventsStr, language: currentLang });
-                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article?${params.toString()}`, { method: "GET", headers: { "x-action": "generate-article" }, timeout: 20000 });
-                if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || "Error"); } 
-                const data = await response.json(); 
-                aiBox.innerHTML = `<div class="mt-5 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden"><div class="relative w-full h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Stadium Background"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div><div class="relative z-10 flex items-center gap-6 sm:gap-10"><img src="${matchCached.teams.home.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"><span class="text-white font-black text-2xl sm:text-3xl italic opacity-90 drop-shadow-lg">VS</span><img src="${matchCached.teams.away.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"></div></div><div class="p-5 sm:p-6"><div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3"><div class="flex items-center gap-3"><div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div><span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${translations[currentLang].reportTitle}</span></div></div><div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">${data.result}</div></div></div>`;
+                // تم رفع الـ Timeout إلى 45 ثانية
+                const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article?${params.toString()}`, { method: "GET", headers: { "x-action": "generate-article" }, timeout: 45000 });
+                if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || "Error"); }
+                const data = await response.json();
+                aiBox.innerHTML = `<div class="mt-5 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden"><div class="relative w-full h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Stadium Background"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div><div class="relative z-10 flex items-center gap-6 sm:gap-10"><img src="${matchCached.teams.home.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"><span class="text-white font-black text-2xl sm:text-3xl italic opacity-90 drop-shadow-lg">VS</span><img src="${matchCached.teams.away.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"></div></div><div class="p-5 sm:p-6"><div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3"><div class="flex items-center gap-3"><div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div><span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${translations[currentLang].reportTitle}</span></div></div><div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">${data.result}</div></div></div>`;
                 btnElement.style.display = 'none';
             } catch (error) { aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${error.message || translations[currentLang].reportError}</p>`; btnElement.innerText = translations[currentLang].readReportBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed'); }
         }
@@ -375,7 +377,7 @@
             const details = document.getElementById(`details-${fId}`);
             if (details) {
                 document.querySelectorAll('[id^="details-"]').forEach(el => { if (el.id !== `details-${fId}`) el.classList.add('hidden'); });
-                details.classList.remove('hidden'); 
+                details.classList.remove('hidden');
                 if (!loadedDetails.has(fId)) { fetchMatchEvents(fId, document.getElementById(`events-list-${fId}`)); fetchMatchStats(fId); loadedDetails.add(fId); }
                 if (scrollToIt) { setTimeout(() => { details.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }
             }
@@ -388,7 +390,7 @@
 
         function filterAndRenderMatches() {
             const container = document.getElementById('api-scores-container'); const currentT = translations[currentLang] || translations['en'];
-            
+           
             let filtered = [];
             if (selectedLeagueId === 'all') {
                 filtered = allMatchesCached.filter(m => TOP_LEAGUES.includes(String(m.league.id)));
@@ -398,27 +400,27 @@
 
             if (currentSearchQuery) { const query = currentSearchQuery.toLowerCase(); filtered = filtered.filter(m => m.teams.home.name.toLowerCase().includes(query) || m.teams.away.name.toLowerCase().includes(query)); }
             if (!filtered || filtered.length === 0) { container.innerHTML = `<div class="bg-white border rounded-xl p-8 text-center font-medium text-slate-500 shadow-sm">${currentT.noMatches}</div>`; return; }
-            
-            let finalHTML = ''; 
+           
+            let finalHTML = '';
             const grouped = {};
             filtered.forEach(m => { if (!grouped[m.league.id]) grouped[m.league.id] = { id: m.league.id, name: m.league.name, logo: m.league.logo, fixtures: [] }; grouped[m.league.id].fixtures.push(m); });
-            
+           
             Object.values(grouped).forEach(league => {
                 const leagueName = getLeagueNameLocal(String(league.id), league.name, currentLang);
                 let html = `<div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm mb-5 transition-colors"><div class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/50 px-4 py-3 font-extrabold text-sm text-slate-800 dark:text-slate-200 flex gap-3 items-center"><img src="${league.logo}" class="w-6 h-6 object-contain drop-shadow-sm">${leagueName}</div><div class="divide-y divide-slate-100 dark:divide-slate-800/50">`;
-                
+               
                 league.fixtures.forEach(match => {
                     const fId = match.fixture.id; const hScore = match.goals.home !== null ? match.goals.home : '-'; const aScore = match.goals.away !== null ? match.goals.away : '-';
                     const isLive = match.fixture.status.short === '1H' || match.fixture.status.short === '2H' || match.fixture.status.short === 'HT';
                     const notStarted = match.fixture.status.short === 'NS' || match.fixture.status.short === 'TBD';
                     const statusText = isLive ? `<span class="text-red-500 font-bold flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 live-dot"></span><span class="live-timer" data-status="${match.fixture.status.short}">${match.fixture.status.elapsed}</span>'</span>` : (match.fixture.status.short === 'FT' ? currentT.ended : match.fixture.date.substring(11, 16));
-                    
+                   
                     const homeName = getTeamName(match.teams.home.name, currentLang);
                     const awayName = getTeamName(match.teams.away.name, currentLang);
 
                     let customSection = '';
                     if (match.fixture.status.short === 'FT') {
-                        if (String(league.id) === '39') { customSection = `<button class="article-btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-bold mt-4 shadow-sm transition-colors" data-fixture-id="${fId}" data-league-id="${league.id}">${currentT.readReportBtn}</button><div id="ai-article-${fId}" class="hidden"></div>`; } 
+                        if (String(league.id) === '39') { customSection = `<button class="article-btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-bold mt-4 shadow-sm transition-colors" data-fixture-id="${fId}" data-league-id="${league.id}">${currentT.readReportBtn}</button><div id="ai-article-${fId}" class="hidden"></div>`; }
                         else { customSection = `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.reportExclusive}</div>`; }
                     } else if (notStarted) {
                         if (String(league.id) === '39') {
@@ -452,25 +454,25 @@
                                         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-center space-y-4"><div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">${currentT.statsTitle}</div><div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="poss-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.poss}</span><span id="poss-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="poss-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="poss-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div><div><div class="flex justify-between text-[11px] mb-1.5 font-bold"><span id="shots-home-val-${fId}" class="text-emerald-500">-</span><span class="text-slate-500">${currentT.shots}</span><span id="shots-away-val-${fId}" class="text-blue-500">-</span></div><div class="flex h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800"><div id="shots-home-bar-${fId}" class="bg-emerald-500 transition-all duration-1000 w-[50%]"></div><div id="shots-away-bar-${fId}" class="bg-blue-500 transition-all duration-1000 w-[50%]"></div></div></div></div></div>
                                     ${customSection}
                                 </div></div></div>`;
-                }); 
+                });
                 finalHTML += html + `</div></div>`;
             });
-            
-            container.innerHTML = finalHTML; 
+           
+            container.innerHTML = finalHTML;
             handleRoute();
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            initTheme(); 
-            initLanguage(); 
+            initTheme();
+            initLanguage();
             startLocalClock();
-            fetchLiveMatches(); 
+            fetchLiveMatches();
             setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
-            
+           
             document.querySelectorAll('.date-tab').forEach(btn => { btn.addEventListener('click', (e) => { document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('date-tab-active')); e.currentTarget.classList.add('date-tab-active'); currentDateOffset = parseInt(e.currentTarget.getAttribute('data-offset')); allMatchesCached = []; fetchLiveMatches(true); }); });
             const searchInput = document.getElementById('search-input'); if (searchInput) { searchInput.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentSearchQuery = e.target.value.trim(); filterAndRenderMatches(); }, 300); }); }
             document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme); document.getElementById('btn-refresh').addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
-            
+           
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.custom-dropdown')) {
                     document.querySelectorAll('.drop-options').forEach(d => d.classList.remove('show'));
@@ -478,35 +480,35 @@
             });
 
             document.getElementById('btn-lang-dropdown').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('lang-options-menu'); });
-            
-            document.querySelectorAll('.lang-opt').forEach(btn => { 
-                btn.addEventListener('click', () => { 
-                    document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag'); 
-                    document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name'); 
-                    changeLanguage(btn.getAttribute('data-lang')); 
+           
+            document.querySelectorAll('.lang-opt').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag');
+                    document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name');
+                    changeLanguage(btn.getAttribute('data-lang'));
                     document.getElementById('lang-options-menu').classList.remove('show');
-                }); 
+                });
             });
-            
+           
             document.getElementById('btn-league-dropdown').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('league-options-menu'); });
-            document.querySelectorAll('.league-opt').forEach(btn => { 
-                btn.addEventListener('click', () => { 
-                    selectedLeagueId = btn.getAttribute('data-id'); 
-                    document.getElementById('current-league-flag').src = btn.getAttribute('data-flag'); 
-                    selectedLeagueTranslationKey = btn.getAttribute('data-key'); 
-                    const t = translations[currentLang] || translations['en']; 
-                    document.getElementById('current-league-text').innerText = t[selectedLeagueTranslationKey] || t['allLeagues']; 
-                    filterAndRenderMatches(); 
+            document.querySelectorAll('.league-opt').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedLeagueId = btn.getAttribute('data-id');
+                    document.getElementById('current-league-flag').src = btn.getAttribute('data-flag');
+                    selectedLeagueTranslationKey = btn.getAttribute('data-key');
+                    const t = translations[currentLang] || translations['en'];
+                    document.getElementById('current-league-text').innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
+                    filterAndRenderMatches();
                     document.getElementById('league-options-menu').classList.remove('show');
-                }); 
+                });
             });
-            
+           
             document.getElementById('api-scores-container').addEventListener('change', (e) => { if (e.target.classList.contains('vote-select')) { const fId = e.target.getAttribute('data-fixture-id'); const vote = e.target.value; localStorage.setItem(`vote_${fId}`, vote); showToast(translations[currentLang].voteSaved, 'success'); } });
 
-            document.getElementById('api-scores-container').addEventListener('click', (e) => { 
+            document.getElementById('api-scores-container').addEventListener('click', (e) => {
                 if (e.target.closest('.predict-btn')) { const btn = e.target.closest('.predict-btn'); loadPrediction(btn.getAttribute('data-fixture-id'), btn.getAttribute('data-league-id'), btn.getAttribute('data-home'), btn.getAttribute('data-away'), btn); return; }
                 if (e.target.closest('.article-btn')) { const btn = e.target.closest('.article-btn'); loadMatchArticle(btn.getAttribute('data-fixture-id'), btn.getAttribute('data-league-id'), btn); return; }
-                const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState(null, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState(null, '', '/'); handleRoute(); } else { openMatch(fId); } } 
+                const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState(null, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState(null, '', '/'); handleRoute(); } else { openMatch(fId); } }
             });
             const logoLink = document.getElementById('logo-link'); if(logoLink) { logoLink.addEventListener('click', (e) => { e.preventDefault(); history.pushState(null, '', '/'); handleRoute(); }); }
             window.addEventListener('popstate', handleRoute);
