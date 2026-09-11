@@ -54,7 +54,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
 
-        /* تنسيق صفحات السيو (Privacy, About, Contact) */
+        /* تنسيق صفحات السيو */
         .static-page-content h1 { font-size: 2rem; font-weight: 900; margin-bottom: 1.5rem; color: #10b981; letter-spacing: -0.025em; }
         .static-page-content h2 { font-size: 1.4rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
         .dark .static-page-content h2 { color: #f8fafc; border-bottom-color: #1e293b; }
@@ -63,6 +63,12 @@
         .static-page-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; color: #475569; line-height: 1.8; font-size: 1.05rem; }
         .dark .static-page-content ul { color: #cbd5e1; }
         .static-page-content li { margin-bottom: 0.5rem; }
+
+        /* 🚨 تنسيقات اللعبة (Game Widget) */
+        .game-bar-container { width: 100%; height: 36px; background-color: #e2e8f0; border-radius: 18px; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .dark .game-bar-container { background-color: #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        .game-target-zone { position: absolute; left: 40%; width: 20%; height: 100%; background-color: #10b981; opacity: 0.8; }
+        .game-ball { position: absolute; left: 0%; top: 4px; width: 28px; height: 28px; background: radial-gradient(circle at 30% 30%, #ffffff, #94a3b8); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: left 0.05s linear; display: flex; align-items: center; justify-content: center; font-size: 14px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200">
@@ -163,6 +169,33 @@
             </div>
         </section>
 
+        <!-- 🚨 مسار اللعبة المنعزل (Game Section) -->
+        <section id="page-game" class="lg:col-span-2 hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm text-center" dir="ltr">
+            <h1 class="text-3xl font-black text-emerald-500 mb-2 uppercase tracking-wide">Penalty Shootout ⚽</h1>
+            <p class="text-slate-500 dark:text-slate-400 mb-8 font-medium">Stop the ball exactly in the green zone to score a goal!</p>
+            
+            <div class="max-w-md mx-auto bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50">
+                <!-- شريط اللعبة -->
+                <div class="game-bar-container mb-8">
+                    <div class="game-target-zone"></div>
+                    <div class="game-ball" id="game-ball">⚽</div>
+                </div>
+                
+                <!-- زر التسديد -->
+                <button id="btn-shoot-game" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-2xl py-4 px-8 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest">
+                    SHOOT!
+                </button>
+                
+                <!-- نتيجة التسديدة -->
+                <div id="game-result-msg" class="mt-6 text-2xl font-black h-8 flex items-center justify-center"></div>
+                
+                <!-- النقاط المتتالية -->
+                <div class="mt-6 text-slate-500 dark:text-slate-400 font-bold text-lg uppercase tracking-wider">
+                    Streak: <span id="game-score" class="text-emerald-500 text-2xl ml-2">0</span>
+                </div>
+            </div>
+        </section>
+
         <!-- قسم الصفحات الثابتة -->
         <section id="static-pages-section" class="lg:col-span-2 hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm static-page-content" dir="ltr">
             
@@ -257,7 +290,10 @@
     <footer class="bg-white border-t border-slate-200 dark:bg-slate-900 dark:border-slate-800 py-6 mt-auto">
         <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
             <p>© <span id="current-year">2026</span> ScoreRecap. <span id="footer-rights">All rights reserved.</span></p>
-            <div class="flex gap-4 font-bold">
+            <div class="flex flex-wrap justify-center gap-4 font-bold">
+                <!-- 🚨 تمت إضافة رابط اللعبة هنا -->
+                <a href="/game" class="static-link text-emerald-500 hover:text-emerald-600 transition-colors" id="link-game">Play Game 🎮</a>
+                <span class="hidden md:inline text-slate-300 dark:text-slate-700">|</span>
                 <a href="/about" class="static-link hover:text-emerald-500 transition-colors" id="link-about">About Us</a>
                 <a href="/contact" class="static-link hover:text-emerald-500 transition-colors" id="link-contact">Contact Us</a>
                 <a href="/privacy" class="static-link hover:text-emerald-500 transition-colors" id="link-privacy">Privacy Policy</a>
@@ -306,15 +342,15 @@
         }
 
         const translations = {
-            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "Top Leagues", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Loading match report...", reportError: "Could not load the report.", reportExclusive: "Match reports are exclusive to the Premier League.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server", predictVote: "Your Prediction...", win: "Win", draw: "Draw", voteSaved: "Prediction saved successfully!", predictBtn: "Predict Winner 🔮", predictLoading: "Analyzing teams...", predictError: "Failed to generate prediction.", predictTitle: "Match Prediction", readReportBtn: "Read Match Report 📰", aboutUs: "About Us", contactUs: "Contact Us", privacyPolicy: "Privacy Policy", liveOnly: "Live Only", copyLink: "Link copied!" },
-            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "أهم الدوريات", ucl: "دوري أبطال أوروبا", caf: "دوري أبطال أفريقيا", champ: "دوري البطولة الإنجليزية", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", ligue1: "الدوري الفرنسي", bundes: "الدوري الألماني", saudi: "الدوري السعودي", mls: "الدوري الأمريكي", botola: "البطولة المغربية", swe: "الدوري السويدي", nor: "الدوري النرويجي", den: "الدوري الدنماركي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري تحميل تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportExclusive: "تقارير المباريات متاحة حصرياً للدوري الإنجليزي.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم", predictVote: "توقع نتيجتك...", win: "فوز", draw: "تعادل", voteSaved: "تم حفظ توقعك بنجاح!", predictBtn: "توقع الفائز 🔮", predictLoading: "جاري تحليل الفريقين...", predictError: "تعذر توليد التوقع.", predictTitle: "توقع نتيجة المباراة", readReportBtn: "اقرأ تقرير المباراة 📰", aboutUs: "من نحن", contactUs: "اتصل بنا", privacyPolicy: "سياسة الخصوصية", liveOnly: "مباشر فقط", copyLink: "تم نسخ الرابط!" },
-            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Ligues Majeures", ucl: "Champions League", caf: "Ligue des Champions de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Chargement du rapport...", reportError: "Échec du chargement.", reportExclusive: "Exclusif à la Premier League.", reportTitle: "Rapport et Analyse", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher...", toastSuccess: "Mis à jour", toastError: "Échec de connexion", predictVote: "Votre Prédiction...", win: "Victoire", draw: "Nul", voteSaved: "Enregistrée !", predictBtn: "Prédire le Vainqueur 🔮", predictLoading: "Analyse...", predictError: "Échec.", predictTitle: "Prédiction", readReportBtn: "Lire le Rapport 📰", aboutUs: "À Propos", contactUs: "Contact", privacyPolicy: "Confidentialité", liveOnly: "En direct", copyLink: "Lien copié !" },
-            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Ligas Principales", ucl: "Champions League", caf: "Liga de Campeones de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Liga Saudí", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Cargando informe del partido...", reportError: "Error al cargar el informe.", reportExclusive: "Los informes de partidos son exclusivos de la Premier League.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión", predictVote: "Tu Predicción...", win: "Victoria", draw: "Empate", voteSaved: "¡Predicción guardada!", predictBtn: "Predecir Ganador 🔮", predictLoading: "Analizando equipos...", predictError: "Error en la predicción.", predictTitle: "Predicción del Partido", readReportBtn: "Leer Informe del Partido 📰", aboutUs: "Sobre Nosotros", contactUs: "Contacto", privacyPolicy: "Privacidad", liveOnly: "Solo en vivo", copyLink: "¡Enlace copiado!" },
-            de: { title: "ScoreRecap | Ergebnisse", live: "LIVE", yesterday: "Gestern", todayTab: "Heute", tomorrow: "Morgen", allLeagues: "Top-Ligen", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Wird geladen...", noMatches: "Keine Spiele gefunden.", error: "Fehler beim Laden der Daten.", ad: "Werbung", adBanner: "Werbebanner-Platz", rights: "Alle Rechte vorbehalten.", ended: "Beendet", noEvents: "Keine Schlüsselereignisse.", reportLoading: "Spielbericht wird geladen...", reportError: "Bericht konnte nicht geladen werden.", reportExclusive: "Spielberichte gibt es exklusiv für die Premier League.", reportTitle: "Spielbericht & Taktische Analyse", statsTitle: "LIVE SPIELSTATISTIKEN", poss: "Ballbesitz", shots: "Schüsse", search: "Nach einem Team suchen...", toastSuccess: "Daten erfolgreich aktualisiert", toastError: "Verbindung zum Server fehlgeschlagen", predictVote: "Deine Vorhersage...", win: "Sieg", draw: "Unentschieden", voteSaved: "Vorhersage erfolgreich gespeichert!", predictBtn: "Gewinner Vorhersagen 🔮", predictLoading: "Teams werden analysiert...", predictError: "Fehler bei der Vorhersage.", predictTitle: "Spielvorhersage", readReportBtn: "Spielbericht lesen 📰", aboutUs: "Über Uns", contactUs: "Kontakt", privacyPolicy: "Datenschutz", liveOnly: "Nur Live", copyLink: "Link kopiert!" },
-            it: { title: "ScoreRecap | Risultati", live: "DIRETTA", yesterday: "Ieri", todayTab: "Oggi", tomorrow: "Domani", allLeagues: "Campionati Principali", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Lega Saudita", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Caricamento...", noMatches: "Nessuna partita trovata.", error: "Errore durante il caricamento dei dati.", ad: "Pubblicità", adBanner: "Spazio Banner Pubblicitario", rights: "Tutti i diritti riservati.", ended: "Finita", noEvents: "Nessun evento chiave.", reportLoading: "Caricamento del report della partita...", reportError: "Impossibile caricare il report.", reportExclusive: "I report delle partite sono un'esclusiva della Premier League.", reportTitle: "Report e Analisi Tattica", statsTitle: "STATISTICHE IN DIRETTA", poss: "Possesso", shots: "Tiri", search: "Cerca una squadra...", toastSuccess: "Dati aggiornati con successo", toastError: "Impossibile connettersi al server", predictVote: "Il tuo pronostico...", win: "Vittoria", draw: "Pareggio", voteSaved: "Pronostico salvato con successo!", predictBtn: "Pronostica Vincitore 🔮", predictLoading: "Analisi delle squadre...", predictError: "Impossibile generare il pronostico.", predictTitle: "Pronostico Partita", readReportBtn: "Leggi Report Partita 📰", aboutUs: "Chi Siamo", contactUs: "Contatti", privacyPolicy: "Privacy", liveOnly: "Solo Diretta", copyLink: "Link copiato!" },
-            sv: { title: "ScoreRecap | Resultat", live: "LIVE", yesterday: "Igår", todayTab: "Idag", tomorrow: "Imorgon", allLeagues: "Toppligor", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Laddar...", noMatches: "Inga matcher hittades.", error: "Fel vid laddning av data.", ad: "Annons", adBanner: "Annonsplats", rights: "Alla rättigheter förbehållna.", ended: "Avslutad", noEvents: "Inga viktiga händelser.", reportLoading: "Laddar matchrapport...", reportError: "Kunde inte ladda rapporten.", reportExclusive: "Matchrapporter är exklusiva för Premier League.", reportTitle: "Matchrapport & Taktisk Analys", statsTitle: "LIVE MATCHSTATISTIK", poss: "Bollinnehav", shots: "Skott", search: "Sök efter ett lag...", toastSuccess: "Data har uppdaterats", toastError: "Det gick inte att ansluta till servern", predictVote: "Din förutsägelse...", win: "Vinst", draw: "Oavgjort", voteSaved: "Förutsägelsen sparades!", predictBtn: "Förutsäg Vinnare 🔮", predictLoading: "Analyserar lag...", predictError: "Kunde inte generera förutsägelse.", predictTitle: "Matchförutsägelse", readReportBtn: "Läs Matchrapport 📰", aboutUs: "Om Oss", contactUs: "Kontakt", privacyPolicy: "Integritetspolicy", liveOnly: "Endast Live", copyLink: "Länk kopierad!" },
-            no: { title: "ScoreRecap | Resultater", live: "LIVE", yesterday: "I går", todayTab: "I dag", tomorrow: "I morgen", allLeagues: "Toppligaer", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Laster...", noMatches: "Ingen kamper funnet.", error: "Feil ved lasting av data.", ad: "Annonse", adBanner: "Annonseplass", rights: "Med enerett.", ended: "Avsluttet", noEvents: "Ingen nøkkelhendelser.", reportLoading: "Laster kamprapport...", reportError: "Kunne ikke laste rapporten.", reportExclusive: "Kamprapporter er eksklusive for Premier League.", reportTitle: "Kamprapport & Taktisk Analyse", statsTitle: "LIVE KAMPSTATISTIKK", poss: "Ballbesittelse", shots: "Skudd", search: "Søk etter et lag...", toastSuccess: "Data oppdatert", toastError: "Kunne ikke koble til serveren", predictVote: "Din spådom...", win: "Seier", draw: "Uavgjort", voteSaved: "Spådom lagret!", predictBtn: "Spå Vinner 🔮", predictLoading: "Analyserer lag...", predictError: "Kunne ikke generere spådom.", predictTitle: "Kampspådom", readReportBtn: "Les Kamprapport 📰", aboutUs: "Om Oss", contactUs: "Kontakt", privacyPolicy: "Personvern", liveOnly: "Kun Live", copyLink: "Lenke kopiert!" },
-            da: { title: "ScoreRecap | Resultater", live: "LIVE", yesterday: "I går", todayTab: "I dag", tomorrow: "I morgen", allLeagues: "Topligaer", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Indlæser...", noMatches: "Ingen kampe fundet.", error: "Fejl ved indlæsning af data.", ad: "Annonce", adBanner: "Annonceplads", rights: "Alle rettigheder forbeholdes.", ended: "Afsluttet", noEvents: "Ingen nøglebegivenheder.", reportLoading: "Indlæser kamprapport...", reportError: "Kunne ikke indlæse rapporten.", reportExclusive: "Kamprapporter er eksklusive for Premier League.", reportTitle: "Kamprapport & Taktisk Analyse", statsTitle: "LIVE KAMPSTATISTIK", poss: "Boldbesiddelse", shots: "Skud", search: "Søg efter et hold...", toastSuccess: "Data opdateret", toastError: "Kunne ikke oprette forbindelse til serveren", predictVote: "Din forudsigelse...", win: "Sejr", draw: "Uafgjort", voteSaved: "Forudsigelse gemt!", predictBtn: "Forudsig Vinder 🔮", predictLoading: "Analyserer hold...", predictError: "Kunne ikke generere forudsigelse.", predictTitle: "Kampforudsigelse", readReportBtn: "Læs Kamprapport 📰", aboutUs: "Om Os", contactUs: "Kontakt", privacyPolicy: "Privatlivspolitik", liveOnly: "Kun Live", copyLink: "Link kopieret!" }
+            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "Top Leagues", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Loading match report...", reportError: "Could not load the report.", reportExclusive: "Match reports are exclusive to the Premier League.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server", predictVote: "Your Prediction...", win: "Win", draw: "Draw", voteSaved: "Prediction saved successfully!", predictBtn: "Predict Winner 🔮", predictLoading: "Analyzing teams...", predictError: "Failed to generate prediction.", predictTitle: "Match Prediction", readReportBtn: "Read Match Report 📰", aboutUs: "About Us", contactUs: "Contact Us", privacyPolicy: "Privacy Policy", liveOnly: "Live Only", copyLink: "Link copied!", gamePlay: "Play Game 🎮" },
+            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "أهم الدوريات", ucl: "دوري أبطال أوروبا", caf: "دوري أبطال أفريقيا", champ: "دوري البطولة الإنجليزية", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", ligue1: "الدوري الفرنسي", bundes: "الدوري الألماني", saudi: "الدوري السعودي", mls: "الدوري الأمريكي", botola: "البطولة المغربية", swe: "الدوري السويدي", nor: "الدوري النرويجي", den: "الدوري الدنماركي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري تحميل تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportExclusive: "تقارير المباريات متاحة حصرياً للدوري الإنجليزي.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم", predictVote: "توقع نتيجتك...", win: "فوز", draw: "تعادل", voteSaved: "تم حفظ توقعك بنجاح!", predictBtn: "توقع الفائز 🔮", predictLoading: "جاري تحليل الفريقين...", predictError: "تعذر توليد التوقع.", predictTitle: "توقع نتيجة المباراة", readReportBtn: "اقرأ تقرير المباراة 📰", aboutUs: "من نحن", contactUs: "اتصل بنا", privacyPolicy: "سياسة الخصوصية", liveOnly: "مباشر فقط", copyLink: "تم نسخ الرابط!", gamePlay: "العب الآن 🎮" },
+            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Ligues Majeures", ucl: "Champions League", caf: "Ligue des Champions de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Chargement du rapport...", reportError: "Échec du chargement.", reportExclusive: "Exclusif à la Premier League.", reportTitle: "Rapport et Analyse", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher...", toastSuccess: "Mis à jour", toastError: "Échec de connexion", predictVote: "Votre Prédiction...", win: "Victoire", draw: "Nul", voteSaved: "Enregistrée !", predictBtn: "Prédire le Vainqueur 🔮", predictLoading: "Analyse...", predictError: "Échec.", predictTitle: "Prédiction", readReportBtn: "Lire le Rapport 📰", aboutUs: "À Propos", contactUs: "Contact", privacyPolicy: "Confidentialité", liveOnly: "En direct", copyLink: "Lien copié !", gamePlay: "Jouer 🎮" },
+            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Ligas Principales", ucl: "Champions League", caf: "Liga de Campeones de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Liga Saudí", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Cargando informe del partido...", reportError: "Error al cargar el informe.", reportExclusive: "Los informes de partidos son exclusivos de la Premier League.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión", predictVote: "Tu Predicción...", win: "Victoria", draw: "Empate", voteSaved: "¡Predicción guardada!", predictBtn: "Predecir Ganador 🔮", predictLoading: "Analizando equipos...", predictError: "Error en la predicción.", predictTitle: "Predicción del Partido", readReportBtn: "Leer Informe del Partido 📰", aboutUs: "Sobre Nosotros", contactUs: "Contacto", privacyPolicy: "Privacidad", liveOnly: "Solo en vivo", copyLink: "¡Enlace copiado!", gamePlay: "Jugar 🎮" },
+            de: { title: "ScoreRecap | Ergebnisse", live: "LIVE", yesterday: "Gestern", todayTab: "Heute", tomorrow: "Morgen", allLeagues: "Top-Ligen", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Wird geladen...", noMatches: "Keine Spiele gefunden.", error: "Fehler beim Laden der Daten.", ad: "Werbung", adBanner: "Werbebanner-Platz", rights: "Alle Rechte vorbehalten.", ended: "Beendet", noEvents: "Keine Schlüsselereignisse.", reportLoading: "Spielbericht wird geladen...", reportError: "Bericht konnte nicht geladen werden.", reportExclusive: "Spielberichte gibt es exklusiv für die Premier League.", reportTitle: "Spielbericht & Taktische Analyse", statsTitle: "LIVE SPIELSTATISTIKEN", poss: "Ballbesitz", shots: "Schüsse", search: "Nach einem Team suchen...", toastSuccess: "Daten erfolgreich aktualisiert", toastError: "Verbindung zum Server fehlgeschlagen", predictVote: "Deine Vorhersage...", win: "Sieg", draw: "Unentschieden", voteSaved: "Vorhersage erfolgreich gespeichert!", predictBtn: "Gewinner Vorhersagen 🔮", predictLoading: "Teams werden analysiert...", predictError: "Fehler bei der Vorhersage.", predictTitle: "Spielvorhersage", readReportBtn: "Spielbericht lesen 📰", aboutUs: "Über Uns", contactUs: "Kontakt", privacyPolicy: "Datenschutz", liveOnly: "Nur Live", copyLink: "Link kopiert!", gamePlay: "Spielen 🎮" },
+            it: { title: "ScoreRecap | Risultati", live: "DIRETTA", yesterday: "Ieri", todayTab: "Oggi", tomorrow: "Domani", allLeagues: "Campionati Principali", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Lega Saudita", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Caricamento...", noMatches: "Nessuna partita trovata.", error: "Errore durante il caricamento dei dati.", ad: "Pubblicità", adBanner: "Spazio Banner Pubblicitario", rights: "Tutti i diritti riservati.", ended: "Finita", noEvents: "Nessun evento chiave.", reportLoading: "Caricamento del report della partita...", reportError: "Impossibile caricare il report.", reportExclusive: "I report delle partite sono un'esclusiva della Premier League.", reportTitle: "Report e Analisi Tattica", statsTitle: "STATISTICHE IN DIRETTA", poss: "Possesso", shots: "Tiri", search: "Cerca una squadra...", toastSuccess: "Dati aggiornati con successo", toastError: "Impossibile connettersi al server", predictVote: "Il tuo pronostico...", win: "Vittoria", draw: "Pareggio", voteSaved: "Pronostico salvato con successo!", predictBtn: "Pronostica Vincitore 🔮", predictLoading: "Analisi delle squadre...", predictError: "Impossibile generare il pronostico.", predictTitle: "Pronostico Partita", readReportBtn: "Leggi Report Partita 📰", aboutUs: "Chi Siamo", contactUs: "Contatti", privacyPolicy: "Privacy", liveOnly: "Solo Diretta", copyLink: "Link copiato!", gamePlay: "Giocare 🎮" },
+            sv: { title: "ScoreRecap | Resultat", live: "LIVE", yesterday: "Igår", todayTab: "Idag", tomorrow: "Imorgon", allLeagues: "Toppligor", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Laddar...", noMatches: "Inga matcher hittades.", error: "Fel vid laddning av data.", ad: "Annons", adBanner: "Annonsplats", rights: "Alla rättigheter förbehållna.", ended: "Avslutad", noEvents: "Inga viktiga händelser.", reportLoading: "Laddar matchrapport...", reportError: "Kunde inte ladda rapporten.", reportExclusive: "Matchrapporter är exklusiva för Premier League.", reportTitle: "Matchrapport & Taktisk Analys", statsTitle: "LIVE MATCHSTATISTIK", poss: "Bollinnehav", shots: "Skott", search: "Sök efter ett lag...", toastSuccess: "Data har uppdaterats", toastError: "Det gick inte att ansluta till servern", predictVote: "Din förutsägelse...", win: "Vinst", draw: "Oavgjort", voteSaved: "Förutsägelsen sparades!", predictBtn: "Förutsäg Vinnare 🔮", predictLoading: "Analyserar lag...", predictError: "Kunde inte generera förutsägelse.", predictTitle: "Matchförutsägelse", readReportBtn: "Läs Matchrapport 📰", aboutUs: "Om Oss", contactUs: "Kontakt", privacyPolicy: "Integritetspolicy", liveOnly: "Endast Live", copyLink: "Länk kopierad!", gamePlay: "Spela 🎮" },
+            no: { title: "ScoreRecap | Resultater", live: "LIVE", yesterday: "I går", todayTab: "I dag", tomorrow: "I morgen", allLeagues: "Toppligaer", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Laster...", noMatches: "Ingen kamper funnet.", error: "Feil ved lasting av data.", ad: "Annonse", adBanner: "Annonseplass", rights: "Med enerett.", ended: "Avsluttet", noEvents: "Ingen nøkkelhendelser.", reportLoading: "Laster kamprapport...", reportError: "Kunne ikke laste rapporten.", reportExclusive: "Kamprapporter er eksklusive for Premier League.", reportTitle: "Kamprapport & Taktisk Analyse", statsTitle: "LIVE KAMPSTATISTIKK", poss: "Ballbesittelse", shots: "Skudd", search: "Søk etter et lag...", toastSuccess: "Data oppdatert", toastError: "Kunne ikke koble til serveren", predictVote: "Din spådom...", win: "Seier", draw: "Uavgjort", voteSaved: "Spådom lagret!", predictBtn: "Spå Vinner 🔮", predictLoading: "Analyserer lag...", predictError: "Kunne ikke generere spådom.", predictTitle: "Kampspådom", readReportBtn: "Les Kamprapport 📰", aboutUs: "Om Oss", contactUs: "Kontakt", privacyPolicy: "Personvern", liveOnly: "Kun Live", copyLink: "Lenke kopiert!", gamePlay: "Spille 🎮" },
+            da: { title: "ScoreRecap | Resultater", live: "LIVE", yesterday: "I går", todayTab: "I dag", tomorrow: "I morgen", allLeagues: "Topligaer", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Indlæser...", noMatches: "Ingen kampe fundet.", error: "Fejl ved indlæsning af data.", ad: "Annonce", adBanner: "Annonceplads", rights: "Alle rettigheder forbeholdes.", ended: "Afsluttet", noEvents: "Ingen nøglebegivenheder.", reportLoading: "Indlæser kamprapport...", reportError: "Kunne ikke indlæse rapporten.", reportExclusive: "Kamprapporter er eksklusive for Premier League.", reportTitle: "Kamprapport & Taktisk Analyse", statsTitle: "LIVE KAMPSTATISTIK", poss: "Boldbesiddelse", shots: "Skud", search: "Søg efter et hold...", toastSuccess: "Data opdateret", toastError: "Kunne ikke oprette forbindelse til serveren", predictVote: "Din forudsigelse...", win: "Sejr", draw: "Uafgjort", voteSaved: "Forudsigelse gemt!", predictBtn: "Forudsig Vinder 🔮", predictLoading: "Analyserer hold...", predictError: "Kunne ikke generere forudsigelse.", predictTitle: "Kampforudsigelse", readReportBtn: "Læs Kamprapport 📰", aboutUs: "Om Os", contactUs: "Kontakt", privacyPolicy: "Privatlivspolitik", liveOnly: "Kun Live", copyLink: "Link kopieret!", gamePlay: "Spil 🎮" }
         };
 
         function initTheme() { const htmlTag = document.getElementById('html-tag'); if (localStorage.getItem('app_theme') === 'dark') { htmlTag.classList.add('dark'); document.getElementById('theme-icon-sun').classList.remove('hidden'); document.getElementById('theme-icon-moon').classList.add('hidden'); } }
@@ -337,6 +373,7 @@
             safeSetText('link-about', t.aboutUs || "About Us");
             safeSetText('link-contact', t.contactUs || "Contact Us");
             safeSetText('link-privacy', t.privacyPolicy || "Privacy Policy");
+            safeSetText('link-game', t.gamePlay || "Play Game 🎮");
             safeSetText('txt-live-only', t.liveOnly || "Live Only");
 
             const searchInput = document.getElementById('search-input'); if(searchInput) searchInput.placeholder = t.search;
@@ -403,7 +440,7 @@
             } catch (err) { container.innerHTML = `<p class="text-center text-red-500 text-xs py-1">Error fetching events</p>`; }
         }
 
-        // 🚨 التعديل هنا: التفريق بين البطاقة الصفراء والحمراء
+        // التفريق بين البطاقة الصفراء والحمراء
         function renderEvents(events, container) {
             if (!events || events.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
             let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">`;
@@ -494,6 +531,7 @@
             }
         }
 
+        // 🚨 نظام التوجيه للعبة والصفحات الثابتة
         function handleRoute() {
             const path = window.location.pathname; 
             
@@ -503,11 +541,16 @@
             document.getElementById('page-about').classList.add('hidden');
             document.getElementById('page-contact').classList.add('hidden');
             document.getElementById('page-privacy').classList.add('hidden');
+            document.getElementById('page-game').classList.add('hidden');
 
             if (path.startsWith('/match/')) { 
                 document.getElementById('home-section').classList.remove('hidden');
                 const pathParts = path.split('/'); const fId = pathParts[2]; 
                 if (fId) { setTimeout(() => openMatch(fId, true), 100); return; } 
+            }
+            else if (path === '/game') {
+                document.title = "Play Game | ScoreRecap";
+                document.getElementById('page-game').classList.remove('hidden');
             }
             else if (path === '/about') {
                 document.title = "About Us | ScoreRecap";
@@ -615,6 +658,50 @@
             handleRoute();
         }
 
+        // 🚨 سكربت اللعبة (Penalty Game Logic)
+        let ballPos = 0; let ballDir = 1; let gameInterval; let gameScore = 0; let gameActive = false;
+        function startGame() {
+            if(gameActive) return;
+            gameActive = true;
+            document.getElementById('game-result-msg').innerHTML = '';
+            document.getElementById('btn-shoot-game').innerText = 'SHOOT!';
+            document.getElementById('btn-shoot-game').classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+            document.getElementById('btn-shoot-game').classList.add('bg-blue-600', 'hover:bg-blue-700');
+            
+            // سرعة الكرة تزيد كلما زادت النقاط
+            let speed = 3 + (gameScore * 0.5); 
+            if(speed > 10) speed = 10;
+
+            gameInterval = setInterval(() => {
+                ballPos += ballDir * speed;
+                if(ballPos >= 92) ballDir = -1;
+                if(ballPos <= 0) ballDir = 1;
+                document.getElementById('game-ball').style.left = ballPos + '%';
+            }, 30);
+        }
+
+        function shootBall() {
+            if(!gameActive) { startGame(); return; }
+            clearInterval(gameInterval);
+            gameActive = false;
+            const resEl = document.getElementById('game-result-msg');
+            const scoreEl = document.getElementById('game-score');
+            const btn = document.getElementById('btn-shoot-game');
+            
+            // المنطقة الخضراء من 40% إلى 60%
+            if(ballPos >= 38 && ballPos <= 60) { 
+                resEl.innerHTML = '<span class="text-emerald-500">GOAL! ⚽🔥</span>';
+                gameScore++;
+                btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            } else {
+                resEl.innerHTML = '<span class="text-red-500">MISS! ❌</span>';
+                gameScore = 0;
+            }
+            scoreEl.innerText = gameScore;
+            btn.innerText = "PLAY AGAIN";
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             initTheme();
             initLanguage();
@@ -622,6 +709,14 @@
             fetchLiveMatches();
             setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
            
+            // ربط زر اللعبة
+            const btnShoot = document.getElementById('btn-shoot-game');
+            if(btnShoot) {
+                btnShoot.addEventListener('click', shootBall);
+                // بدء اللعبة تلقائياً إذا كان المسار /game
+                if(window.location.pathname === '/game') startGame();
+            }
+
             document.querySelectorAll('.date-tab').forEach(btn => { btn.addEventListener('click', (e) => { document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('date-tab-active')); e.currentTarget.classList.add('date-tab-active'); currentDateOffset = parseInt(e.currentTarget.getAttribute('data-offset')); allMatchesCached = []; fetchLiveMatches(true); }); });
             const searchInput = document.getElementById('search-input'); if (searchInput) { searchInput.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentSearchQuery = e.target.value.trim(); filterAndRenderMatches(); }, 300); }); }
             document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme); document.getElementById('btn-refresh').addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
@@ -702,6 +797,7 @@
                     if (window.location.pathname !== href) {
                         history.pushState(null, '', href);
                         handleRoute();
+                        if(href === '/game') startGame(); // تشغيل اللعبة عند الدخول
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 });
