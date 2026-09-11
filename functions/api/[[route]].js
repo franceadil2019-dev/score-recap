@@ -47,6 +47,12 @@ export async function onRequest(context) {
     return new Response(dataText, { headers: corsHeaders });
   }
 
+  // خريطة اللغات لترجمة طلبات الذكاء الاصطناعي
+  const langMap = {
+    en: "English", ar: "Arabic", fr: "French", es: "Spanish", de: "German", 
+    it: "Italian", sv: "Swedish", no: "Norwegian", da: "Danish"
+  };
+
   try {
     // 1. جلب قائمة المباريات
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
@@ -70,17 +76,7 @@ export async function onRequest(context) {
       return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 60);
     }
 
-    // 📊 4. جلب جدول الترتيب (Standings) - الميزة التي أضفناها الآن!
-    if (action.includes("fetch-standings") || action.includes("standings")) {
-      const leagueId = url.searchParams.get("league");
-      const season = url.searchParams.get("season") || new Date().getFullYear();
-      if (!leagueId) return new Response(JSON.stringify({ error: "League ID is required" }), { status: 400, headers: corsHeaders });
-      
-      // نحفظ الترتيب لمدة 24 ساعة (86400 ثانية) لتوفير الرصيد
-      return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, `api_standings_${leagueId}_${season}`, 86400);
-    }
-
-    // 5. التوقعات الذكية
+    // 4. التوقعات الذكية (تم تحسينها للغة والتحليل التكتيكي)
     if (action.includes("predict-match") || action.includes("predict")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -90,7 +86,11 @@ export async function onRequest(context) {
       const fixtureId = url.searchParams.get("fixtureId");
       const homeTeam = url.searchParams.get("homeTeam");
       const awayTeam = url.searchParams.get("awayTeam");
-      const kvKey = `predict_${fixtureId}_en`;
+      const languageCode = url.searchParams.get("language") || "en";
+      const targetLang = langMap[languageCode] || "English";
+      
+      // الكاش الآن يعتمد على رقم المباراة + اللغة
+      const kvKey = `predict_v2_${fixtureId}_${languageCode}`;
 
       if (env.SPORTS_KV) {
         const cachedPrediction = await env.SPORTS_KV.get(kvKey);
@@ -103,7 +103,12 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
-      const prompt = `Act as an expert football analyst. Write a short, engaging prediction for the upcoming Premier League match between ${homeTeam} and ${awayTeam}. Provide a brief reason analyzing both teams' current form, and predict the final score. Return ONLY valid HTML (use <p> and <strong> for the result). Do not wrap inside markdown code blocks.`;
+      // 🚨 الأمر الجديد: نمنع النتيجة الرقمية ونطلب التحليل باللغة المطلوبة
+      const prompt = `Act as an expert football analyst. Write a short, engaging tactical preview for the upcoming Premier League match between ${homeTeam} and ${awayTeam}. 
+      Focus on team form, key tactical battles, and who has the upper hand. 
+      IMPORTANT: DO NOT predict an exact numerical score (like 2-1). Just analyze the expected flow of the game and the likely outcome (e.g., a tight draw, a comfortable home win, etc.).
+      Write the ENTIRE response perfectly in ${targetLang}.
+      Return ONLY valid HTML (use <p> and <strong> for emphasis). Do not wrap inside markdown code blocks.`;
 
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
@@ -113,8 +118,7 @@ export async function onRequest(context) {
 
       const aiData = await aiRes.json();
       if (!aiRes.ok || !aiData.candidates) {
-        const googleError = aiData.error?.message || "Gemini API Error";
-        return new Response(JSON.stringify({ error: `Gemini Error: ${googleError}` }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: `Gemini Error` }), { status: 500, headers: corsHeaders });
       }
 
       const predictionText = aiData.candidates[0].content.parts[0].text;
@@ -125,7 +129,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 6. تقرير المباراة
+    // 5. تقرير المباراة (تم إضافة دعم اللغات أيضاً)
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -136,7 +140,10 @@ export async function onRequest(context) {
       const matchStr = url.searchParams.get("matchStr");
       const score = url.searchParams.get("score");
       const events = url.searchParams.get("events");
-      const kvKey = `recap_${fixtureId}_en`;
+      const languageCode = url.searchParams.get("language") || "en";
+      const targetLang = langMap[languageCode] || "English";
+      
+      const kvKey = `recap_v2_${fixtureId}_${languageCode}`;
 
       if (env.SPORTS_KV) {
         const cachedArticle = await env.SPORTS_KV.get(kvKey);
@@ -149,7 +156,9 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
-      const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging match report for the Premier League match: ${matchStr}. Final Score: ${score}. Key Events: ${events}. Include: <h2>Title</h2>, <p>Introduction</p>, <p>Tactical Analysis</p>, <h3>Turning Point</h3> with <ul><li>...</li></ul>, and a strong conclusion. Return ONLY clean HTML code without markdown wrappers.`;
+      const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging match report for the Premier League match: ${matchStr}. Final Score: ${score}. Key Events: ${events}. Include: <h2>Title</h2>, <p>Introduction</p>, <p>Tactical Analysis</p>, <h3>Turning Point</h3> with <ul><li>...</li></ul>, and a strong conclusion. 
+      Write the ENTIRE article perfectly in ${targetLang}.
+      Return ONLY clean HTML code without markdown wrappers.`;
 
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
@@ -159,8 +168,7 @@ export async function onRequest(context) {
 
       const aiData = await aiRes.json();
       if (!aiRes.ok || !aiData.candidates) {
-        const googleError = aiData.error?.message || "Gemini API Error";
-        return new Response(JSON.stringify({ error: `Gemini Error: ${googleError}` }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: `Gemini Error` }), { status: 500, headers: corsHeaders });
       }
 
       const articleText = aiData.candidates[0].content.parts[0].text;
