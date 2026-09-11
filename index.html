@@ -73,11 +73,7 @@
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <a href="/" class="text-xl md:text-2xl font-black text-emerald-500 tracking-tight whitespace-nowrap" id="logo-link">SCORE<span class="text-slate-800 dark:text-white">RECAP</span></a>
-                <!-- زر LIVE بجانب الشعار -->
-                <span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 hidden md:flex shadow-inner" aria-label="Live Matches Status">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 flex live-dot"></span>
-                    <span id="badge-live">LIVE</span>
-                </span>
+                <!-- تم حذف كلمة LIVE الزائدة من هنا -->
                 <button id="btn-refresh" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-all active:scale-95" aria-label="Refresh matches">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 </button>
@@ -114,7 +110,6 @@
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- القسم الرئيسي (المباريات) -->
         <section id="home-section" class="lg:col-span-2 space-y-4">
             <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-none pb-1">
                 <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="-1" id="tab-yesterday">Yesterday</button>
@@ -131,7 +126,6 @@
                         </div>
                         <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <!-- 🚨 إعادة جميع الدوريات للقائمة المنسدلة -->
                     <div id="league-options-menu" class="drop-options">
                         <button class="drop-opt league-opt" data-id="all" data-flag="https://media.api-sports.io/football/leagues/2.png" data-key="allLeagues"><img src="https://media.api-sports.io/football/leagues/2.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-all">Top Leagues</span></button>
                         <button class="drop-opt league-opt" data-id="253" data-flag="https://media.api-sports.io/football/leagues/253.png" data-key="mls"><img src="https://media.api-sports.io/football/leagues/253.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-mls">MLS</span></button>
@@ -151,7 +145,6 @@
                     </div>
                 </div>
 
-                <!-- شريط البحث + زر مباشر فقط -->
                 <div class="flex items-center gap-2 w-full flex-grow">
                     <div class="relative w-full flex-grow">
                         <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -251,7 +244,6 @@
             </div>
         </section>
 
-        <!-- الإعلانات الجانبية -->
         <aside class="space-y-6">
             <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl p-4 text-center sticky top-24 shadow-sm">
                 <span id="ad-label" class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Advertisement</span>
@@ -262,7 +254,6 @@
         </aside>
     </main>
 
-    <!-- الفوتر مع الروابط الجديدة -->
     <footer class="bg-white border-t border-slate-200 dark:bg-slate-900 dark:border-slate-800 py-6 mt-auto">
         <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
             <p>© <span id="current-year">2026</span> ScoreRecap. <span id="footer-rights">All rights reserved.</span></p>
@@ -283,7 +274,6 @@
         function saveToCache(key, data) { sessionStorage.setItem(key, JSON.stringify(data)); }
         let loadedDetails = new Set();
 
-        // 🚨 إعادة جميع الدوريات هنا
         const TOP_LEAGUES = ["2", "12", "39", "40", "61", "78", "135", "140", "307", "253", "200", "113", "69", "119"];
 
         const teamNamesAR = {
@@ -339,7 +329,7 @@
             localStorage.setItem('site_lang', lang);
             const t = translations[lang] || translations['en'];
             document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
-            safeSetText('badge-live', t.live); safeSetText('tab-yesterday', t.yesterday); safeSetText('tab-today', t.todayTab); safeSetText('tab-tomorrow', t.tomorrow);
+            safeSetText('tab-yesterday', t.yesterday); safeSetText('tab-today', t.todayTab); safeSetText('tab-tomorrow', t.tomorrow);
             safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl); safeSetText('opt-caf', t.caf); safeSetText('opt-champ', t.champ); safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie); safeSetText('opt-ligue1', t.ligue1); safeSetText('opt-bundes', t.bundes);
             safeSetText('opt-saudi', t.saudi); safeSetText('opt-mls', t.mls); safeSetText('opt-botola', t.botola); safeSetText('opt-swe', t.swe); safeSetText('opt-nor', t.nor); safeSetText('opt-den', t.den);
             safeSetText('ad-label', t.ad); safeSetText('ad-banner', t.adBanner); safeSetText('footer-rights', t.rights);
@@ -545,7 +535,6 @@
 
             if (currentSearchQuery) { const query = currentSearchQuery.toLowerCase(); filtered = filtered.filter(m => m.teams.home.name.toLowerCase().includes(query) || m.teams.away.name.toLowerCase().includes(query)); }
             
-            // 🚨 تطبيق فلتر المباريات المباشرة فقط
             if (showLiveOnly) {
                 filtered = filtered.filter(m => ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(m.fixture.status.short));
             }
@@ -602,7 +591,6 @@
                             <div id="details-${fId}" class="hidden px-4 pb-5 pt-2 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
                                 <div class="max-w-2xl mx-auto mt-2 relative">
                                     
-                                    <!-- 🚨 زر المشاركة الذكي -->
                                     <button class="share-btn absolute top-2 end-2 p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full text-slate-500 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors shadow-sm z-10" data-title="${homeName} vs ${awayName} | ScoreRecap" data-url="${matchUrl}" title="Share">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
                                     </button>
@@ -631,7 +619,6 @@
             const searchInput = document.getElementById('search-input'); if (searchInput) { searchInput.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentSearchQuery = e.target.value.trim(); filterAndRenderMatches(); }, 300); }); }
             document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme); document.getElementById('btn-refresh').addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
            
-            // 🚨 تفعيل زر "مباشر فقط"
             document.getElementById('btn-live-filter').addEventListener('click', (e) => {
                 showLiveOnly = !showLiveOnly;
                 const dot = document.getElementById('live-filter-dot');
@@ -682,7 +669,6 @@
             document.getElementById('api-scores-container').addEventListener('change', (e) => { if (e.target.classList.contains('vote-select')) { const fId = e.target.getAttribute('data-fixture-id'); const vote = e.target.value; localStorage.setItem(`vote_${fId}`, vote); showToast(translations[currentLang].voteSaved, 'success'); } });
 
             document.getElementById('api-scores-container').addEventListener('click', (e) => {
-                // 🚨 تفعيل زر المشاركة
                 if (e.target.closest('.share-btn')) {
                     const btn = e.target.closest('.share-btn');
                     const shareTitle = btn.getAttribute('data-title');
