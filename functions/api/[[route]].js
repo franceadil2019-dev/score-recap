@@ -76,7 +76,7 @@ export async function onRequest(context) {
       return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 60);
     }
 
-    // 4. التوقعات الذكية (تم تحسينها للغة والتحليل التكتيكي)
+    // 4. التوقعات الذكية (تبقى لمدة 24 ساعة لأنها تفقد قيمتها بعد بدء المباراة)
     if (action.includes("predict-match") || action.includes("predict")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -89,7 +89,6 @@ export async function onRequest(context) {
       const languageCode = url.searchParams.get("language") || "en";
       const targetLang = langMap[languageCode] || "English";
       
-      // الكاش الآن يعتمد على رقم المباراة + اللغة
       const kvKey = `predict_v2_${fixtureId}_${languageCode}`;
 
       if (env.SPORTS_KV) {
@@ -103,7 +102,6 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
-      // 🚨 الأمر الجديد: نمنع النتيجة الرقمية ونطلب التحليل باللغة المطلوبة
       const prompt = `Act as an expert football analyst. Write a short, engaging tactical preview for the upcoming Premier League match between ${homeTeam} and ${awayTeam}. 
       Focus on team form, key tactical battles, and who has the upper hand. 
       IMPORTANT: DO NOT predict an exact numerical score (like 2-1). Just analyze the expected flow of the game and the likely outcome (e.g., a tight draw, a comfortable home win, etc.).
@@ -129,7 +127,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 5. تقرير المباراة (تم إضافة دعم اللغات أيضاً)
+    // 5. تقرير المباراة (تم التعديل: حفظ المقال للأبد من أجل أدسنس والـ SEO)
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -172,8 +170,10 @@ export async function onRequest(context) {
       }
 
       const articleText = aiData.candidates[0].content.parts[0].text;
+      
+      // 🚨 السحر هنا: قمنا بحذف الـ expirationTtl ليتم حفظ المقال للأبد!
       if (env.SPORTS_KV) {
-        waitUntil(env.SPORTS_KV.put(kvKey, articleText, { expirationTtl: 604800 })); 
+        waitUntil(env.SPORTS_KV.put(kvKey, articleText)); 
       }
 
       return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
