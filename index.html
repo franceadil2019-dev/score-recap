@@ -206,6 +206,30 @@
                 </div>
             </div>
 
+            <!-- اللعبة الثالثة: Flick Shoot -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm text-center">
+                <h1 class="text-2xl font-black text-amber-500 mb-2 uppercase tracking-wide">Flick Shoot 🎯</h1>
+                <p class="text-slate-500 dark:text-slate-400 mb-6 font-medium text-sm">Tap inside the goal to shoot! Avoid the moving goalkeeper.</p>
+                <div class="max-w-md mx-auto">
+                    <div class="flex justify-between items-center mb-3 px-2">
+                        <div class="text-slate-600 dark:text-slate-300 font-bold text-lg uppercase tracking-wider">Goals: <span id="fs-score" class="text-amber-500 text-2xl ml-1">0</span></div>
+                        <div id="fs-msg" class="h-8 flex items-center justify-center font-bold text-lg"></div>
+                    </div>
+                    <!-- مساحة اللعب -->
+                    <div id="fs-area" class="w-full h-64 bg-green-500 dark:bg-green-700 relative overflow-hidden rounded-xl border-4 border-slate-300 dark:border-slate-600 cursor-pointer shadow-inner" onclick="shootFlick(event)">
+                        <!-- خط المرمى -->
+                        <div class="absolute top-0 left-[20%] w-[60%] h-16 border-b-4 border-l-4 border-r-4 border-white/50 flex items-start justify-center pt-2">
+                            <span class="text-white/30 text-xs font-bold tracking-widest">GOAL ZONE</span>
+                        </div>
+                        <!-- الحارس -->
+                        <div id="fs-gk" class="absolute top-10 left-[40%] w-[20%] h-6 bg-red-500 rounded flex items-center justify-center text-white text-[10px] font-black shadow-md z-10">GK</div>
+                        <!-- الكرة -->
+                        <div id="fs-ball" class="absolute bottom-4 left-[50%] -translate-x-1/2 text-3xl transition-all duration-300 ease-out z-20" style="transform: translate(-50%, 0) scale(1);">⚽</div>
+                    </div>
+                    <button id="btn-fs-reset" class="w-full mt-4 bg-amber-500 hover:bg-amber-600 text-white font-black text-xl py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest hidden" onclick="resetFlick()">PLAY AGAIN</button>
+                </div>
+            </div>
+
         </section>
 
         <!-- قسم الصفحات الثابتة -->
@@ -525,6 +549,7 @@
             else if (path === '/game') {
                 document.title = "Game Zone | ScoreRecap";
                 document.getElementById('page-game').classList.remove('hidden');
+                startFlickGK(); // بدء لعبة Flick Shoot عند دخول الصفحة
             }
             else if (path === '/about') {
                 document.title = "About Us | ScoreRecap";
@@ -689,6 +714,92 @@
             document.getElementById('j-score').innerText = j_score;
         }
 
+        // اللعبة الثالثة: Flick Shoot
+        let fs_score = 0, fs_gkPos = 40, fs_gkDir = 1, fs_gkInterval, fs_isShooting = false;
+
+        function startFlickGK() {
+            if(fs_gkInterval) clearInterval(fs_gkInterval);
+            fs_gkInterval = setInterval(() => {
+                let speed = 1.5 + (fs_score * 0.3); // الحارس يسرع مع كل هدف
+                if(speed > 6) speed = 6; // الحد الأقصى للسرعة
+                fs_gkPos += fs_gkDir * speed;
+                if(fs_gkPos >= 80) fs_gkDir = -1; // عرض الحارس 20%، لذا أقصى يمين هو 80%
+                if(fs_gkPos <= 0) fs_gkDir = 1;
+                document.getElementById('fs-gk').style.left = fs_gkPos + '%';
+            }, 30);
+        }
+
+        function shootFlick(e) {
+            if (fs_isShooting) return;
+            fs_isShooting = true;
+
+            const area = document.getElementById('fs-area');
+            const ball = document.getElementById('fs-ball');
+            const rect = area.getBoundingClientRect();
+            
+            // حساب مكان الضغطة
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            // تحويلها إلى نسب مئوية
+            const targetX = (clickX / rect.width) * 100;
+            const targetY = (clickY / rect.height) * 100;
+
+            // تحريك الكرة نحو الهدف وتصغيرها لتبدو وكأنها تبتعد
+            ball.style.left = targetX + '%';
+            ball.style.bottom = (100 - targetY) + '%';
+            ball.style.transform = 'translate(-50%, 50%) scale(0.5)';
+
+            // التحقق من النتيجة بعد انتهاء حركة الكرة (300 ملي ثانية)
+            setTimeout(() => {
+                const gk = document.getElementById('fs-gk');
+                const gkRect = gk.getBoundingClientRect();
+                const ballRect = ball.getBoundingClientRect();
+
+                // التحقق من الاصطدام بالحارس
+                const isSaved = !(ballRect.right < gkRect.left || ballRect.left > gkRect.right || ballRect.bottom < gkRect.top || ballRect.top > gkRect.bottom);
+                const msg = document.getElementById('fs-msg');
+
+                if (isSaved) {
+                    msg.innerHTML = '<span class="text-red-500">SAVED! 🧤</span>';
+                    fs_score = 0;
+                    endFlick();
+                } else if (targetX > 20 && targetX < 80 && targetY < 30) {
+                    // إذا كانت داخل المرمى ولم تصطدم بالحارس
+                    msg.innerHTML = '<span class="text-emerald-500">GOAL! ⚽</span>';
+                    fs_score++;
+                    document.getElementById('fs-score').innerText = fs_score;
+                    setTimeout(resetFlickBall, 1000);
+                } else {
+                    // إذا سدد خارج المرمى
+                    msg.innerHTML = '<span class="text-red-500">MISS! ❌</span>';
+                    fs_score = 0;
+                    endFlick();
+                }
+            }, 300); 
+        }
+
+        function resetFlickBall() {
+            const ball = document.getElementById('fs-ball');
+            ball.style.left = '50%';
+            ball.style.bottom = '1rem';
+            ball.style.transform = 'translate(-50%, 0) scale(1)';
+            document.getElementById('fs-msg').innerHTML = '';
+            fs_isShooting = false;
+        }
+
+        function endFlick() {
+            clearInterval(fs_gkInterval);
+            document.getElementById('btn-fs-reset').classList.remove('hidden');
+            document.getElementById('fs-score').innerText = fs_score;
+        }
+
+        function resetFlick() {
+            document.getElementById('btn-fs-reset').classList.add('hidden');
+            resetFlickBall();
+            startFlickGK();
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             initTheme();
             initLanguage();
@@ -776,7 +887,7 @@
                     if (window.location.pathname !== href) {
                         history.pushState(null, '', href);
                         handleRoute();
-                        if(href === '/game') { startPenalty(); startJuggle(); }
+                        if(href === '/game') { startPenalty(); startJuggle(); startFlickGK(); }
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 });
