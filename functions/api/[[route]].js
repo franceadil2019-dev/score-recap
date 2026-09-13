@@ -52,6 +52,7 @@ export async function onRequest(context) {
   };
 
   try {
+    // 1. جلب المباريات أو مباراة محددة
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const id = url.searchParams.get("id");
       if (id) {
@@ -63,18 +64,21 @@ export async function onRequest(context) {
       return await getFromApiSports(`fixtures?date=${date}`, `api_fixtures_${date}`, ttl);
     }
 
+    // 2. جلب الأحداث
     if (action.includes("fetch-events") || action.includes("events")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
       return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, 60);
     }
 
+    // 3. جلب الإحصائيات
     if (action.includes("fetch-stats") || action.includes("statistics")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
       return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 60);
     }
 
+    // 4. التوقعات الذكية
     if (action.includes("predict-match") || action.includes("predict")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -109,7 +113,10 @@ export async function onRequest(context) {
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        body: JSON.stringify({ 
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.8, topP: 0.9 }
+        })
       });
 
       const aiData = await aiRes.json();
@@ -125,7 +132,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 5. تقرير المباراة
+    // 5. تقرير المباراة (مع الأساليب العشوائية ودرجة الإبداع)
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -141,7 +148,6 @@ export async function onRequest(context) {
      
       const kvKey = `recap_v2_${fixtureId}_${languageCode}`;
 
-      // 🌟 التحديث: حتى لو كان المقال في الكاش، نضمن إضافته لقائمة أحدث التقارير
       if (env.SPORTS_KV) {
         const cachedArticle = await env.SPORTS_KV.get(kvKey);
         if (cachedArticle) {
@@ -153,7 +159,7 @@ export async function onRequest(context) {
                       recent.unshift(fixtureId);
                       recent = recent.slice(0, 10);
                       await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
-                      await env.SPORTS_KV.delete("cached_latest_reports"); // تدمير الكاش القديم
+                      await env.SPORTS_KV.delete("cached_latest_reports");
                   }
               } catch (e) {}
           })());
@@ -165,14 +171,42 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
-      const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging match report for the Premier League match: ${matchStr}. Final Score: ${score}. Key Events: ${events}. Include: <h2>Title</h2>, <p>Introduction</p>, <p>Tactical Analysis</p>, <h3>Turning Point</h3> with <ul><li>...</li></ul>, and a strong conclusion.
-      Write the ENTIRE article perfectly in ${targetLang}.
-      Return ONLY clean HTML code without markdown wrappers.`;
+      // 🌟 مصفوفة الأساليب الصحفية لضمان اختلاف المقالات
+      const writingStyles = [
+        "Focus heavily on the tactical battle, formations, and the managers' strategic decisions.",
+        "Write with high passion and drama, focusing on the emotional rollercoaster and intensity of the match.",
+        "Focus on individual player performances, key mistakes, and moments of individual brilliance.",
+        "Take a narrative angle, discussing how this specific result impacts the teams' season and their fans.",
+        "Adopt a highly analytical and critical journalistic tone, questioning the losing team's performance."
+      ];
+      const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
+
+      const prompt = `Act as an expert sports journalist. Write a unique, comprehensive, and highly engaging match report for: ${matchStr}. Final Score: ${score}. Key Events: ${events}.
+      
+      CRITICAL INSTRUCTION: ${randomStyle}
+      
+      Avoid repetitive journalistic clichés. Use varied vocabulary and dynamic sentence structures. Ensure this article feels 100% human-written and distinct from other match reports on the internet.
+      
+      Structure the HTML exactly like this:
+      <h2>[Generate a Catchy and Unique Title]</h2>
+      <p>[Engaging Introduction]</p>
+      <p>[Main Analysis based on the critical instruction]</p>
+      <h3>Match Highlights & Turning Points</h3>
+      <ul><li>[Event 1]</li><li>[Event 2]</li></ul>
+      <p>[Strong Conclusion]</p>
+      
+      Write the ENTIRE article perfectly in ${targetLang}. Return ONLY clean HTML code without markdown wrappers.`;
 
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        body: JSON.stringify({ 
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+                temperature: 0.85, // 🌟 درجة الإبداع العالية
+                topP: 0.9
+            }
+        })
       });
 
       const aiData = await aiRes.json();
@@ -206,7 +240,6 @@ export async function onRequest(context) {
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
-      // 🌟 التحديث: تجاهل الكاش إذا كان فارغاً
       const cachedList = await env.SPORTS_KV.get("cached_latest_reports");
       if (cachedList && cachedList !== "[]" && cachedList.length > 5) {
         return new Response(cachedList, { headers: corsHeaders });
@@ -214,7 +247,6 @@ export async function onRequest(context) {
 
       let fixtureIds = await env.SPORTS_KV.get("recent_generated_reports", "json");
       
-      // 🌟 التحديث: البحث عن كل المقالات القديمة (recap_) وليس فقط v2
       if (!fixtureIds || !Array.isArray(fixtureIds) || fixtureIds.length === 0) {
         const listed = await env.SPORTS_KV.list({ prefix: "recap_" });
         fixtureIds = [];
