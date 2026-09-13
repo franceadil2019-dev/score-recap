@@ -54,6 +54,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
 
+        /* تنسيق صفحات السيو */
         .static-page-content h1 { font-size: 2rem; font-weight: 900; margin-bottom: 1.5rem; color: #10b981; letter-spacing: -0.025em; }
         .static-page-content h2 { font-size: 1.4rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
         .dark .static-page-content h2 { color: #f8fafc; border-bottom-color: #1e293b; }
@@ -63,16 +64,11 @@
         .dark .static-page-content ul { color: #cbd5e1; }
         .static-page-content li { margin-bottom: 0.5rem; }
 
-        /* 🚨 تنسيقات الألعاب (Penalty + Keepy-Uppy + Flick Shoot) */
+        /* 🚨 تنسيقات اللعبة (Game Widget) */
         .game-bar-container { width: 100%; height: 36px; background-color: #e2e8f0; border-radius: 18px; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .dark .game-bar-container { background-color: #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
         .game-target-zone { position: absolute; left: 40%; width: 20%; height: 100%; background-color: #10b981; opacity: 0.8; }
-        .game-ball { position: absolute; left: 0%; top: 4px; width: 28px; height: 28px; background: radial-gradient(circle at 30% 30%, #ffffff, #94a3b8); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        
-        #juggle-area { width: 100%; height: 250px; background: linear-gradient(to bottom, #7dd3fc 0%, #7dd3fc 75%, #4ade80 75%, #4ade80 100%); position: relative; overflow: hidden; border-radius: 1rem; border: 3px solid #cbd5e1; user-select: none; touch-action: manipulation; box-shadow: inset 0 4px 6px rgba(0,0,0,0.1); }
-        .dark #juggle-area { background: linear-gradient(to bottom, #0f172a 0%, #0f172a 75%, #166534 75%, #166534 100%); border-color: #334155; }
-        #j-ball { position: absolute; left: 50%; top: 20px; transform: translateX(-50%); font-size: 40px; cursor: pointer; z-index: 10; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3)); }
-        #j-ball:active { transform: translateX(-50%) scale(0.9); }
+        .game-ball { position: absolute; left: 0%; top: 4px; width: 28px; height: 28px; background: radial-gradient(circle at 30% 30%, #ffffff, #94a3b8); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: left 0.05s linear; display: flex; align-items: center; justify-content: center; font-size: 14px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200">
@@ -118,7 +114,7 @@
     </header>
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+       
         <!-- القسم الرئيسي (المباريات) -->
         <section id="home-section" class="lg:col-span-2 space-y-4">
             <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-none pb-1">
@@ -150,7 +146,7 @@
                         <button class="drop-opt league-opt" data-id="307" data-flag="https://media.api-sports.io/football/leagues/307.png" data-key="saudi"><img src="https://media.api-sports.io/football/leagues/307.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-saudi">Saudi Pro League</span></button>
                         <button class="drop-opt league-opt" data-id="200" data-flag="https://media.api-sports.io/football/leagues/200.png" data-key="botola"><img src="https://media.api-sports.io/football/leagues/200.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-botola">Botola Pro</span></button>
                         <button class="drop-opt league-opt" data-id="113" data-flag="https://media.api-sports.io/football/leagues/113.png" data-key="swe"><img src="https://media.api-sports.io/football/leagues/113.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-swe">Allsvenskan</span></button>
-                        <button class="drop-opt league-opt" data-id="71" data-flag="https://media.api-sports.io/football/leagues/71.png" data-key="nor"><img src="https://media.api-sports.io/football/leagues/71.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-nor">Eliteserien</span></button>
+                        <button class="drop-opt league-opt" data-id="69" data-flag="https://media.api-sports.io/football/leagues/69.png" data-key="nor"><img src="https://media.api-sports.io/football/leagues/69.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-nor">Eliteserien</span></button>
                         <button class="drop-opt league-opt" data-id="119" data-flag="https://media.api-sports.io/football/leagues/119.png" data-key="den"><img src="https://media.api-sports.io/football/leagues/119.png" class="w-5 h-5 object-contain" alt=""> <span id="opt-den">Superliga</span></button>
                     </div>
                 </div>
@@ -169,79 +165,47 @@
                 </div>
             </div>
 
-            <div id="api-scores-container" class="space-y-4 min-h-[500px]" aria-live="polite"></div>
+            <div id="api-scores-container" class="space-y-4 min-h-[500px]" aria-live="polite">
+            </div>
         </section>
 
-        <!-- 🚨 مسار الألعاب المنعزل (Game Zone) -->
-        <section id="page-game" class="lg:col-span-2 hidden space-y-8" dir="ltr">
-            
-            <!-- اللعبة الأولى: Penalty Shootout -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm text-center">
-                <h1 class="text-2xl font-black text-emerald-500 mb-2 uppercase tracking-wide">Penalty Shootout ⚽</h1>
-                <p class="text-slate-500 dark:text-slate-400 mb-6 font-medium text-sm">Stop the ball exactly in the green zone to score a goal!</p>
-                <div class="max-w-md mx-auto bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50">
-                    <div class="game-bar-container mb-6">
-                        <div class="game-target-zone"></div>
-                        <div class="game-ball" id="p-ball">⚽</div>
-                    </div>
-                    <button id="btn-penalty" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xl py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest" onclick="shootPenalty()">SHOOT!</button>
-                    <div id="p-msg" class="mt-4 text-xl font-black h-8 flex items-center justify-center"></div>
-                    <div class="mt-2 text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-wider">Streak: <span id="p-score" class="text-emerald-500 text-xl ml-1">0</span></div>
+        <!-- 🚨 مسار اللعبة المنعزل (Game Section) -->
+        <section id="page-game" class="lg:col-span-2 hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm text-center" dir="ltr">
+            <h1 class="text-3xl font-black text-emerald-500 mb-2 uppercase tracking-wide">Penalty Shootout ⚽</h1>
+            <p class="text-slate-500 dark:text-slate-400 mb-8 font-medium">Stop the ball exactly in the green zone to score a goal!</p>
+           
+            <div class="max-w-md mx-auto bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50">
+                <!-- شريط اللعبة -->
+                <div class="game-bar-container mb-8">
+                    <div class="game-target-zone"></div>
+                    <div class="game-ball" id="game-ball">⚽</div>
+                </div>
+               
+                <!-- زر التسديد -->
+                <button id="btn-shoot-game" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-2xl py-4 px-8 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest">
+                    SHOOT!
+                </button>
+               
+                <!-- نتيجة التسديدة -->
+                <div id="game-result-msg" class="mt-6 text-2xl font-black h-8 flex items-center justify-center"></div>
+               
+                <!-- النقاط المتتالية -->
+                <div class="mt-6 text-slate-500 dark:text-slate-400 font-bold text-lg uppercase tracking-wider">
+                    Streak: <span id="game-score" class="text-emerald-500 text-2xl ml-2">0</span>
                 </div>
             </div>
-
-            <!-- اللعبة الثانية: Keepy-Uppy -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm text-center">
-                <h1 class="text-2xl font-black text-blue-500 mb-2 uppercase tracking-wide">Keepy-Uppy Challenge ⚽</h1>
-                <p class="text-slate-500 dark:text-slate-400 mb-6 font-medium text-sm">Tap the ball to keep it in the air! Don't let it hit the grass.</p>
-                <div class="max-w-md mx-auto">
-                    <div class="flex justify-between items-center mb-3 px-2">
-                        <div class="text-slate-600 dark:text-slate-300 font-bold text-lg uppercase tracking-wider">Score: <span id="j-score" class="text-blue-500 text-2xl ml-1">0</span></div>
-                        <div id="j-msg" class="h-8 flex items-center justify-center"></div>
-                    </div>
-                    <div id="juggle-area" class="mb-4 relative">
-                        <div id="j-ball" onmousedown="hitJuggle(event)" ontouchstart="hitJuggle(event)">⚽</div>
-                    </div>
-                    <button id="btn-juggle" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xl py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest" onclick="startJuggle()">START GAME</button>
-                </div>
-            </div>
-
-            <!-- اللعبة الثالثة: Flick Shoot -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm text-center">
-                <h1 class="text-2xl font-black text-amber-500 mb-2 uppercase tracking-wide">Flick Shoot 🎯</h1>
-                <p class="text-slate-500 dark:text-slate-400 mb-6 font-medium text-sm">Tap inside the goal to shoot! Avoid the moving goalkeeper.</p>
-                <div class="max-w-md mx-auto">
-                    <div class="flex justify-between items-center mb-3 px-2">
-                        <div class="text-slate-600 dark:text-slate-300 font-bold text-lg uppercase tracking-wider">Goals: <span id="fs-score" class="text-amber-500 text-2xl ml-1">0</span></div>
-                        <div id="fs-msg" class="h-8 flex items-center justify-center font-bold text-lg"></div>
-                    </div>
-                    <!-- مساحة اللعب -->
-                    <div id="fs-area" class="w-full h-64 bg-green-500 dark:bg-green-700 relative overflow-hidden rounded-xl border-4 border-slate-300 dark:border-slate-600 cursor-pointer shadow-inner" onclick="shootFlick(event)">
-                        <!-- خط المرمى -->
-                        <div class="absolute top-0 left-[20%] w-[60%] h-16 border-b-4 border-l-4 border-r-4 border-white/50 flex items-start justify-center pt-2">
-                            <span class="text-white/30 text-xs font-bold tracking-widest">GOAL ZONE</span>
-                        </div>
-                        <!-- الحارس -->
-                        <div id="fs-gk" class="absolute top-10 left-[40%] w-[20%] h-6 bg-red-500 rounded flex items-center justify-center text-white text-[10px] font-black shadow-md z-10">GK</div>
-                        <!-- الكرة -->
-                        <div id="fs-ball" class="absolute bottom-4 left-[50%] -translate-x-1/2 text-3xl transition-all duration-300 ease-out z-20" style="transform: translate(-50%, 0) scale(1);">⚽</div>
-                    </div>
-                    <button id="btn-fs-reset" class="w-full mt-4 bg-amber-500 hover:bg-amber-600 text-white font-black text-xl py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest hidden" onclick="resetFlick()">PLAY AGAIN</button>
-                </div>
-            </div>
-
         </section>
 
         <!-- قسم الصفحات الثابتة -->
         <section id="static-pages-section" class="lg:col-span-2 hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm static-page-content" dir="ltr">
-            
+           
             <div id="page-about" class="hidden">
                 <h1>Welcome to ScoreRecap</h1>
                 <p>Football is not just a game played on a pitch for 90 minutes; it is a universal language, a weekly ritual, and a passion that unites millions of fans across the globe. At <strong>ScoreRecap</strong>, we understand that true football enthusiasts crave more than just the final whistle's scoreline. They seek the story behind the goals, the tactical shifts that changed the momentum, and the comprehensive data that paints the full picture of the match.</p>
-                
+               
                 <h2>The ScoreRecap Vision</h2>
                 <p>ScoreRecap was founded with a singular, ambitious vision: to build the ultimate digital companion for the modern sports fan. In an era where information is abundant but clarity is rare, we strive to cut through the noise. We transform raw match data into compelling narratives, ensuring that whether you watched the game live or missed the kickoff, you always feel like you were right there in the stands.</p>
-                
+               
                 <h2>What Sets Us Apart?</h2>
                 <p>We believe that delivering sports news should be as dynamic and fast-paced as the sport itself. Here is what makes the ScoreRecap experience unique:</p>
                 <ul>
@@ -250,17 +214,17 @@
                     <li><strong>Interactive Fan Experience:</strong> Football is about opinions. We provide features that allow users to test their football knowledge, make match predictions, and engage deeply with the content.</li>
                     <li><strong>Global Accessibility:</strong> The love for football knows no borders. That is why our platform is built to support multiple languages and interfaces, ensuring fans from different regions can enjoy our content seamlessly.</li>
                 </ul>
-                
+               
                 <h2>Our Commitment to Quality</h2>
                 <p>Accuracy and speed are the pillars of our platform. We continuously invest in advanced technologies and reliable data sources to ensure that every piece of information, from ball possession percentages to the exact minute of a crucial substitution, is precise and trustworthy.</p>
-                
+               
                 <p>Thank you for choosing ScoreRecap. Whether you are tracking a heated derby, following a title race, or analyzing a relegation battle, we are here to provide you with the ultimate football coverage. Enjoy the game!</p>
             </div>
 
             <div id="page-contact" class="hidden">
                 <h1>Contact Us</h1>
                 <p>We are always eager to connect with our community. Whether you have a question about our platform, want to report a technical issue, have suggestions for new features, or are interested in business partnerships, our team is ready to listen.</p>
-                
+               
                 <p>Your feedback is the driving force behind our continuous improvement. Every message we receive helps us refine ScoreRecap to better serve football fans around the world.</p>
 
                 <div class="mt-8 bg-slate-50 dark:bg-slate-800/40 p-8 rounded-2xl border border-slate-200 dark:border-slate-700/50">
@@ -314,21 +278,10 @@
         </section>
 
         <aside class="space-y-6">
-            <!-- مساحة الإعلان -->
             <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl p-4 text-center sticky top-24 shadow-sm">
                 <span id="ad-label" class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Advertisement</span>
                 <div class="bg-slate-100 border-dashed border-2 border-slate-300 dark:bg-slate-950 dark:border-slate-800 rounded-lg h-64 flex items-center justify-center mt-2 transition-colors">
                     <p id="ad-banner" class="text-slate-500 dark:text-slate-600 text-sm font-medium">Ad Banner Space</p>
-                </div>
-            </div>
-
-            <!-- أحدث التقارير -->
-            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl p-4 shadow-sm sticky top-[370px]">
-                <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <span class="text-blue-500">📰</span> <span id="txt-latest-reports">Latest Reports</span>
-                </h3>
-                <div id="latest-reports-container" class="space-y-3">
-                    <div class="flex justify-center py-4"><div class="mini-spinner"></div></div>
                 </div>
             </div>
         </aside>
@@ -338,7 +291,8 @@
         <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
             <p>© <span id="current-year">2026</span> ScoreRecap. <span id="footer-rights">All rights reserved.</span></p>
             <div class="flex flex-wrap justify-center gap-4 font-bold">
-                <a href="/game" class="static-link text-emerald-500 hover:text-emerald-600 transition-colors" id="link-game">Game Zone 🎮</a>
+                <!-- 🚨 تمت إضافة رابط اللعبة هنا -->
+                <a href="/game" class="static-link text-emerald-500 hover:text-emerald-600 transition-colors" id="link-game">Play Game 🎮</a>
                 <span class="hidden md:inline text-slate-300 dark:text-slate-700">|</span>
                 <a href="/about" class="static-link hover:text-emerald-500 transition-colors" id="link-about">About Us</a>
                 <a href="/contact" class="static-link hover:text-emerald-500 transition-colors" id="link-contact">Contact Us</a>
@@ -346,24 +300,57 @@
             </div>
         </div>
     </footer>
-     <script>
+
+    <script>
         const APP_CONFIG = { workerUrl: "/api", cacheExpiryMinutes: 5, autoRefreshInterval: 300000 };
-        let currentLang = 'en', selectedLeagueId = 'all', currentSearchQuery = '', searchTimeout = null, selectedLeagueTranslationKey = 'allLeagues', allMatchesCached = [], currentDateOffset = 0, showLiveOnly = false; 
+        let currentLang = 'en', selectedLeagueId = 'all', currentSearchQuery = '', searchTimeout = null, selectedLeagueTranslationKey = 'allLeagues', allMatchesCached = [], currentDateOffset = 0;
+        let showLiveOnly = false;
        
         function getFromCache(key) { const data = sessionStorage.getItem(key); return data ? JSON.parse(data) : null; }
         function saveToCache(key, data) { sessionStorage.setItem(key, JSON.stringify(data)); }
         let loadedDetails = new Set();
 
-        const TOP_LEAGUES = ["2", "12", "39", "40", "61", "78", "135", "140", "307", "253", "200", "113", "71", "119"];
-        const teamNamesAR = { "Arsenal": "أرسنال", "Aston Villa": "أستون فيلا", "Bournemouth": "بورنموث", "Brentford": "برينتفورد", "Brighton": "برايتون", "Chelsea": "تشيلسي", "Crystal Palace": "كريستال بالاس", "Everton": "إيفرتون", "Fulham": "فولهام", "Liverpool": "ليفربول", "Luton": "لوتون تاون", "Manchester City": "مانشستر سيتي", "Manchester United": "مانشستر يونايتد", "Newcastle": "نيوكاسل", "Nottingham Forest": "نوتينغهام فورست", "Sheffield Utd": "شيفيلد", "Tottenham": "توتنهام", "West Ham": "وست هام", "Wolverhampton": "وولفرهامبتون", "Real Madrid": "ريال مدريد", "Barcelona": "برشلونة", "Atletico Madrid": "أتلتيكو مدريد", "Sevilla": "إشبيلية", "Valencia": "فالنسيا", "Villarreal": "فياريال", "Real Sociedad": "ريال سوسيداد", "Athletic Club": "أتلتيك بيلباو", "Real Betis": "ريال بيتيس", "Girona": "جيرونا", "Juventus": "يوفنتوس", "AC Milan": "ميلان", "Inter": "إنتر ميلان", "Napoli": "نابولي", "Roma": "روما", "Lazio": "لاتسيو", "Atalanta": "أتالانتا", "Fiorentina": "فيورنتينا", "Bayern Munich": "بايرن ميونخ", "Borussia Dortmund": "دورتموند", "Bayer Leverkusen": "ليفركوزن", "RB Leipzig": "لايبزيغ", "Stuttgart": "شتوتغارت", "Paris Saint Germain": "باريس سان جيرمان", "Marseille": "مارسيليا", "Lyon": "ليون", "Monaco": "موناكو", "Lille": "ليل", "Al Hilal": "الهلال", "Al Nassr": "النصر", "Al Ittihad": "الاتحاد", "Al-Ittihad FC": "الاتحاد", "Al Ahli": "الأهلي", "Al Shabab": "الشباب", "Al Ettifaq": "الاتفاق", "Al-Ettifaq": "الاتفاق", "Al Faisaly": "الفيصلي", "Al-Faisaly FC": "الفيصلي", "Al-Faisaly": "الفيصلي", "Al Taawoun": "التعاون", "Al Taawon": "التعاون", "Al Wehda": "الوحدة", "Al Raed": "الرائد", "Al Fayha": "الفيحاء", "Al-Fayha": "الفيحاء", "Damac FC": "ضمك", "Abha": "أبها", "Al Khaleej": "الخليج", "Al Hazem": "الحزم", "Al-Hazm": "الحزم", "Al Okhdood": "الأخدود", "Al Riyadh": "الرياض", "Al Fateh": "الفتح", "Wydad AC": "الوداد الرياضي", "Raja Casablanca": "الرجاء الرياضي", "AS FAR Rabat": "الجيش الملكي", "RSB Berkane": "نهضة بركان", "Al Ahly": "الأهلي", "Zamalek SC": "الزمالك", "Esperance Tunis": "الترجي", "Mamelodi Sundowns": "صن داونز", "Inter Miami": "إنتر ميامي", "LA Galaxy": "لوس أنجلوس جالاكسي", "New York City FC": "نيويورك سيتي" };
-        function getLeagueNameLocal(leagueId, defaultName, lang) { if (lang !== 'ar') return defaultName; const leaguesAR = { "2": "دوري أبطال أوروبا", "12": "دوري أبطال أفريقيا", "39": "الدوري الإنجليزي", "40": "دوري البطولة الإنجليزية", "61": "الدوري الفرنسي", "78": "الدوري الألماني", "135": "الدوري الإيطالي", "140": "الدوري الإسباني", "307": "الدوري السعودي", "253": "الدوري الأمريكي", "200": "البطولة المغربية", "113": "الدوري السويدي", "71": "الدوري النرويجي", "119": "الدوري الدنماركي" }; return leaguesAR[leagueId] || defaultName; }
-        function getTeamName(name, lang) { if (lang === 'ar') { for (let key in teamNamesAR) { if (name.toLowerCase().includes(key.toLowerCase())) return teamNamesAR[key]; } } return name; }
+        const TOP_LEAGUES = ["2", "12", "39", "40", "61", "78", "135", "140", "307", "253", "200", "113", "69", "119"];
+
+        const teamNamesAR = {
+            "Arsenal": "أرسنال", "Aston Villa": "أستون فيلا", "Bournemouth": "بورنموث", "Brentford": "برينتفورد", "Brighton": "برايتون", "Chelsea": "تشيلسي", "Crystal Palace": "كريستال بالاس", "Everton": "إيفرتون", "Fulham": "فولهام", "Liverpool": "ليفربول", "Luton": "لوتون تاون", "Manchester City": "مانشستر سيتي", "Manchester United": "مانشستر يونايتد", "Newcastle": "نيوكاسل", "Nottingham Forest": "نوتينغهام فورست", "Sheffield Utd": "شيفيلد", "Tottenham": "توتنهام", "West Ham": "وست هام", "Wolverhampton": "وولفرهامبتون",
+            "Real Madrid": "ريال مدريد", "Barcelona": "برشلونة", "Atletico Madrid": "أتلتيكو مدريد", "Sevilla": "إشبيلية", "Valencia": "فالنسيا", "Villarreal": "فياريال", "Real Sociedad": "ريال سوسيداد", "Athletic Club": "أتلتيك بيلباو", "Real Betis": "ريال بيتيس", "Girona": "جيرونا",
+            "Juventus": "يوفنتوس", "AC Milan": "ميلان", "Inter": "إنتر ميلان", "Napoli": "نابولي", "Roma": "روما", "Lazio": "لاتسيو", "Atalanta": "أتالانتا", "Fiorentina": "فيورنتينا",
+            "Bayern Munich": "بايرن ميونخ", "Borussia Dortmund": "دورتموند", "Bayer Leverkusen": "ليفركوزن", "RB Leipzig": "لايبزيغ", "Stuttgart": "شتوتغارت",
+            "Paris Saint Germain": "باريس سان جيرمان", "Marseille": "مارسيليا", "Lyon": "ليون", "Monaco": "موناكو", "Lille": "ليل",
+            "Al Hilal": "الهلال", "Al Nassr": "النصر", "Al Ittihad": "الاتحاد", "Al-Ittihad FC": "الاتحاد", "Al Ahli": "الأهلي", "Al Shabab": "الشباب", "Al Ettifaq": "الاتفاق", "Al-Ettifaq": "الاتفاق", "Al Faisaly": "الفيصلي", "Al-Faisaly FC": "الفيصلي", "Al-Faisaly": "الفيصلي", "Al Taawoun": "التعاون", "Al Taawon": "التعاون", "Al Wehda": "الوحدة", "Al Raed": "الرائد", "Al Fayha": "الفيحاء", "Al-Fayha": "الفيحاء", "Damac FC": "ضمك", "Abha": "أبها", "Al Khaleej": "الخليج", "Al Hazem": "الحزم", "Al-Hazm": "الحزم", "Al Okhdood": "الأخدود", "Al Riyadh": "الرياض", "Al Fateh": "الفتح",
+            "Wydad AC": "الوداد الرياضي", "Raja Casablanca": "الرجاء الرياضي", "AS FAR Rabat": "الجيش الملكي", "RSB Berkane": "نهضة بركان",
+            "Al Ahly": "الأهلي", "Zamalek SC": "الزمالك", "Esperance Tunis": "الترجي", "Mamelodi Sundowns": "صن داونز",
+            "Inter Miami": "إنتر ميامي", "LA Galaxy": "لوس أنجلوس جالاكسي", "New York City FC": "نيويورك سيتي"
+        };
+
+        function getLeagueNameLocal(leagueId, defaultName, lang) {
+            if (lang !== 'ar') return defaultName;
+            const leaguesAR = {
+                "2": "دوري أبطال أوروبا", "12": "دوري أبطال أفريقيا", "39": "الدوري الإنجليزي", "40": "دوري البطولة الإنجليزية", "61": "الدوري الفرنسي", "78": "الدوري الألماني", "135": "الدوري الإيطالي", "140": "الدوري الإسباني", "307": "الدوري السعودي", "253": "الدوري الأمريكي", "200": "البطولة المغربية", "113": "الدوري السويدي", "69": "الدوري النرويجي", "119": "الدوري الدنماركي"
+            };
+            return leaguesAR[leagueId] || defaultName;
+        }
+
+        function getTeamName(name, lang) {
+            if (lang === 'ar') {
+                for (let key in teamNamesAR) {
+                    if (name.toLowerCase().includes(key.toLowerCase())) return teamNamesAR[key];
+                }
+            }
+            return name;
+        }
+
         const translations = {
-            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "Top Leagues", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Loading match report...", reportError: "Could not load the report.", reportExclusive: "Match reports are exclusive to the Premier League.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server", predictVote: "Your Prediction...", win: "Win", draw: "Draw", voteSaved: "Prediction saved successfully!", predictBtn: "Predict Winner 🔮", predictLoading: "Analyzing teams...", predictError: "Failed to generate prediction.", predictTitle: "Match Prediction", readReportBtn: "Read Match Report 📰", aboutUs: "About Us", contactUs: "Contact Us", privacyPolicy: "Privacy Policy", liveOnly: "Live Only", copyLink: "Link copied!", gameZone: "Game Zone 🎮", latestReports: "Latest Reports" },
-            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "أهم الدوريات", ucl: "دوري أبطال أوروبا", caf: "دوري أبطال أفريقيا", champ: "دوري البطولة الإنجليزية", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", ligue1: "الدوري الفرنسي", bundes: "الدوري الألماني", saudi: "الدوري السعودي", mls: "الدوري الأمريكي", botola: "البطولة المغربية", swe: "الدوري السويدي", nor: "الدوري النرويجي", den: "الدوري الدنماركي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري تحميل تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportExclusive: "تقارير المباريات متاحة حصرياً للدوري الإنجليزي.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم", predictVote: "توقع نتيجتك...", win: "فوز", draw: "تعادل", voteSaved: "تم حفظ توقعك بنجاح!", predictBtn: "توقع الفائز 🔮", predictLoading: "جاري تحليل الفريقين...", predictError: "تعذر توليد التوقع.", predictTitle: "توقع نتيجة المباراة", readReportBtn: "اقرأ تقرير المباراة 📰", aboutUs: "من نحن", contactUs: "اتصل بنا", privacyPolicy: "سياسة الخصوصية", liveOnly: "مباشر فقط", copyLink: "تم نسخ الرابط!", gameZone: "منطقة الألعاب 🎮", latestReports: "أحدث التقارير" },
-            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Ligues Majeures", ucl: "Champions League", caf: "Ligue des Champions de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Chargement du rapport...", reportError: "Échec du chargement.", reportExclusive: "Exclusif à la Premier League.", reportTitle: "Rapport et Analyse", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher...", toastSuccess: "Mis à jour", toastError: "Échec de connexion", predictVote: "Votre Prédiction...", win: "Victoire", draw: "Nul", voteSaved: "Enregistrée !", predictBtn: "Prédire le Vainqueur 🔮", predictLoading: "Analyse...", predictError: "Échec.", predictTitle: "Prédiction", readReportBtn: "Lire le Rapport 📰", aboutUs: "À Propos", contactUs: "Contact", privacyPolicy: "Confidentialité", liveOnly: "En direct", copyLink: "Lien copié !", gameZone: "Zone de Jeu 🎮", latestReports: "Derniers Rapports" },
-            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Ligas Principales", ucl: "Champions League", caf: "Liga de Campeones de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Liga Saudí", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Cargando informe del partido...", reportError: "Error al cargar el informe.", reportExclusive: "Los informes de partidos son exclusivos de la Premier League.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión", predictVote: "Tu Predicción...", win: "Victoria", draw: "Empate", voteSaved: "¡Predicción guardada!", predictBtn: "Predecir Ganador 🔮", predictLoading: "Analizando equipos...", predictError: "Error en la predicción.", predictTitle: "Predicción del Partido", readReportBtn: "Leer Informe del Partido 📰", aboutUs: "Sobre Nosotros", contactUs: "Contacto", privacyPolicy: "Privacidad", liveOnly: "Solo en vivo", copyLink: "¡Enlace copiado!", gameZone: "Zona de Juegos 🎮", latestReports: "Últimos Informes" },
-            de: { title: "ScoreRecap | Ergebnisse", live: "LIVE", yesterday: "Gestern", todayTab: "Heute", tomorrow: "Morgen", allLeagues: "Top-Ligen", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Wird geladen...", noMatches: "Keine Spiele gefunden.", error: "Fehler beim Laden der Daten.", ad: "Werbung", adBanner: "Werbebanner-Platz", rights: "Alle Rechte vorbehalten.", ended: "Beendet", noEvents: "Keine Schlüsselereignisse.", reportLoading: "Spielbericht wird geladen...", reportError: "Bericht konnte nicht geladen werden.", reportExclusive: "Spielberichte gibt es exklusiv für die Premier League.", reportTitle: "Spielbericht & Taktische Analyse", statsTitle: "LIVE SPIELSTATISTIKEN", poss: "Ballbesitz", shots: "Schüsse", search: "Nach einem Team suchen...", toastSuccess: "Daten erfolgreich aktualisiert", toastError: "Verbindung zum Server fehlgeschlagen", predictVote: "Deine Vorhersage...", win: "Sieg", draw: "Unentschieden", voteSaved: "Vorhersage erfolgreich gespeichert!", predictBtn: "Gewinner Vorhersagen 🔮", predictLoading: "Teams werden analysiert...", predictError: "Fehler bei der Vorhersage.", predictTitle: "Spielvorhersage", readReportBtn: "Spielbericht lesen 📰", aboutUs: "Über Uns", contactUs: "Kontakt", privacyPolicy: "Datenschutz", liveOnly: "Nur Live", copyLink: "Link kopiert!", gameZone: "Spielzone 🎮", latestReports: "Neueste Berichte" }
+            en: { title: "ScoreRecap | Scores", live: "LIVE", yesterday: "Yesterday", todayTab: "Today", tomorrow: "Tomorrow", allLeagues: "Top Leagues", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Loading...", noMatches: "No matches found.", error: "Error loading data.", ad: "Advertisement", adBanner: "Ad Banner Space", rights: "All rights reserved.", ended: "Ended", noEvents: "No key events.", reportLoading: "Loading match report...", reportError: "Could not load the report.", reportExclusive: "Match reports are exclusive to the Premier League.", reportTitle: "Match Report & Tactical Analysis", statsTitle: "LIVE MATCH STATS", poss: "Possession", shots: "Shots", search: "Search for a team...", toastSuccess: "Data updated successfully", toastError: "Failed to connect to server", predictVote: "Your Prediction...", win: "Win", draw: "Draw", voteSaved: "Prediction saved successfully!", predictBtn: "Predict Winner 🔮", predictLoading: "Analyzing teams...", predictError: "Failed to generate prediction.", predictTitle: "Match Prediction", readReportBtn: "Read Match Report 📰", aboutUs: "About Us", contactUs: "Contact Us", privacyPolicy: "Privacy Policy", liveOnly: "Live Only", copyLink: "Link copied!", gamePlay: "Play Game 🎮" },
+            ar: { title: "سكور-ريكاب | النتائج", live: "مباشر", yesterday: "الأمس", todayTab: "اليوم", tomorrow: "الغد", allLeagues: "أهم الدوريات", ucl: "دوري أبطال أوروبا", caf: "دوري أبطال أفريقيا", champ: "دوري البطولة الإنجليزية", pl: "الدوري الإنجليزي الممتاز", liga: "الدوري الإسباني", serie: "الدوري الإيطالي", ligue1: "الدوري الفرنسي", bundes: "الدوري الألماني", saudi: "الدوري السعودي", mls: "الدوري الأمريكي", botola: "البطولة المغربية", swe: "الدوري السويدي", nor: "الدوري النرويجي", den: "الدوري الدنماركي", loading: "جاري التحميل...", noMatches: "لا توجد مباريات.", error: "خطأ في التحميل.", ad: "إعلان", adBanner: "مساحة إعلانية", rights: "جميع الحقوق محفوظة.", ended: "انتهت", noEvents: "لا توجد أحداث.", reportLoading: "جاري تحميل تقرير المباراة...", reportError: "تعذر تحميل التقرير.", reportExclusive: "تقارير المباريات متاحة حصرياً للدوري الإنجليزي.", reportTitle: "تقرير وتحليل المباراة", statsTitle: "الإحصائيات المباشرة", poss: "الاستحواذ", shots: "التسديدات", search: "ابحث عن فريق...", toastSuccess: "تم تحديث البيانات بنجاح", toastError: "فشل الاتصال بالخادم", predictVote: "توقع نتيجتك...", win: "فوز", draw: "تعادل", voteSaved: "تم حفظ توقعك بنجاح!", predictBtn: "توقع الفائز 🔮", predictLoading: "جاري تحليل الفريقين...", predictError: "تعذر توليد التوقع.", predictTitle: "توقع نتيجة المباراة", readReportBtn: "اقرأ تقرير المباراة 📰", aboutUs: "من نحن", contactUs: "اتصل بنا", privacyPolicy: "سياسة الخصوصية", liveOnly: "مباشر فقط", copyLink: "تم نسخ الرابط!", gamePlay: "العب الآن 🎮" },
+            fr: { title: "ScoreRecap | Résultats", live: "DIRECT", yesterday: "Hier", todayTab: "Aujourd'hui", tomorrow: "Demain", allLeagues: "Ligues Majeures", ucl: "Champions League", caf: "Ligue des Champions de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Chargement...", noMatches: "Aucun match trouvé.", error: "Erreur.", ad: "Publicité", adBanner: "Bannière", rights: "Tous droits réservés.", ended: "Terminé", noEvents: "Aucun événement.", reportLoading: "Chargement du rapport...", reportError: "Échec du chargement.", reportExclusive: "Exclusif à la Premier League.", reportTitle: "Rapport et Analyse", statsTitle: "STATISTIQUES EN DIRECT", poss: "Possession", shots: "Tirs", search: "Rechercher...", toastSuccess: "Mis à jour", toastError: "Échec de connexion", predictVote: "Votre Prédiction...", win: "Victoire", draw: "Nul", voteSaved: "Enregistrée !", predictBtn: "Prédire le Vainqueur 🔮", predictLoading: "Analyse...", predictError: "Échec.", predictTitle: "Prédiction", readReportBtn: "Lire le Rapport 📰", aboutUs: "À Propos", contactUs: "Contact", privacyPolicy: "Confidentialité", liveOnly: "En direct", copyLink: "Lien copié !", gamePlay: "Jouer 🎮" },
+            es: { title: "ScoreRecap | Resultados", live: "VIVO", yesterday: "Ayer", todayTab: "Hoy", tomorrow: "Mañana", allLeagues: "Ligas Principales", ucl: "Champions League", caf: "Liga de Campeones de la CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Liga Saudí", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Cargando...", noMatches: "No se encontraron partidos.", error: "Error.", ad: "Anuncio", adBanner: "Banner", rights: "Derechos reservados.", ended: "Finalizado", noEvents: "Sin eventos.", reportLoading: "Cargando informe del partido...", reportError: "Error al cargar el informe.", reportExclusive: "Los informes de partidos son exclusivos de la Premier League.", reportTitle: "Informe y Análisis del Partido", statsTitle: "ESTADÍSTICAS EN VIVO", poss: "Posesión", shots: "Tiros", search: "Buscar un equipo...", toastSuccess: "Datos actualizados", toastError: "Error de conexión", predictVote: "Tu Predicción...", win: "Victoria", draw: "Empate", voteSaved: "¡Predicción guardada!", predictBtn: "Predecir Ganador 🔮", predictLoading: "Analizando equipos...", predictError: "Error en la predicción.", predictTitle: "Predicción del Partido", readReportBtn: "Leer Informe del Partido 📰", aboutUs: "Sobre Nosotros", contactUs: "Contacto", privacyPolicy: "Privacidad", liveOnly: "Solo en vivo", copyLink: "¡Enlace copiado!", gamePlay: "Jugar 🎮" },
+            de: { title: "ScoreRecap | Ergebnisse", live: "LIVE", yesterday: "Gestern", todayTab: "Heute", tomorrow: "Morgen", allLeagues: "Top-Ligen", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Wird geladen...", noMatches: "Keine Spiele gefunden.", error: "Fehler beim Laden der Daten.", ad: "Werbung", adBanner: "Werbebanner-Platz", rights: "Alle Rechte vorbehalten.", ended: "Beendet", noEvents: "Keine Schlüsselereignisse.", reportLoading: "Spielbericht wird geladen...", reportError: "Bericht konnte nicht geladen werden.", reportExclusive: "Spielberichte gibt es exklusiv für die Premier League.", reportTitle: "Spielbericht & Taktische Analyse", statsTitle: "LIVE SPIELSTATISTIKEN", poss: "Ballbesitz", shots: "Schüsse", search: "Nach einem Team suchen...", toastSuccess: "Daten erfolgreich aktualisiert", toastError: "Verbindung zum Server fehlgeschlagen", predictVote: "Deine Vorhersage...", win: "Sieg", draw: "Unentschieden", voteSaved: "Vorhersage erfolgreich gespeichert!", predictBtn: "Gewinner Vorhersagen 🔮", predictLoading: "Teams werden analysiert...", predictError: "Fehler bei der Vorhersage.", predictTitle: "Spielvorhersage", readReportBtn: "Spielbericht lesen 📰", aboutUs: "Über Uns", contactUs: "Kontakt", privacyPolicy: "Datenschutz", liveOnly: "Nur Live", copyLink: "Link kopiert!", gamePlay: "Spielen 🎮" },
+            it: { title: "ScoreRecap | Risultati", live: "DIRETTA", yesterday: "Ieri", todayTab: "Oggi", tomorrow: "Domani", allLeagues: "Campionati Principali", ucl: "UEFA Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Lega Saudita", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Caricamento...", noMatches: "Nessuna partita trovata.", error: "Errore durante il caricamento dei dati.", ad: "Pubblicità", adBanner: "Spazio Banner Pubblicitario", rights: "Tutti i diritti riservati.", ended: "Finita", noEvents: "Nessun evento chiave.", reportLoading: "Caricamento del report della partita...", reportError: "Impossibile caricare il report.", reportExclusive: "I report delle partite sono un'esclusiva della Premier League.", reportTitle: "Report e Analisi Tattica", statsTitle: "STATISTICHE IN DIRETTA", poss: "Possesso", shots: "Tiri", search: "Cerca una squadra...", toastSuccess: "Dati aggiornati con successo", toastError: "Impossibile connettersi al server", predictVote: "Il tuo pronostico...", win: "Vittoria", draw: "Pareggio", voteSaved: "Pronostico salvato con successo!", predictBtn: "Pronostica Vincitore 🔮", predictLoading: "Analisi delle squadre...", predictError: "Impossibile generare il pronostico.", predictTitle: "Pronostico Partita", readReportBtn: "Leggi Report Partita 📰", aboutUs: "Chi Siamo", contactUs: "Contatti", privacyPolicy: "Privacy", liveOnly: "Solo Diretta", copyLink: "Link copiato!", gamePlay: "Giocare 🎮" },
+            sv: { title: "ScoreRecap | Resultat", live: "LIVE", yesterday: "Igår", todayTab: "Idag", tomorrow: "Imorgon", allLeagues: "Toppligor", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Laddar...", noMatches: "Inga matcher hittades.", error: "Fel vid laddning av data.", ad: "Annons", adBanner: "Annonsplats", rights: "Alla rättigheter förbehållna.", ended: "Avslutad", noEvents: "Inga viktiga händelser.", reportLoading: "Laddar matchrapport...", reportError: "Kunde inte ladda rapporten.", reportExclusive: "Matchrapporter är exklusiva för Premier League.", reportTitle: "Matchrapport & Taktisk Analys", statsTitle: "LIVE MATCHSTATISTIK", poss: "Bollinnehav", shots: "Skott", search: "Sök efter ett lag...", toastSuccess: "Data har uppdaterats", toastError: "Det gick inte att ansluta till servern", predictVote: "Din förutsägelse...", win: "Vinst", draw: "Oavgjort", voteSaved: "Förutsägelsen sparades!", predictBtn: "Förutsäg Vinnare 🔮", predictLoading: "Analyserar lag...", predictError: "Kunde inte generera förutsägelse.", predictTitle: "Matchförutsägelse", readReportBtn: "Läs Matchrapport 📰", aboutUs: "Om Oss", contactUs: "Kontakt", privacyPolicy: "Integritetspolicy", liveOnly: "Endast Live", copyLink: "Länk kopierad!", gamePlay: "Spela 🎮" },
+            no: { title: "ScoreRecap | Resultater", live: "LIVE", yesterday: "I går", todayTab: "I dag", tomorrow: "I morgen", allLeagues: "Toppligaer", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Laster...", noMatches: "Ingen kamper funnet.", error: "Feil ved lasting av data.", ad: "Annonse", adBanner: "Annonseplass", rights: "Med enerett.", ended: "Avsluttet", noEvents: "Ingen nøkkelhendelser.", reportLoading: "Laster kamprapport...", reportError: "Kunne ikke laste rapporten.", reportExclusive: "Kamprapporter er eksklusive for Premier League.", reportTitle: "Kamprapport & Taktisk Analyse", statsTitle: "LIVE KAMPSTATISTIKK", poss: "Ballbesittelse", shots: "Skudd", search: "Søk etter et lag...", toastSuccess: "Data oppdatert", toastError: "Kunne ikke koble til serveren", predictVote: "Din spådom...", win: "Seier", draw: "Uavgjort", voteSaved: "Spådom lagret!", predictBtn: "Spå Vinner 🔮", predictLoading: "Analyserer lag...", predictError: "Kunne ikke generere spådom.", predictTitle: "Kampspådom", readReportBtn: "Les Kamprapport 📰", aboutUs: "Om Oss", contactUs: "Kontakt", privacyPolicy: "Personvern", liveOnly: "Kun Live", copyLink: "Lenke kopiert!", gamePlay: "Spille 🎮" },
+            da: { title: "ScoreRecap | Resultater", live: "LIVE", yesterday: "I går", todayTab: "I dag", tomorrow: "I morgen", allLeagues: "Topligaer", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Indlæser...", noMatches: "Ingen kampe fundet.", error: "Fejl ved indlæsning af data.", ad: "Annonce", adBanner: "Annonceplads", rights: "Alle rettigheder forbeholdes.", ended: "Afsluttet", noEvents: "Ingen nøglebegivenheder.", reportLoading: "Indlæser kamprapport...", reportError: "Kunne ikke indlæse rapporten.", reportExclusive: "Kamprapporter er eksklusive for Premier League.", reportTitle: "Kamprapport & Taktisk Analyse", statsTitle: "LIVE KAMPSTATISTIK", poss: "Boldbesiddelse", shots: "Skud", search: "Søg efter et hold...", toastSuccess: "Data opdateret", toastError: "Kunne ikke oprette forbindelse til serveren", predictVote: "Din forudsigelse...", win: "Sejr", draw: "Uafgjort", voteSaved: "Forudsigelse gemt!", predictBtn: "Forudsig Vinder 🔮", predictLoading: "Analyserer hold...", predictError: "Kunne ikke generere forudsigelse.", predictTitle: "Kampforudsigelse", readReportBtn: "Læs Kamprapport 📰", aboutUs: "Om Os", contactUs: "Kontakt", privacyPolicy: "Privatlivspolitik", liveOnly: "Kun Live", copyLink: "Link kopieret!", gamePlay: "Spil 🎮" }
         };
 
         function initTheme() { const htmlTag = document.getElementById('html-tag'); if (localStorage.getItem('app_theme') === 'dark') { htmlTag.classList.add('dark'); document.getElementById('theme-icon-sun').classList.remove('hidden'); document.getElementById('theme-icon-moon').classList.add('hidden'); } }
@@ -382,13 +369,12 @@
             safeSetText('opt-all', t.allLeagues); safeSetText('opt-ucl', t.ucl); safeSetText('opt-caf', t.caf); safeSetText('opt-champ', t.champ); safeSetText('opt-pl', t.pl); safeSetText('opt-liga', t.liga); safeSetText('opt-serie', t.serie); safeSetText('opt-ligue1', t.ligue1); safeSetText('opt-bundes', t.bundes);
             safeSetText('opt-saudi', t.saudi); safeSetText('opt-mls', t.mls); safeSetText('opt-botola', t.botola); safeSetText('opt-swe', t.swe); safeSetText('opt-nor', t.nor); safeSetText('opt-den', t.den);
             safeSetText('ad-label', t.ad); safeSetText('ad-banner', t.adBanner); safeSetText('footer-rights', t.rights);
-            
+           
             safeSetText('link-about', t.aboutUs || "About Us");
             safeSetText('link-contact', t.contactUs || "Contact Us");
             safeSetText('link-privacy', t.privacyPolicy || "Privacy Policy");
-            safeSetText('link-game', t.gameZone || "Game Zone 🎮");
+            safeSetText('link-game', t.gamePlay || "Play Game 🎮");
             safeSetText('txt-live-only', t.liveOnly || "Live Only");
-            safeSetText('txt-latest-reports', t.latestReports || "Latest Reports");
 
             const searchInput = document.getElementById('search-input'); if(searchInput) searchInput.placeholder = t.search;
             const leagueTextEl = document.getElementById('current-league-text'); if(leagueTextEl) leagueTextEl.innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
@@ -444,26 +430,6 @@
             if(refreshBtn) setTimeout(() => refreshBtn.classList.remove('animate-spin'), 500);
         }
 
-        // 🌟 دالة Deep Linking لجلب مباراة غير موجودة في القائمة الحالية
-        async function fetchSingleMatch(fId) {
-            try {
-                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/fixtures?id=${fId}`, { headers: { "x-action": "fetch-matches" } });
-                const data = await res.json();
-                if (data.response && data.response.length > 0) {
-                    const match = data.response[0];
-                    if (!allMatchesCached.find(m => String(m.fixture.id) === String(fId))) {
-                        allMatchesCached.unshift(match);
-                        filterAndRenderMatches();
-                        setTimeout(() => openMatch(fId, true), 100);
-                    }
-                } else {
-                    showToast(translations[currentLang].noMatches || "Match not found", "error");
-                    history.pushState(null, '', '/');
-                    handleRoute();
-                }
-            } catch (e) { console.error(e); }
-        }
-
         async function fetchMatchEvents(fixtureId, container) {
             if(!container) return; const cachedEvents = getFromCache(`events_${fixtureId}`);
             if (cachedEvents) { renderEvents(cachedEvents, container); return; }
@@ -474,14 +440,18 @@
             } catch (err) { container.innerHTML = `<p class="text-center text-red-500 text-xs py-1">Error fetching events</p>`; }
         }
 
+        // التفريق بين البطاقة الصفراء والحمراء
         function renderEvents(events, container) {
             if (!events || events.length === 0) { container.innerHTML = `<p class="text-center text-xs text-slate-500 py-2 italic">${translations[currentLang].noEvents}</p>`; return; }
             let html = `<div class="space-y-2 text-xs text-slate-600 dark:text-slate-400 mt-2 px-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">`;
             events.forEach(ev => {
                 let icon = '🔹';
                 if (ev.type === 'Goal') icon = '⚽';
-                else if (ev.type === 'Card') { icon = (ev.detail && ev.detail.includes('Red')) ? '🟥' : '🟨'; }
+                else if (ev.type === 'Card') {
+                    icon = (ev.detail && ev.detail.includes('Red')) ? '🟥' : '🟨';
+                }
                 else if (ev.type === 'subst') icon = '🔄';
+               
                 const teamName = getTeamName(ev.team.name, currentLang);
                 html += `<div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-1"><span class="font-bold w-6 text-emerald-500">${ev.time.elapsed}'</span><span>${icon} ${ev.player.name} <span class="opacity-50">(${teamName})</span></span></div>`;
             }); container.innerHTML = html + `</div>`;
@@ -536,7 +506,7 @@
                 const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article?${params.toString()}`, { method: "GET", headers: { "x-action": "generate-article" }, timeout: 45000 });
                 if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || "Error"); }
                 const data = await response.json();
-                aiBox.innerHTML = `<div class="mt-5 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden"><div class="relative w-full h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Stadium Background"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div><div class="relative z-10 flex items-center gap-4 sm:gap-8"><img src="${matchCached.teams.home.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"><div class="text-center mx-2 sm:mx-4"><div class="text-3xl sm:text-4xl font-black text-white drop-shadow-lg tracking-wider bg-slate-900/50 px-4 py-1 rounded-xl border border-white/10 backdrop-blur-sm">${matchCached.goals.home} - ${matchCached.goals.away}</div><div class="text-emerald-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest mt-2 drop-shadow-md">Full Time</div></div><img src="${matchCached.teams.away.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"></div></div><div class="p-5 sm:p-6"><div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3"><div class="flex items-center gap-3"><div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div><span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${translations[currentLang].reportTitle}</span></div></div><div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">${data.result}</div></div></div>`;
+                aiBox.innerHTML = `<div class="mt-5 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden"><div class="relative w-full h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Stadium Background"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div><div class="relative z-10 flex items-center gap-6 sm:gap-10"><img src="${matchCached.teams.home.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"><span class="text-white font-black text-2xl sm:text-3xl italic opacity-90 drop-shadow-lg">VS</span><img src="${matchCached.teams.away.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"></div></div><div class="p-5 sm:p-6"><div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3"><div class="flex items-center gap-3"><div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div><span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${translations[currentLang].reportTitle}</span></div></div><div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">${data.result}</div></div></div>`;
                 btnElement.style.display = 'none';
             } catch (error) { aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${error.message || translations[currentLang].reportError}</p>`; btnElement.innerText = translations[currentLang].readReportBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed'); }
         }
@@ -561,9 +531,10 @@
             }
         }
 
+        // 🚨 نظام التوجيه للعبة والصفحات الثابتة
         function handleRoute() {
-            const path = window.location.pathname; 
-            
+            const path = window.location.pathname;
+           
             document.getElementById('home-section').classList.add('hidden');
             document.querySelectorAll('[id^="details-"]').forEach(el => el.classList.add('hidden'));
             document.getElementById('static-pages-section').classList.add('hidden');
@@ -572,35 +543,14 @@
             document.getElementById('page-privacy').classList.add('hidden');
             document.getElementById('page-game').classList.add('hidden');
 
-            if (path.startsWith('/match/')) { 
+            if (path.startsWith('/match/')) {
                 document.getElementById('home-section').classList.remove('hidden');
-                const pathParts = path.split('/'); const fId = pathParts[2]; 
-                if (fId) { 
-                    setTimeout(() => {
-                        const details = document.getElementById(`details-${fId}`);
-                        if (details) {
-                            openMatch(fId, true);
-                        } else if (allMatchesCached.length > 0) {
-                            fetchSingleMatch(fId);
-                        } else {
-                            setTimeout(() => {
-                                if(!allMatchesCached.find(m => String(m.fixture.id) === String(fId))) {
-                                    fetchSingleMatch(fId);
-                                } else {
-                                    openMatch(fId, true);
-                                }
-                            }, 1500);
-                        }
-                    }, 100); 
-                    return; 
-                } 
+                const pathParts = path.split('/'); const fId = pathParts[2];
+                if (fId) { setTimeout(() => openMatch(fId, true), 100); return; }
             }
             else if (path === '/game') {
-                document.title = "Game Zone | ScoreRecap";
+                document.title = "Play Game | ScoreRecap";
                 document.getElementById('page-game').classList.remove('hidden');
-                startPenalty();
-                startJuggle();
-                startFlickGK();
             }
             else if (path === '/about') {
                 document.title = "About Us | ScoreRecap";
@@ -618,7 +568,7 @@
                 document.getElementById('page-privacy').classList.remove('hidden');
             }
             else {
-                document.title = translations[currentLang].title || "ScoreRecap | Scores"; 
+                document.title = translations[currentLang].title || "ScoreRecap | Scores";
                 document.getElementById('home-section').classList.remove('hidden');
             }
         }
@@ -626,20 +576,17 @@
         function filterAndRenderMatches() {
             const container = document.getElementById('api-scores-container'); const currentT = translations[currentLang] || translations['en'];
            
-            const pathParts = window.location.pathname.split('/');
-            const activeMatchId = pathParts[1] === 'match' ? pathParts[2] : null;
-
             let filtered = [];
             if (selectedLeagueId === 'all') {
-                filtered = allMatchesCached.filter(m => TOP_LEAGUES.includes(String(m.league.id)) || String(m.fixture.id) === activeMatchId);
+                filtered = allMatchesCached.filter(m => TOP_LEAGUES.includes(String(m.league.id)));
             } else {
-                filtered = allMatchesCached.filter(m => String(m.league.id) === String(selectedLeagueId) || String(m.fixture.id) === activeMatchId);
+                filtered = allMatchesCached.filter(m => String(m.league.id) === String(selectedLeagueId));
             }
 
-            if (currentSearchQuery) { const query = currentSearchQuery.toLowerCase(); filtered = filtered.filter(m => m.teams.home.name.toLowerCase().includes(query) || m.teams.away.name.toLowerCase().includes(query) || String(m.fixture.id) === activeMatchId); }
-            
+            if (currentSearchQuery) { const query = currentSearchQuery.toLowerCase(); filtered = filtered.filter(m => m.teams.home.name.toLowerCase().includes(query) || m.teams.away.name.toLowerCase().includes(query)); }
+           
             if (showLiveOnly) {
-                filtered = filtered.filter(m => ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(m.fixture.status.short) || String(m.fixture.id) === activeMatchId);
+                filtered = filtered.filter(m => ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(m.fixture.status.short));
             }
 
             if (!filtered || filtered.length === 0) { container.innerHTML = `<div class="bg-white border rounded-xl p-8 text-center font-medium text-slate-500 shadow-sm">${currentT.noMatches}</div>`; return; }
@@ -711,165 +658,48 @@
             handleRoute();
         }
 
-        // 🚨 ألعاب مصغرة: Penalty, Keepy-Uppy, Flick Shoot
-        let p_ballPos = 0, p_ballDir = 1, p_interval, p_score = 0, p_active = false;
-        function startPenalty() {
-            if(p_active) return;
-            p_active = true;
-            document.getElementById('p-msg').innerHTML = '';
-            document.getElementById('btn-penalty').innerText = 'SHOOT!';
-            document.getElementById('btn-penalty').className = 'w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xl py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest';
-            let speed = 3 + (p_score * 0.5); if(speed > 10) speed = 10;
-            p_interval = setInterval(() => {
-                p_ballPos += p_ballDir * speed;
-                if(p_ballPos >= 92) p_ballDir = -1;
-                if(p_ballPos <= 0) p_ballDir = 1;
-                document.getElementById('p-ball').style.left = p_ballPos + '%';
+        // 🚨 سكربت اللعبة (Penalty Game Logic)
+        let ballPos = 0; let ballDir = 1; let gameInterval; let gameScore = 0; let gameActive = false;
+        function startGame() {
+            if(gameActive) return;
+            gameActive = true;
+            document.getElementById('game-result-msg').innerHTML = '';
+            document.getElementById('btn-shoot-game').innerText = 'SHOOT!';
+            document.getElementById('btn-shoot-game').classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+            document.getElementById('btn-shoot-game').classList.add('bg-blue-600', 'hover:bg-blue-700');
+           
+            // سرعة الكرة تزيد كلما زادت النقاط
+            let speed = 3 + (gameScore * 0.5);
+            if(speed > 10) speed = 10;
+
+            gameInterval = setInterval(() => {
+                ballPos += ballDir * speed;
+                if(ballPos >= 92) ballDir = -1;
+                if(ballPos <= 0) ballDir = 1;
+                document.getElementById('game-ball').style.left = ballPos + '%';
             }, 30);
         }
-        function shootPenalty() {
-            if(!p_active) { startPenalty(); return; }
-            clearInterval(p_interval); p_active = false;
-            const msg = document.getElementById('p-msg'), scoreEl = document.getElementById('p-score'), btn = document.getElementById('btn-penalty');
-            if(p_ballPos >= 38 && p_ballPos <= 60) {
-                msg.innerHTML = '<span class="text-emerald-500">GOAL! ⚽</span>'; p_score++;
-                btn.classList.replace('bg-blue-600', 'bg-emerald-600'); btn.classList.replace('hover:bg-blue-700', 'hover:bg-emerald-700');
+
+        function shootBall() {
+            if(!gameActive) { startGame(); return; }
+            clearInterval(gameInterval);
+            gameActive = false;
+            const resEl = document.getElementById('game-result-msg');
+            const scoreEl = document.getElementById('game-score');
+            const btn = document.getElementById('btn-shoot-game');
+           
+            // المنطقة الخضراء من 40% إلى 60%
+            if(ballPos >= 38 && ballPos <= 60) {
+                resEl.innerHTML = '<span class="text-emerald-500">GOAL! ⚽🔥</span>';
+                gameScore++;
+                btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
             } else {
-                msg.innerHTML = '<span class="text-red-500">MISS! ❌</span>'; p_score = 0;
+                resEl.innerHTML = '<span class="text-red-500">MISS! ❌</span>';
+                gameScore = 0;
             }
-            scoreEl.innerText = p_score; btn.innerText = "PLAY AGAIN";
-        }
-
-        let j_score = 0, j_active = false, j_y = 50, j_vy = 0, j_interval;
-        function startJuggle() {
-            if(j_active) return;
-            j_active = true; j_score = 0; j_y = 50; j_vy = -10;
-            document.getElementById('j-score').innerText = j_score;
-            document.getElementById('j-msg').innerHTML = '';
-            document.getElementById('btn-juggle').classList.add('hidden');
-            j_interval = setInterval(() => {
-                j_vy += 1;
-                j_y += j_vy;
-                const ball = document.getElementById('j-ball');
-                if(j_y >= 200) {
-                    clearInterval(j_interval); j_active = false;
-                    document.getElementById('j-msg').innerHTML = '<span class="text-red-500 font-bold">DROPPED! ❌</span>';
-                    document.getElementById('btn-juggle').classList.remove('hidden');
-                    document.getElementById('btn-juggle').innerText = 'TRY AGAIN';
-                } else {
-                    ball.style.top = j_y + 'px';
-                }
-            }, 30);
-        }
-        function hitJuggle(e) {
-            if(e) e.preventDefault();
-            if(!j_active) return;
-            j_vy = -12; j_score++;
-            document.getElementById('j-score').innerText = j_score;
-        }
-
-        let fs_score = 0, fs_gkPos = 40, fs_gkDir = 1, fs_gkInterval, fs_isShooting = false;
-        function startFlickGK() {
-            if(fs_gkInterval) clearInterval(fs_gkInterval);
-            fs_gkInterval = setInterval(() => {
-                let speed = 1.5 + (fs_score * 0.3);
-                if(speed > 6) speed = 6;
-                fs_gkPos += fs_gkDir * speed;
-                if(fs_gkPos >= 80) fs_gkDir = -1;
-                if(fs_gkPos <= 0) fs_gkDir = 1;
-                document.getElementById('fs-gk').style.left = fs_gkPos + '%';
-            }, 30);
-        }
-        function shootFlick(e) {
-            if (fs_isShooting) return;
-            fs_isShooting = true;
-
-            const area = document.getElementById('fs-area');
-            const ball = document.getElementById('fs-ball');
-            const rect = area.getBoundingClientRect();
-            
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-            
-            const targetX = (clickX / rect.width) * 100;
-            const targetY = (clickY / rect.height) * 100;
-
-            ball.style.left = targetX + '%';
-            ball.style.bottom = (100 - targetY) + '%';
-            ball.style.transform = 'translate(-50%, 50%) scale(0.5)';
-
-            setTimeout(() => {
-                const gk = document.getElementById('fs-gk');
-                const gkRect = gk.getBoundingClientRect();
-                const ballRect = ball.getBoundingClientRect();
-
-                const isSaved = !(ballRect.right < gkRect.left || ballRect.left > gkRect.right || ballRect.bottom < gkRect.top || ballRect.top > gkRect.bottom);
-                const msg = document.getElementById('fs-msg');
-
-                if (isSaved) {
-                    msg.innerHTML = '<span class="text-red-500">SAVED! 🧤</span>';
-                    fs_score = 0;
-                    endFlick();
-                } else if (targetX > 20 && targetX < 80 && targetY < 30) {
-                    msg.innerHTML = '<span class="text-emerald-500">GOAL! ⚽</span>';
-                    fs_score++;
-                    document.getElementById('fs-score').innerText = fs_score;
-                    setTimeout(resetFlickBall, 1000);
-                } else {
-                    msg.innerHTML = '<span class="text-red-500">MISS! ❌</span>';
-                    fs_score = 0;
-                    endFlick();
-                }
-            }, 300); 
-        }
-        function resetFlickBall() {
-            const ball = document.getElementById('fs-ball');
-            ball.style.left = '50%';
-            ball.style.bottom = '1rem';
-            ball.style.transform = 'translate(-50%, 0) scale(1)';
-            document.getElementById('fs-msg').innerHTML = '';
-            fs_isShooting = false;
-        }
-        function endFlick() {
-            clearInterval(fs_gkInterval);
-            document.getElementById('btn-fs-reset').classList.remove('hidden');
-            document.getElementById('fs-score').innerText = fs_score;
-        }
-        function resetFlick() {
-            document.getElementById('btn-fs-reset').classList.add('hidden');
-            resetFlickBall();
-            startFlickGK();
-        }
-
-        async function fetchLatestReports() {
-            const container = document.getElementById('latest-reports-container');
-            if(!container) return;
-            try {
-                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/latest-reports`, { headers: { "x-action": "latest-reports" }, timeout: 10000 });
-                const reports = await res.json();
-                if (reports && reports.length > 0) {
-                    let html = '';
-                    reports.forEach(r => {
-                        html += `
-                        <a href="${r.url}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-                            <div class="flex flex-col items-center gap-1 w-10 flex-shrink-0">
-                                <img src="${r.logoHome}" class="w-5 h-5 object-contain">
-                                <img src="${r.logoAway}" class="w-5 h-5 object-contain">
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-700 dark:text-slate-200 line-clamp-2">${r.title}</h4>
-                                <span class="text-[9px] text-emerald-500 uppercase font-bold tracking-wider">Match Analysis</span>
-                            </div>
-                        </a>
-                        `;
-                    });
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = `<p class="text-xs text-slate-500 text-center italic py-2">No reports yet.</p>`;
-                }
-            } catch (err) {
-                container.innerHTML = `<p class="text-xs text-red-500 text-center">Failed to load reports.</p>`;
-            }
+            scoreEl.innerText = gameScore;
+            btn.innerText = "PLAY AGAIN";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -877,9 +707,16 @@
             initLanguage();
             startLocalClock();
             fetchLiveMatches();
-            fetchLatestReports();
             setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
            
+            // ربط زر اللعبة
+            const btnShoot = document.getElementById('btn-shoot-game');
+            if(btnShoot) {
+                btnShoot.addEventListener('click', shootBall);
+                // بدء اللعبة تلقائياً إذا كان المسار /game
+                if(window.location.pathname === '/game') startGame();
+            }
+
             document.querySelectorAll('.date-tab').forEach(btn => { btn.addEventListener('click', (e) => { document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('date-tab-active')); e.currentTarget.classList.add('date-tab-active'); currentDateOffset = parseInt(e.currentTarget.getAttribute('data-offset')); allMatchesCached = []; fetchLiveMatches(true); }); });
             const searchInput = document.getElementById('search-input'); if (searchInput) { searchInput.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentSearchQuery = e.target.value.trim(); filterAndRenderMatches(); }, 300); }); }
             document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme); document.getElementById('btn-refresh').addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
@@ -960,11 +797,7 @@
                     if (window.location.pathname !== href) {
                         history.pushState(null, '', href);
                         handleRoute();
-                        if(href === '/game') {
-                            startPenalty();
-                            startJuggle();
-                            startFlickGK();
-                        }
+                        if(href === '/game') startGame(); // تشغيل اللعبة عند الدخول
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 });
