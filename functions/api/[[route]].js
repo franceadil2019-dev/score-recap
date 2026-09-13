@@ -129,7 +129,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 5. تقرير المباراة
+    // 5. تقرير المباراة (مع التحديث الفوري لأحدث التقارير)
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -174,16 +174,28 @@ export async function onRequest(context) {
       const articleText = aiData.candidates[0].content.parts[0].text;
      
       if (env.SPORTS_KV) {
+        // حفظ المقال
         waitUntil(env.SPORTS_KV.put(kvKey, articleText));
         
-        // 🚨 السر هنا: مسح الذاكرة المؤقتة لقائمة "أحدث التقارير" لكي تتحدث فوراً!
-        waitUntil(env.SPORTS_KV.delete("cached_latest_reports"));
+        // 🚨 إضافة رقم المباراة فوراً إلى مصفوفة أحدث التقارير لتجنب تأخير Cloudflare KV List
+        waitUntil((async () => {
+            try {
+                let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
+                if (!recent) recent = [];
+                if (!recent.includes(fixtureId)) {
+                    recent.unshift(fixtureId);
+                    recent = recent.slice(0, 10); // نحتفظ بآخر 10 مباريات فقط
+                    await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
+                }
+                await env.SPORTS_KV.delete("cached_latest_reports");
+            } catch (e) {}
+        })());
       }
 
       return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 6. أحدث التقارير
+    // 6. أحدث التقارير (تم تحديثها لتكون فورية)
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
@@ -192,20 +204,13 @@ export async function onRequest(context) {
         return new Response(cachedList, { headers: corsHeaders });
       }
 
-      const listed = await env.SPORTS_KV.list({ prefix: "recap_", limit: 30 });
-      const fixtureIds = [];
-      
-      for (const key of listed.keys) {
-        const match = key.name.match(/recap_(?:v2_)?(\d+)/);
-        if (match && match[1] && !fixtureIds.includes(match[1])) {
-          fixtureIds.push(match[1]);
-        }
-        if (fixtureIds.length >= 5) break;
-      }
-
-      if (fixtureIds.length === 0) {
+      // جلب المصفوفة المباشرة بدلاً من البحث البطيء (List)
+      const recentIds = await env.SPORTS_KV.get("recent_generated_reports", "json");
+      if (!recentIds || recentIds.length === 0) {
         return new Response(JSON.stringify([]), { headers: corsHeaders });
       }
+
+      const fixtureIds = recentIds.slice(0, 5);
 
       const res = await fetch(`https://v3.football.api-sports.io/fixtures?ids=${fixtureIds.join('-')}`, {
         headers: { "x-apisports-key": env.API_SPORTS_KEY }
@@ -214,22 +219,25 @@ export async function onRequest(context) {
       
       const reports = [];
       if (data.response) {
-        data.response.forEach(m => {
-          const home = m.teams.home.name;
-          const away = m.teams.away.name;
-          const slug = `${home.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}-vs-${away.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}`;
-          reports.push({
-            fixtureId: m.fixture.id,
-            title: `${home} vs ${away}`,
-            url: `/match/${m.fixture.id}/${slug}`,
-            logoHome: m.teams.home.logo,
-            logoAway: m.teams.away.logo
-          });
+        // ترتيب النتائج بناءً على ترتيب المصفوفة الأصلية (الأحدث أولاً)
+        fixtureIds.forEach(id => {
+            const m = data.response.find(match => String(match.fixture.id) === String(id));
+            if (m) {
+                const home = m.teams.home.name;
+                const away = m.teams.away.name;
+                const slug = `${home.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}-vs-${away.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}`;
+                reports.push({
+                    fixtureId: m.fixture.id,
+                    title: `${home} vs ${away}`,
+                    url: `/match/${m.fixture.id}/${slug}`,
+                    logoHome: m.teams.home.logo,
+                    logoAway: m.teams.away.logo
+                });
+            }
         });
       }
 
       const responseText = JSON.stringify(reports);
-      // جعلنا مدة الكاش 10 دقائق فقط لتحديث أسرع
       waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText, { expirationTtl: 600 }));
 
       return new Response(responseText, { headers: corsHeaders });
