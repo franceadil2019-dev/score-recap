@@ -1,190 +1,188 @@
 export async function onRequest(context) {
-    const { request, env, waitUntil } = context;
-    const url = new URL(request.url);
-   
-    // استخراج رقم المباراة من الرابط (مثال: /match/123456/arsenal-vs-chelsea)
-    const routeParams = context.params.route || [];
-    const fixtureId = routeParams[0];
+  const { request, env, waitUntil } = context;
+  const url = new URL(request.url);
 
-    // 🌟 دالة جديدة: عرض الواجهة الأمامية (SPA) بدون تغيير الرابط بدلاً من إعادة التوجيه
-    const serveSPA = () => env.ASSETS.fetch(new Request(url.origin + "/"));
+  const actionHeader = request.headers.get("x-action");
+  const pathname = url.pathname.replace('/api', '').toLowerCase();
+  const action = (actionHeader || pathname).toLowerCase();
 
-    // إذا لم يكن هناك رقم مباراة، نعرض الصفحة الرئيسية
-    if (!fixtureId) {
-        return serveSPA();
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type, x-action",
+    "Content-Type": "application/json"
+  };
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!env.API_SPORTS_KEY) {
+    return new Response(JSON.stringify({ error: "API_SPORTS_KEY is missing" }), { status: 500, headers: corsHeaders });
+  }
+
+  // 🛡️ دالة جلب البيانات مع الكاش المضمون (KV Cache)
+  async function getFromApiSports(endpoint, kvKey, ttlSeconds) {
+    if (env.SPORTS_KV) {
+      try {
+        const cachedData = await env.SPORTS_KV.get(kvKey);
+        if (cachedData) {
+          return new Response(cachedData, { headers: corsHeaders });
+        }
+      } catch (e) {}
     }
 
-    if (!env.API_SPORTS_KEY || !env.GEMINI_API_KEY) {
-        return serveSPA();
-    }
+    const res = await fetch(`https://v3.football.api-sports.io/${endpoint}`, {
+      headers: { "x-apisports-key": env.API_SPORTS_KEY }
+    });
+    const dataText = await res.text();
 
     try {
-        // 1. جلب تفاصيل المباراة من API-Sports
-        const matchRes = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, {
-            headers: { "x-apisports-key": env.API_SPORTS_KEY }
-        });
-        const matchData = await matchRes.json();
-       
-        if (!matchData.response || matchData.response.length === 0) {
-            return serveSPA();
-        }
+      const dataObj = JSON.parse(dataText);
+      if (env.SPORTS_KV && res.ok && (!dataObj.errors || Object.keys(dataObj.errors).length === 0)) {
+        const safeTtl = Math.max(ttlSeconds, 60);
+        waitUntil(env.SPORTS_KV.put(kvKey, dataText, { expirationTtl: safeTtl }));
+      }
+    } catch (e) {}
 
-        const match = matchData.response[0];
-       
-        // إذا لم يكن الدوري الإنجليزي (39)، نعرض الواجهة العادية ليرى الزائر النتيجة والتفاصيل
-        if (String(match.league.id) !== "39") {
-            return serveSPA();
-        }
+    return new Response(dataText, { headers: corsHeaders });
+  }
 
-        const homeTeam = match.teams.home.name;
-        const awayTeam = match.teams.away.name;
-        const score = `${match.goals.home} - ${match.goals.away}`;
-        const matchStr = `${homeTeam} vs ${awayTeam}`;
-        const status = match.fixture.status.short;
+  // خريطة اللغات لترجمة طلبات الذكاء الاصطناعي
+  const langMap = {
+    en: "English", ar: "Arabic", fr: "French", es: "Spanish", de: "German",
+    it: "Italian", sv: "Swedish", no: "Norwegian", da: "Danish"
+  };
 
-        // إذا كانت المباراة لم تنتهِ بعد (Live أو مجدولة)، نعرض الواجهة العادية
-        if (status !== 'FT' && status !== 'AET' && status !== 'PEN') {
-            return serveSPA();
-        }
-
-        // 2. البحث عن المقال في قاعدة البيانات (KV) أو توليده
-        const lang = "en";
-        const kvKey = `recap_${fixtureId}_${lang}`;
-        let articleHTML = "";
-
-        if (env.SPORTS_KV) {
-            articleHTML = await env.SPORTS_KV.get(kvKey);
-        }
-
-        if (!articleHTML) {
-            // جلب الأحداث لمساعدة الذكاء الاصطناعي
-            const eventsRes = await fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`, {
-                headers: { "x-apisports-key": env.API_SPORTS_KEY }
-            });
-            const eventsData = await eventsRes.json();
-            let eventsStr = "No specific events";
-            if (eventsData.response && eventsData.response.length > 0) {
-                eventsStr = eventsData.response.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', ');
-            }
-
-            const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging, and detailed match report for the Premier League fixture: ${matchStr}. Final score: ${score}. Key events: ${eventsStr}.
-            The article MUST include:
-            1. A catchy headline wrapped in an <h2> HTML tag.
-            2. An exciting introduction wrapped in <p> tags.
-            3. A tactical analysis paragraph wrapped in <p> tags.
-            4. A "Turning Point" section using an <h3> tag, followed by a bulleted list <ul><li>...</li></ul>.
-            5. A strong conclusion paragraph.
-            Write the ENTIRE article perfectly in English. Return ONLY valid clean HTML code. Do NOT wrap the response in markdown blocks.`;
-
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
-                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-           
-            const aiData = await aiRes.json();
-            if (aiRes.ok && aiData.candidates) {
-                articleHTML = aiData.candidates[0].content.parts[0].text;
-                if (env.SPORTS_KV) { waitUntil(env.SPORTS_KV.put(kvKey, articleHTML)); }
-            } else {
-                articleHTML = "<p>Match report is currently being prepared. Please check back later.</p>";
-            }
-        }
-
-        // 3. بناء صفحة HTML مستقلة ومثالية للسيو (SEO)
-        const title = `${matchStr} (${score}) - Premier League Match Report | ScoreRecap`;
-        const description = `Read the full match report, tactical breakdown, and key highlights for ${matchStr}. Final Score: ${score}.`;
-        const canonicalUrl = `${url.origin}${url.pathname}`;
-
-        const html = `<!DOCTYPE html>
-<html lang="en" dir="ltr" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title>
-    <meta name="description" content="${description}">
-    <link rel="canonical" href="${canonicalUrl}">
-   
-    <!-- Open Graph SEO (للمشاركة في فيسبوك وواتساب) -->
-    <meta property="og:title" content="${title}">
-    <meta property="og:description" content="${description}">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="${canonicalUrl}">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1200&auto=format&fit=crop">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script> tailwind.config = { darkMode: 'class', } </script>
-   
-    <style>
-        .ai-article-content h2 { font-size: 1.5rem; font-weight: 900; margin-top: 1.5rem; margin-bottom: 1rem; color: #60a5fa; }
-        .ai-article-content h3 { font-size: 1.25rem; font-weight: 800; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #cbd5e1; }
-        .ai-article-content p { margin-bottom: 1.25rem; line-height: 1.8; font-size: 1.05rem; color: #e2e8f0; }
-        .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; font-size: 1.05rem; color: #e2e8f0; }
-        .ai-article-content li { margin-bottom: 0.5rem; }
-        .ai-article-content strong { color: #10b981; }
-    </style>
-</head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
-   
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="/" class="text-2xl font-black text-emerald-500 tracking-tight">SCORE<span class="text-white">RECAP</span></a>
-            <a href="/" class="text-sm font-bold text-slate-300 hover:text-white transition-colors flex items-center gap-2">
-                &larr; Back to Scores
-            </a>
-        </div>
-    </header>
-
-    <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
-        <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-            <!-- صورة الغلاف الاحترافية -->
-            <div class="relative w-full h-56 sm:h-72 bg-slate-950 flex items-center justify-center overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1200&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-30" alt="Stadium">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
-                <div class="relative z-10 flex items-center gap-8 sm:gap-16">
-                    <div class="text-center">
-                        <img src="${match.teams.home.logo}" class="w-20 h-20 sm:w-28 sm:h-28 drop-shadow-2xl mx-auto mb-3">
-                        <span class="font-bold text-sm sm:text-base">${match.teams.home.name}</span>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-4xl sm:text-5xl font-black text-white drop-shadow-lg mb-1">${score}</div>
-                        <span class="text-emerald-500 font-bold text-xs sm:text-sm uppercase tracking-widest">Full Time</span>
-                    </div>
-                    <div class="text-center">
-                        <img src="${match.teams.away.logo}" class="w-20 h-20 sm:w-28 sm:h-28 drop-shadow-2xl mx-auto mb-3">
-                        <span class="font-bold text-sm sm:text-base">${match.teams.away.name}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- محتوى المقال -->
-            <div class="p-6 sm:p-10">
-                <div class="flex items-center gap-3 mb-8 border-b border-slate-800 pb-4">
-                    <div class="bg-slate-800 p-2.5 rounded-xl text-blue-400">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-                    </div>
-                    <h1 class="text-lg sm:text-xl font-black text-white uppercase tracking-widest">Match Report & Tactical Analysis</h1>
-                </div>
-               
-                <div class="ai-article-content">
-                    ${articleHTML}
-                </div>
-            </div>
-        </article>
-    </main>
-
-    <footer class="bg-slate-900 border-t border-slate-800 text-center py-6 text-slate-500 text-sm mt-auto">
-        <p>&copy; 2026 ScoreRecap. All rights reserved.</p>
-    </footer>
-</body>
-</html>`;
-
-        return new Response(html, {
-            headers: {
-                "Content-Type": "text/html; charset=utf-8",
-                "Cache-Control": "public, max-age=86400"
-            }
-        });
-
-    } catch (error) {
-        return new Response(`Error: ${error.message}`, { status: 500 });
+  try {
+    // 1. جلب قائمة المباريات
+    if (action.includes("fetch-matches") || action.includes("fixtures")) {
+      const date = url.searchParams.get("date") || new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split('T')[0];
+      const ttl = (date === today) ? 60 : 86400;
+      return await getFromApiSports(`fixtures?date=${date}`, `api_fixtures_${date}`, ttl);
     }
+
+    // 2. جلب الأحداث
+    if (action.includes("fetch-events") || action.includes("events")) {
+      const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
+      if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
+      return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, 60);
+    }
+
+    // 3. جلب الإحصائيات
+    if (action.includes("fetch-stats") || action.includes("statistics")) {
+      const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
+      if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
+      return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 60);
+    }
+
+    // 4. التوقعات الذكية (تبقى لمدة 24 ساعة لأنها تفقد قيمتها بعد بدء المباراة)
+    if (action.includes("predict-match") || action.includes("predict")) {
+      const leagueId = url.searchParams.get("leagueId");
+      if (leagueId && leagueId !== "39") {
+        return new Response(JSON.stringify({ error: "Predictions available only for Premier League." }), { status: 403, headers: corsHeaders });
+      }
+
+      const fixtureId = url.searchParams.get("fixtureId");
+      const homeTeam = url.searchParams.get("homeTeam");
+      const awayTeam = url.searchParams.get("awayTeam");
+      const languageCode = url.searchParams.get("language") || "en";
+      const targetLang = langMap[languageCode] || "English";
+     
+      const kvKey = `predict_v2_${fixtureId}_${languageCode}`;
+
+      if (env.SPORTS_KV) {
+        const cachedPrediction = await env.SPORTS_KV.get(kvKey);
+        if (cachedPrediction) {
+          return new Response(JSON.stringify({ result: cachedPrediction, source: "KV_CACHE" }), { headers: corsHeaders });
+        }
+      }
+
+      if (!env.GEMINI_API_KEY) {
+        return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
+      }
+
+      const prompt = `Act as an expert football analyst. Write a short, engaging tactical preview for the upcoming Premier League match between ${homeTeam} and ${awayTeam}.
+      Focus on team form, key tactical battles, and who has the upper hand.
+      IMPORTANT: DO NOT predict an exact numerical score (like 2-1). Just analyze the expected flow of the game and the likely outcome (e.g., a tight draw, a comfortable home win, etc.).
+      Write the ENTIRE response perfectly in ${targetLang}.
+      Return ONLY valid HTML (use <p> and <strong> for emphasis). Do not wrap inside markdown code blocks.`;
+
+      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+
+      const aiData = await aiRes.json();
+      if (!aiRes.ok || !aiData.candidates) {
+        return new Response(JSON.stringify({ error: `Gemini Error` }), { status: 500, headers: corsHeaders });
+      }
+
+      const predictionText = aiData.candidates[0].content.parts[0].text;
+      if (env.SPORTS_KV) {
+        waitUntil(env.SPORTS_KV.put(kvKey, predictionText, { expirationTtl: 86400 }));
+      }
+
+      return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
+    }
+
+    // 5. تقرير المباراة (تم التعديل: حفظ المقال للأبد من أجل أدسنس والـ SEO)
+    if (action.includes("generate-article") || action.includes("article")) {
+      const leagueId = url.searchParams.get("leagueId");
+      if (leagueId && leagueId !== "39") {
+        return new Response(JSON.stringify({ error: "Match reports available only for Premier League." }), { status: 403, headers: corsHeaders });
+      }
+
+      const fixtureId = url.searchParams.get("fixtureId");
+      const matchStr = url.searchParams.get("matchStr");
+      const score = url.searchParams.get("score");
+      const events = url.searchParams.get("events");
+      const languageCode = url.searchParams.get("language") || "en";
+      const targetLang = langMap[languageCode] || "English";
+     
+      const kvKey = `recap_v2_${fixtureId}_${languageCode}`;
+
+      if (env.SPORTS_KV) {
+        const cachedArticle = await env.SPORTS_KV.get(kvKey);
+        if (cachedArticle) {
+          return new Response(JSON.stringify({ result: cachedArticle, source: "KV_CACHE" }), { headers: corsHeaders });
+        }
+      }
+
+      if (!env.GEMINI_API_KEY) {
+        return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
+      }
+
+      const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging match report for the Premier League match: ${matchStr}. Final Score: ${score}. Key Events: ${events}. Include: <h2>Title</h2>, <p>Introduction</p>, <p>Tactical Analysis</p>, <h3>Turning Point</h3> with <ul><li>...</li></ul>, and a strong conclusion.
+      Write the ENTIRE article perfectly in ${targetLang}.
+      Return ONLY clean HTML code without markdown wrappers.`;
+
+      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+
+      const aiData = await aiRes.json();
+      if (!aiRes.ok || !aiData.candidates) {
+        return new Response(JSON.stringify({ error: `Gemini Error` }), { status: 500, headers: corsHeaders });
+      }
+
+      const articleText = aiData.candidates[0].content.parts[0].text;
+     
+      // 🚨 السحر هنا: قمنا بحذف الـ expirationTtl ليتم حفظ المقال للأبد!
+      if (env.SPORTS_KV) {
+        waitUntil(env.SPORTS_KV.put(kvKey, articleText));
+      }
+
+      return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
+    }
+
+    return new Response(JSON.stringify({ error: "Route or Action Not Found" }), { status: 404, headers: corsHeaders });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+  }
 }
+
