@@ -2,14 +2,11 @@ export async function onRequest(context) {
     const { request, env, waitUntil } = context;
     const url = new URL(request.url);
    
-    // استخراج رقم المباراة من الرابط (مثال: /match/123456/arsenal-vs-chelsea)
     const routeParams = context.params.route || [];
     const fixtureId = routeParams[0];
 
-    // 🌟 دالة جديدة: عرض الواجهة الأمامية (SPA) بدون تغيير الرابط بدلاً من إعادة التوجيه
     const serveSPA = () => env.ASSETS.fetch(new Request(url.origin + "/"));
 
-    // إذا لم يكن هناك رقم مباراة، نعرض الصفحة الرئيسية
     if (!fixtureId) {
         return serveSPA();
     }
@@ -19,7 +16,6 @@ export async function onRequest(context) {
     }
 
     try {
-        // 1. جلب تفاصيل المباراة من API-Sports
         const matchRes = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, {
             headers: { "x-apisports-key": env.API_SPORTS_KEY }
         });
@@ -31,7 +27,6 @@ export async function onRequest(context) {
 
         const match = matchData.response[0];
        
-        // إذا لم يكن الدوري الإنجليزي (39)، نعرض الواجهة العادية ليرى الزائر النتيجة والتفاصيل
         if (String(match.league.id) !== "39") {
             return serveSPA();
         }
@@ -42,12 +37,10 @@ export async function onRequest(context) {
         const matchStr = `${homeTeam} vs ${awayTeam}`;
         const status = match.fixture.status.short;
 
-        // إذا كانت المباراة لم تنتهِ بعد (Live أو مجدولة)، نعرض الواجهة العادية
         if (status !== 'FT' && status !== 'AET' && status !== 'PEN') {
             return serveSPA();
         }
 
-        // 2. البحث عن المقال في قاعدة البيانات (KV) أو توليده
         const lang = "en";
         const kvKey = `recap_${fixtureId}_${lang}`;
         let articleHTML = "";
@@ -57,7 +50,6 @@ export async function onRequest(context) {
         }
 
         if (!articleHTML) {
-            // جلب الأحداث لمساعدة الذكاء الاصطناعي
             const eventsRes = await fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`, {
                 headers: { "x-apisports-key": env.API_SPORTS_KEY }
             });
@@ -89,7 +81,6 @@ export async function onRequest(context) {
             }
         }
 
-        // 3. بناء صفحة HTML مستقلة ومثالية للسيو (SEO)
         const title = `${matchStr} (${score}) - Premier League Match Report | ScoreRecap`;
         const description = `Read the full match report, tactical breakdown, and key highlights for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
@@ -103,7 +94,6 @@ export async function onRequest(context) {
     <meta name="description" content="${description}">
     <link rel="canonical" href="${canonicalUrl}">
    
-    <!-- Open Graph SEO (للمشاركة في فيسبوك وواتساب) -->
     <meta property="og:title" content="${title}">
     <meta property="og:description" content="${description}">
     <meta property="og:type" content="article">
@@ -135,7 +125,6 @@ export async function onRequest(context) {
 
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
         <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-            <!-- صورة الغلاف الاحترافية -->
             <div class="relative w-full h-56 sm:h-72 bg-slate-950 flex items-center justify-center overflow-hidden">
                 <img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1200&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-30" alt="Stadium">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
@@ -155,11 +144,10 @@ export async function onRequest(context) {
                 </div>
             </div>
 
-            <!-- محتوى المقال -->
             <div class="p-6 sm:p-10">
                 <div class="flex items-center gap-3 mb-8 border-b border-slate-800 pb-4">
                     <div class="bg-slate-800 p-2.5 rounded-xl text-blue-400">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     </div>
                     <h1 class="text-lg sm:text-xl font-black text-white uppercase tracking-widest">Match Report & Tactical Analysis</h1>
                 </div>
