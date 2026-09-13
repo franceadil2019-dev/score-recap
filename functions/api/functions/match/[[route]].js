@@ -1,18 +1,21 @@
 export async function onRequest(context) {
     const { request, env, waitUntil } = context;
     const url = new URL(request.url);
-    
+   
     // استخراج رقم المباراة من الرابط (مثال: /match/123456/arsenal-vs-chelsea)
     const routeParams = context.params.route || [];
     const fixtureId = routeParams[0];
 
-    // إذا لم يكن هناك رقم مباراة، أعد توجيه الزائر للصفحة الرئيسية
+    // 🌟 دالة جديدة: عرض الواجهة الأمامية (SPA) بدون تغيير الرابط بدلاً من إعادة التوجيه
+    const serveSPA = () => env.ASSETS.fetch(new Request(url.origin + "/"));
+
+    // إذا لم يكن هناك رقم مباراة، نعرض الصفحة الرئيسية
     if (!fixtureId) {
-        return Response.redirect(url.origin + "/", 302);
+        return serveSPA();
     }
 
     if (!env.API_SPORTS_KEY || !env.GEMINI_API_KEY) {
-        return new Response("API Keys are missing in Cloudflare settings.", { status: 500 });
+        return serveSPA();
     }
 
     try {
@@ -21,16 +24,16 @@ export async function onRequest(context) {
             headers: { "x-apisports-key": env.API_SPORTS_KEY }
         });
         const matchData = await matchRes.json();
-        
+       
         if (!matchData.response || matchData.response.length === 0) {
-            return Response.redirect(url.origin + "/", 302);
+            return serveSPA();
         }
 
         const match = matchData.response[0];
-        
-        // حصر صفحات السيو في الدوري الإنجليزي الممتاز (ID: 39)
+       
+        // إذا لم يكن الدوري الإنجليزي (39)، نعرض الواجهة العادية ليرى الزائر النتيجة والتفاصيل
         if (String(match.league.id) !== "39") {
-            return Response.redirect(url.origin + "/", 302);
+            return serveSPA();
         }
 
         const homeTeam = match.teams.home.name;
@@ -39,9 +42,9 @@ export async function onRequest(context) {
         const matchStr = `${homeTeam} vs ${awayTeam}`;
         const status = match.fixture.status.short;
 
-        // التأكد من أن المباراة انتهت
+        // إذا كانت المباراة لم تنتهِ بعد (Live أو مجدولة)، نعرض الواجهة العادية
         if (status !== 'FT' && status !== 'AET' && status !== 'PEN') {
-            return Response.redirect(url.origin + "/", 302);
+            return serveSPA();
         }
 
         // 2. البحث عن المقال في قاعدة البيانات (KV) أو توليده
@@ -64,19 +67,19 @@ export async function onRequest(context) {
                 eventsStr = eventsData.response.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', ');
             }
 
-            const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging, and detailed match report for the Premier League fixture: ${matchStr}. Final score: ${score}. Key events: ${eventsStr}. 
-            The article MUST include: 
-            1. A catchy headline wrapped in an <h2> HTML tag. 
-            2. An exciting introduction wrapped in <p> tags. 
-            3. A tactical analysis paragraph wrapped in <p> tags. 
-            4. A "Turning Point" section using an <h3> tag, followed by a bulleted list <ul><li>...</li></ul>. 
-            5. A strong conclusion paragraph. 
+            const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging, and detailed match report for the Premier League fixture: ${matchStr}. Final score: ${score}. Key events: ${eventsStr}.
+            The article MUST include:
+            1. A catchy headline wrapped in an <h2> HTML tag.
+            2. An exciting introduction wrapped in <p> tags.
+            3. A tactical analysis paragraph wrapped in <p> tags.
+            4. A "Turning Point" section using an <h3> tag, followed by a bulleted list <ul><li>...</li></ul>.
+            5. A strong conclusion paragraph.
             Write the ENTIRE article perfectly in English. Return ONLY valid clean HTML code. Do NOT wrap the response in markdown blocks.`;
 
             const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
-            
+           
             const aiData = await aiRes.json();
             if (aiRes.ok && aiData.candidates) {
                 articleHTML = aiData.candidates[0].content.parts[0].text;
@@ -99,7 +102,7 @@ export async function onRequest(context) {
     <title>${title}</title>
     <meta name="description" content="${description}">
     <link rel="canonical" href="${canonicalUrl}">
-    
+   
     <!-- Open Graph SEO (للمشاركة في فيسبوك وواتساب) -->
     <meta property="og:title" content="${title}">
     <meta property="og:description" content="${description}">
@@ -109,7 +112,7 @@ export async function onRequest(context) {
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class', } </script>
-    
+   
     <style>
         .ai-article-content h2 { font-size: 1.5rem; font-weight: 900; margin-top: 1.5rem; margin-bottom: 1rem; color: #60a5fa; }
         .ai-article-content h3 { font-size: 1.25rem; font-weight: 800; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #cbd5e1; }
@@ -120,7 +123,7 @@ export async function onRequest(context) {
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
-    
+   
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <a href="/" class="text-2xl font-black text-emerald-500 tracking-tight">SCORE<span class="text-white">RECAP</span></a>
@@ -156,11 +159,11 @@ export async function onRequest(context) {
             <div class="p-6 sm:p-10">
                 <div class="flex items-center gap-3 mb-8 border-b border-slate-800 pb-4">
                     <div class="bg-slate-800 p-2.5 rounded-xl text-blue-400">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     </div>
                     <h1 class="text-lg sm:text-xl font-black text-white uppercase tracking-widest">Match Report & Tactical Analysis</h1>
                 </div>
-                
+               
                 <div class="ai-article-content">
                     ${articleHTML}
                 </div>
@@ -175,9 +178,9 @@ export async function onRequest(context) {
 </html>`;
 
         return new Response(html, {
-            headers: { 
+            headers: {
                 "Content-Type": "text/html; charset=utf-8",
-                "Cache-Control": "public, max-age=86400" // حفظ الصفحة في الكاش العالمي لمدة 24 ساعة
+                "Cache-Control": "public, max-age=86400"
             }
         });
 
