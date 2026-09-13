@@ -125,6 +125,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
+    // 5. تقرير المباراة
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -140,9 +141,22 @@ export async function onRequest(context) {
      
       const kvKey = `recap_v2_${fixtureId}_${languageCode}`;
 
+      // 🌟 التحديث: حتى لو كان المقال في الكاش، نضمن إضافته لقائمة أحدث التقارير
       if (env.SPORTS_KV) {
         const cachedArticle = await env.SPORTS_KV.get(kvKey);
         if (cachedArticle) {
+          waitUntil((async () => {
+              try {
+                  let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
+                  if (!recent || !Array.isArray(recent)) recent = [];
+                  if (!recent.includes(fixtureId)) {
+                      recent.unshift(fixtureId);
+                      recent = recent.slice(0, 10);
+                      await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
+                      await env.SPORTS_KV.delete("cached_latest_reports"); // تدمير الكاش القديم
+                  }
+              } catch (e) {}
+          })());
           return new Response(JSON.stringify({ result: cachedArticle, source: "KV_CACHE" }), { headers: corsHeaders });
         }
       }
@@ -170,34 +184,56 @@ export async function onRequest(context) {
      
       if (env.SPORTS_KV) {
         waitUntil(env.SPORTS_KV.put(kvKey, articleText));
-        waitUntil(env.SPORTS_KV.delete("cached_latest_reports")); // تدمير الكاش
+        
+        waitUntil((async () => {
+            try {
+                let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
+                if (!recent || !Array.isArray(recent)) recent = [];
+                if (!recent.includes(fixtureId)) {
+                    recent.unshift(fixtureId);
+                    recent = recent.slice(0, 10);
+                    await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
+                }
+                await env.SPORTS_KV.delete("cached_latest_reports");
+            } catch (e) {}
+        })());
       }
 
       return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 🚨 6. أحدث التقارير (النسخة المضادة للأخطاء)
+    // 6. أحدث التقارير
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
-      // قمنا بتعطيل الكاش القديم هنا لإجبار السيرفر على جلب البيانات الحقيقية
-      let fixtureIds = [];
+      // 🌟 التحديث: تجاهل الكاش إذا كان فارغاً
+      const cachedList = await env.SPORTS_KV.get("cached_latest_reports");
+      if (cachedList && cachedList !== "[]" && cachedList.length > 5) {
+        return new Response(cachedList, { headers: corsHeaders });
+      }
+
+      let fixtureIds = await env.SPORTS_KV.get("recent_generated_reports", "json");
       
-      // البحث المباشر في KV عن كل المفاتيح التي تبدأ بـ recap_v2_ (كما يظهر في صورتك)
-      const listed = await env.SPORTS_KV.list({ prefix: "recap_v2_" });
-      
-      for (const key of listed.keys) {
-        const match = key.name.match(/recap_v2_(\d+)/);
-        if (match && match[1] && !fixtureIds.includes(match[1])) {
-          fixtureIds.push(match[1]);
+      // 🌟 التحديث: البحث عن كل المقالات القديمة (recap_) وليس فقط v2
+      if (!fixtureIds || !Array.isArray(fixtureIds) || fixtureIds.length === 0) {
+        const listed = await env.SPORTS_KV.list({ prefix: "recap_" });
+        fixtureIds = [];
+        for (const key of listed.keys) {
+          const match = key.name.match(/recap_(?:v2_)?(\d+)/);
+          if (match && match[1] && !fixtureIds.includes(match[1])) {
+            fixtureIds.push(match[1]);
+          }
+          if (fixtureIds.length >= 10) break;
+        }
+        if (fixtureIds.length > 0) {
+           waitUntil(env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(fixtureIds)));
         }
       }
 
-      if (fixtureIds.length === 0) {
+      if (!fixtureIds || fixtureIds.length === 0) {
         return new Response(JSON.stringify({ error: "No reports found in database yet." }), { headers: corsHeaders });
       }
 
-      // جلب أحدث 10 مباريات فقط
       const fetchIds = fixtureIds.slice(0, 10);
 
       const res = await fetch(`https://v3.football.api-sports.io/fixtures?ids=${fetchIds.join('-')}`, {
@@ -205,9 +241,8 @@ export async function onRequest(context) {
       });
       const data = await res.json();
       
-      // التحقق مما إذا كان رصيد الـ API قد انتهى
-      if (data.errors && data.errors.requests) {
-          return new Response(JSON.stringify({ error: "API-Sports daily limit reached. Reports will appear tomorrow." }), { headers: corsHeaders });
+      if (data.errors && Object.keys(data.errors).length > 0) {
+          return new Response(JSON.stringify({ error: "API limit reached or error fetching matches." }), { headers: corsHeaders });
       }
       
       const reports = [];
@@ -229,11 +264,13 @@ export async function onRequest(context) {
         });
       }
 
-      const responseText = JSON.stringify(reports);
-      // حفظ الكاش الجديد
-      waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText, { expirationTtl: 600 }));
-
-      return new Response(responseText, { headers: corsHeaders });
+      if (reports.length > 0) {
+          const responseText = JSON.stringify(reports);
+          waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText, { expirationTtl: 600 }));
+          return new Response(responseText, { headers: corsHeaders });
+      } else {
+          return new Response(JSON.stringify({ error: "Could not format reports." }), { headers: corsHeaders });
+      }
     }
 
     return new Response(JSON.stringify({ error: "Route or Action Not Found" }), { status: 404, headers: corsHeaders });
