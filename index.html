@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en" dir="ltr" id="html-tag" class="">
 <head>
     <meta charset="UTF-8">
@@ -64,6 +63,7 @@
         .dark .static-page-content ul { color: #cbd5e1; }
         .static-page-content li { margin-bottom: 0.5rem; }
 
+        /* 🚨 تنسيقات الألعاب (Penalty + Keepy-Uppy + Flick Shoot) */
         .game-bar-container { width: 100%; height: 36px; background-color: #e2e8f0; border-radius: 18px; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .dark .game-bar-container { background-color: #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
         .game-target-zone { position: absolute; left: 40%; width: 20%; height: 100%; background-color: #10b981; opacity: 0.8; }
@@ -296,7 +296,8 @@
             </div>
         </div>
     </footer>
-     <script>
+
+    <script>
         const APP_CONFIG = { workerUrl: "/api", cacheExpiryMinutes: 5, autoRefreshInterval: 300000 };
         let currentLang = 'en', selectedLeagueId = 'all', currentSearchQuery = '', searchTimeout = null, selectedLeagueTranslationKey = 'allLeagues', allMatchesCached = [], currentDateOffset = 0, showLiveOnly = false; 
        
@@ -320,7 +321,7 @@
             sv: { title: "ScoreRecap | Resultat", live: "LIVE", yesterday: "Igår", todayTab: "Idag", tomorrow: "Imorgon", allLeagues: "Toppligor", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", bra: "Brazil Serie A", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Laddar...", noMatches: "Inga matcher hittades.", error: "Fel vid laddning av data.", ad: "Annons", adBanner: "Annonsplats", rights: "Alla rättigheter förbehållna.", ended: "Avslutad", noEvents: "Inga viktiga händelser.", reportLoading: "Laddar matchrapport...", reportError: "Kunde inte ladda rapporten.", reportExclusive: "Matchrapporter är exklusiva för Premier League.", reportTitle: "Matchrapport & Analys", statsTitle: "LIVE MATCHSTATISTIK", poss: "Bollinnehav", shots: "Skott", search: "Sök efter ett lag...", toastSuccess: "Data har uppdaterats", toastError: "Det gick inte att ansluta till servern", predictVote: "Din förutsägelse...", win: "Vinst", draw: "Oavgjort", voteSaved: "Förutsägelsen sparades!", predictBtn: "Förutsäg Vinnare 🔮", predictLoading: "Analyserar lag...", predictError: "Kunde inte generera förutsägelse.", predictTitle: "Matchförutsägelse", readReportBtn: "Läs Matchrapport 📰", aboutUs: "Om Oss", contactUs: "Kontakt", privacyPolicy: "Integritetspolicy", liveOnly: "Endast Live", copyLink: "Länk kopierad!", gameZone: "Spelzon 🎮", latestReports: "Senaste Rapporter" },
             no: { title: "ScoreRecap | Resultater", live: "LIVE", yesterday: "I går", todayTab: "I dag", tomorrow: "I morgen", allLeagues: "Toppligaer", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", bra: "Brazil Serie A", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Laster...", noMatches: "Ingen kamper funnet.", error: "Feil ved lasting av data.", ad: "Annonse", adBanner: "Annonseplass", rights: "Med enerett.", ended: "Avsluttet", noEvents: "Ingen nøkkelhendelser.", reportLoading: "Laster kamprapport...", reportError: "Kunne ikke laste rapporten.", reportExclusive: "Kamprapporter er eksklusive for Premier League.", reportTitle: "Kamprapport & Analyse", statsTitle: "LIVE KAMPSTATISTIKK", poss: "Ballbesittelse", shots: "Skudd", search: "Søk etter et lag...", toastSuccess: "Data oppdatert", toastError: "Kunne ikke koble til serveren", predictVote: "Din spådom...", win: "Seier", draw: "Uavgjort", voteSaved: "Spådom lagret!", predictBtn: "Spå Vinner 🔮", predictLoading: "Analyserer lag...", predictError: "Kunne ikke generere spådom.", predictTitle: "Kampspådom", readReportBtn: "Les Kamprapport 📰", aboutUs: "Om Oss", contactUs: "Kontakt", privacyPolicy: "Personvern", liveOnly: "Kun Live", copyLink: "Lenke kopiert!", gameZone: "Spillsone 🎮", latestReports: "Siste Rapporter" },
             da: { title: "ScoreRecap | Resultater", live: "LIVE", yesterday: "I går", todayTab: "I dag", tomorrow: "I morgen", allLeagues: "Topligaer", ucl: "Champions League", caf: "CAF Champions League", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Saudi Pro League", mls: "MLS", bra: "Brazil Serie A", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Indlæser...", noMatches: "Ingen kampe fundet.", error: "Fejl ved indlæsning af data.", ad: "Annonce", adBanner: "Annonceplads", rights: "Alle rettigheder forbeholdes.", ended: "Afsluttet", noEvents: "Ingen nøglebegivenheder.", reportLoading: "Indlæser kamprapport...", reportError: "Kunne ikke indlæse rapporten.", reportExclusive: "Kamprapporter er eksklusive for Premier League.", reportTitle: "Kamprapport & Analyse", statsTitle: "LIVE KAMPSTATISTIK", poss: "Boldbesiddelse", shots: "Skud", search: "Søg efter et hold...", toastSuccess: "Data opdateret", toastError: "Kunne ikke oprette forbindelse", predictVote: "Din forudsigelse...", win: "Sejr", draw: "Uafgjort", voteSaved: "Forudsigelse gemt!", predictBtn: "Forudsig Vinder 🔮", predictLoading: "Analyserer hold...", predictError: "Kunne ikke generere forudsigelse.", predictTitle: "Kampforudsigelse", readReportBtn: "Læs Kamprapport 📰", aboutUs: "Om Os", contactUs: "Kontakt", privacyPolicy: "Privatlivspolitik", liveOnly: "Kun Live", copyLink: "Link kopieret!", gameZone: "Spilzone 🎮", latestReports: "Seneste Rapporter" },
-            pt: { title: "ScoreRecap | Resultados", live: "AO VIVO", yesterday: "Ontem", todayTab: "Hoje", tomorrow: "Amanhã", allLeagues: "Principais Ligas", ucl: "Liga dos Campeões", caf: "Liga dos Campeões da CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Liga Saudita", mls: "MLS", bra: "Brasileirão Série A", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Carregando...", noMatches: "Nenhuma partida encontrada.", error: "Erro ao carregar dados.", ad: "Anúncio", adBanner: "Espaço para Anúncio", rights: "Todos os direitos reservados.", ended: "Encerrado", noEvents: "Nenhum evento principal.", reportLoading: "Carregando relatório da partida...", reportError: "Não foi possível carregar o relatório.", reportExclusive: "Relatórios de partidas são exclusivos da Premier League.", reportTitle: "Relatório da Partida e Análise Tática", statsTitle: "ESTATÍSTICAS AO VIVO", poss: "Posse de Bola", shots: "Chutes", search: "Procurar um time...", toastSuccess: "Dados atualizados com sucesso", toastError: "Falha ao conectar ao servidor", predictVote: "Seu Palpite...", win: "Vitória", draw: "Empate", voteSaved: "Palpite salvo com sucesso!", predictBtn: "Prever Vencedor 🔮", predictLoading: "Analisando times...", predictError: "Falha ao gerar previsão.", predictTitle: "Previsão da Partida", readReportBtn: "Ler Relatório 📰", aboutUs: "Sobre Nós", contactUs: "Contato", privacyPolicy: "Política de Privacidade", liveOnly: "Apenas Ao Vivo", copyLink: "Link copiado!", gameZone: "Área de Jogos 🎮", latestReports: "Últimos Relatórios" }
+            pt: { title: "ScoreRecap | Resultados", live: "AO VIVO", yesterday: "Ontem", todayTab: "Hoje", tomorrow: "Amanhã", allLeagues: "Principais Ligas", ucl: "Liga dos Campeões", caf: "Liga dos Campeões da CAF", champ: "Championship", pl: "Premier League", liga: "La Liga", serie: "Serie A", ligue1: "Ligue 1", bundes: "Bundesliga", saudi: "Liga Saudita", mls: "MLS", bra: "Brasileirão Série A", botola: "Botola Pro", swe: "Allsvenskan", nor: "Eliteserien", den: "Superliga", loading: "Carregando...", noMatches: "Nenhuma partida encontrada.", error: "Erro ao carregar dados.", ad: "Anúncio", adBanner: "Espaço para Anúncio", rights: "Todos os direitos reservados.", ended: "Encerrado", noEvents: "Nenhum evento principal.", reportLoading: "Carregando relatório...", reportError: "Não foi possível carregar o relatório.", reportExclusive: "Relatórios de partidas são exclusivos da Premier League.", reportTitle: "Relatório da Partida e Análise Tática", statsTitle: "ESTATÍSTICAS AO VIVO", poss: "Posse de Bola", shots: "Chutes", search: "Procurar um time...", toastSuccess: "Dados atualizados com sucesso", toastError: "Falha ao conectar ao servidor", predictVote: "Seu Palpite...", win: "Vitória", draw: "Empate", voteSaved: "Palpite salvo com sucesso!", predictBtn: "Prever Vencedor 🔮", predictLoading: "Analisando times...", predictError: "Falha ao gerar previsão.", predictTitle: "Previsão da Partida", readReportBtn: "Ler Relatório 📰", aboutUs: "Sobre Nós", contactUs: "Contato", privacyPolicy: "Política de Privacidade", liveOnly: "Apenas Ao Vivo", copyLink: "Link copiado!", gameZone: "Área de Jogos 🎮", latestReports: "Últimos Relatórios" }
         };
 
         function initTheme() { const htmlTag = document.getElementById('html-tag'); if (localStorage.getItem('app_theme') === 'dark') { htmlTag.classList.add('dark'); document.getElementById('theme-icon-sun').classList.remove('hidden'); document.getElementById('theme-icon-moon').classList.add('hidden'); } }
@@ -395,7 +396,24 @@
                     container.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8 text-center font-medium text-red-500 shadow-sm">API Limit Reached. Please wait until midnight.</div>`;
                     if(refreshBtn) setTimeout(() => refreshBtn.classList.remove('animate-spin'), 500); return;
                 }
-                if (data.response) { allMatchesCached = data.response; filterAndRenderMatches(); if (isManualRefresh) showToast((translations[currentLang] || translations['en']).toastSuccess, 'success'); }
+                if (data.response) { 
+                    const pathParts = window.location.pathname.split('/');
+                    const activeMatchId = pathParts[1] === 'match' ? pathParts[2] : null;
+                    let newMatches = data.response;
+                    
+                    if (activeMatchId) {
+                        const activeMatchObj = allMatchesCached.find(m => String(m.fixture.id) === activeMatchId);
+                        if (activeMatchObj && !newMatches.find(m => String(m.fixture.id) === activeMatchId)) {
+                            newMatches.unshift(activeMatchObj);
+                        }
+                    }
+                    
+                    allMatchesCached = newMatches; 
+                    filterAndRenderMatches(); 
+                    
+                    if (activeMatchId) setTimeout(() => openMatch(activeMatchId, false), 100);
+                    if (isManualRefresh) showToast((translations[currentLang] || translations['en']).toastSuccess, 'success'); 
+                }
             } catch (error) {
                 if (isManualRefresh) showToast((translations[currentLang] || translations['en']).toastError, 'error');
                 if(allMatchesCached.length === 0) { document.getElementById('api-scores-container').innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">${(translations[currentLang] || translations['en']).error}</p>`; }
@@ -405,15 +423,19 @@
 
         async function fetchSingleMatch(fId) {
             try {
+                const container = document.getElementById('api-scores-container');
+                if (container.innerHTML.trim() === '') container.innerHTML = `<div class="flex justify-center py-10"><div class="spinner"></div></div>`;
+                
                 const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/fixtures?id=${fId}`, { headers: { "x-action": "fetch-matches" } });
                 const data = await res.json();
+                
                 if (data.response && data.response.length > 0) {
                     const match = data.response[0];
                     if (!allMatchesCached.find(m => String(m.fixture.id) === String(fId))) {
                         allMatchesCached.unshift(match);
-                        filterAndRenderMatches();
-                        setTimeout(() => openMatch(fId, true), 100);
                     }
+                    filterAndRenderMatches();
+                    setTimeout(() => openMatch(fId, true), 200);
                 } else {
                     showToast((translations[currentLang] || translations['en']).noMatches || "Match not found", "error");
                     history.pushState(null, '', '/');
@@ -536,22 +558,12 @@
                 document.getElementById('home-section').classList.remove('hidden');
                 const pathParts = path.split('/'); const fId = pathParts[2]; 
                 if (fId) { 
-                    setTimeout(() => {
-                        const details = document.getElementById(`details-${fId}`);
-                        if (details) {
-                            openMatch(fId, true);
-                        } else if (allMatchesCached.length > 0) {
-                            fetchSingleMatch(fId);
-                        } else {
-                            setTimeout(() => {
-                                if(!allMatchesCached.find(m => String(m.fixture.id) === String(fId))) {
-                                    fetchSingleMatch(fId);
-                                } else {
-                                    openMatch(fId, true);
-                                }
-                            }, 1500);
-                        }
-                    }, 100); 
+                    const details = document.getElementById(`details-${fId}`);
+                    if (details) {
+                        openMatch(fId, true);
+                    } else {
+                        fetchSingleMatch(fId);
+                    }
                     return; 
                 } 
             }
