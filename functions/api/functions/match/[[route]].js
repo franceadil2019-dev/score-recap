@@ -5,7 +5,6 @@ export async function onRequest(context) {
     const routeParams = context.params.route || [];
     const fixtureId = routeParams[0];
 
-    // دالة عرض الواجهة الأمامية بدون تغيير الرابط
     const serveSPA = () => env.ASSETS.fetch(new Request(url.origin + "/"));
 
     if (!fixtureId) {
@@ -43,7 +42,7 @@ export async function onRequest(context) {
         }
 
         const lang = "en";
-        const kvKey = `recap_${fixtureId}_${lang}`;
+        const kvKey = `recap_v2_${fixtureId}_${lang}`;
         let articleHTML = "";
 
         if (env.SPORTS_KV) {
@@ -60,23 +59,63 @@ export async function onRequest(context) {
                 eventsStr = eventsData.response.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', ');
             }
 
-            const prompt = `Act as an expert sports journalist and tactical analyst. Write a comprehensive, engaging, and detailed match report for the Premier League fixture: ${matchStr}. Final score: ${score}. Key events: ${eventsStr}.
-            The article MUST include:
-            1. A catchy headline wrapped in an <h2> HTML tag.
-            2. An exciting introduction wrapped in <p> tags.
-            3. A tactical analysis paragraph wrapped in <p> tags.
-            4. A "Turning Point" section using an <h3> tag, followed by a bulleted list <ul><li>...</li></ul>.
-            5. A strong conclusion paragraph.
+            // 🌟 مصفوفة الأساليب الصحفية لصفحات السيو
+            const writingStyles = [
+                "Focus heavily on the tactical battle, formations, and the managers' strategic decisions.",
+                "Write with high passion and drama, focusing on the emotional rollercoaster and intensity of the match.",
+                "Focus on individual player performances, key mistakes, and moments of individual brilliance.",
+                "Take a narrative angle, discussing how this specific result impacts the teams' season and their fans.",
+                "Adopt a highly analytical and critical journalistic tone, questioning the losing team's performance."
+            ];
+            const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
+
+            const prompt = `Act as an expert sports journalist. Write a unique, comprehensive, and highly engaging match report for: ${matchStr}. Final score: ${score}. Key events: ${eventsStr}.
+            
+            CRITICAL INSTRUCTION: ${randomStyle}
+            
+            Avoid repetitive journalistic clichés. Use varied vocabulary and dynamic sentence structures. Ensure this article feels 100% human-written and distinct from other match reports.
+            
+            Structure the HTML exactly like this:
+            <h2>[Generate a Catchy and Unique Title]</h2>
+            <p>[Engaging Introduction]</p>
+            <p>[Main Analysis based on the critical instruction]</p>
+            <h3>Match Highlights & Turning Points</h3>
+            <ul><li>[Event 1]</li><li>[Event 2]</li></ul>
+            <p>[Strong Conclusion]</p>
+            
             Write the ENTIRE article perfectly in English. Return ONLY valid clean HTML code. Do NOT wrap the response in markdown blocks.`;
 
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
-                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
+                method: "POST", 
+                headers: { "Content-Type": "application/json" }, 
+                body: JSON.stringify({ 
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        temperature: 0.85, // 🌟 درجة الإبداع العالية
+                        topP: 0.9
+                    }
+                })
             });
            
             const aiData = await aiRes.json();
             if (aiRes.ok && aiData.candidates) {
                 articleHTML = aiData.candidates[0].content.parts[0].text;
-                if (env.SPORTS_KV) { waitUntil(env.SPORTS_KV.put(kvKey, articleHTML)); }
+                if (env.SPORTS_KV) { 
+                    waitUntil(env.SPORTS_KV.put(kvKey, articleHTML));
+                    
+                    waitUntil((async () => {
+                        try {
+                            let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
+                            if (!recent || !Array.isArray(recent)) recent = [];
+                            if (!recent.includes(fixtureId)) {
+                                recent.unshift(fixtureId);
+                                recent = recent.slice(0, 10);
+                                await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
+                                await env.SPORTS_KV.delete("cached_latest_reports");
+                            }
+                        } catch (e) {}
+                    })());
+                }
             } else {
                 articleHTML = "<p>Match report is currently being prepared. Please check back later.</p>";
             }
