@@ -52,7 +52,7 @@ export async function onRequest(context) {
   };
 
   try {
-    // 1. جلب المباريات أو مباراة محددة للروابط المباشرة
+    // 1. جلب المباريات أو مباراة محددة
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const id = url.searchParams.get("id");
       if (id) {
@@ -129,7 +129,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 5. تقرير المباراة (مع التحديث الفوري لأحدث التقارير)
+    // 5. تقرير المباراة
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -176,11 +176,10 @@ export async function onRequest(context) {
       if (env.SPORTS_KV) {
         waitUntil(env.SPORTS_KV.put(kvKey, articleText));
         
-        // إضافة رقم المباراة فوراً إلى مصفوفة أحدث التقارير لتحديثها
         waitUntil((async () => {
             try {
                 let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
-                if (!recent) recent = [];
+                if (!recent || !Array.isArray(recent)) recent = [];
                 if (!recent.includes(fixtureId)) {
                     recent.unshift(fixtureId);
                     recent = recent.slice(0, 10);
@@ -194,7 +193,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 6. أحدث التقارير (فورية ومحدثة)
+    // 6. أحدث التقارير (مع نظام البحث التلقائي عن المقالات القديمة)
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
@@ -203,21 +202,38 @@ export async function onRequest(context) {
         return new Response(cachedList, { headers: corsHeaders });
       }
 
-      const recentIds = await env.SPORTS_KV.get("recent_generated_reports", "json");
-      if (!recentIds || recentIds.length === 0) {
+      let fixtureIds = await env.SPORTS_KV.get("recent_generated_reports", "json");
+      
+      // 🌟 السحر هنا: إذا كانت القائمة فارغة، سيبحث السيرفر عن كل المقالات القديمة ويجلبها!
+      if (!fixtureIds || !Array.isArray(fixtureIds) || fixtureIds.length === 0) {
+        const listed = await env.SPORTS_KV.list({ prefix: "recap_", limit: 30 });
+        fixtureIds = [];
+        for (const key of listed.keys) {
+          const match = key.name.match(/recap_(?:v2_)?(\d+)/);
+          if (match && match[1] && !fixtureIds.includes(match[1])) {
+            fixtureIds.push(match[1]);
+          }
+          if (fixtureIds.length >= 10) break;
+        }
+        if (fixtureIds.length > 0) {
+           waitUntil(env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(fixtureIds)));
+        }
+      }
+
+      if (!fixtureIds || fixtureIds.length === 0) {
         return new Response(JSON.stringify([]), { headers: corsHeaders });
       }
 
-      const fixtureIds = recentIds.slice(0, 5);
+      const fetchIds = fixtureIds.slice(0, 10);
 
-      const res = await fetch(`https://v3.football.api-sports.io/fixtures?ids=${fixtureIds.join('-')}`, {
+      const res = await fetch(`https://v3.football.api-sports.io/fixtures?ids=${fetchIds.join('-')}`, {
         headers: { "x-apisports-key": env.API_SPORTS_KEY }
       });
       const data = await res.json();
       
       const reports = [];
       if (data.response) {
-        fixtureIds.forEach(id => {
+        fetchIds.forEach(id => {
             const m = data.response.find(match => String(match.fixture.id) === String(id));
             if (m) {
                 const home = m.teams.home.name;
