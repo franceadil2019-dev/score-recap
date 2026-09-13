@@ -6,13 +6,16 @@ export async function onRequest(context) {
     const routeParams = context.params.route || [];
     const fixtureId = routeParams[0];
 
-    // إذا لم يكن هناك رقم مباراة، أعد توجيه الزائر للصفحة الرئيسية
+    // 🌟 دالة جديدة: عرض الواجهة الأمامية (SPA) بدون تغيير الرابط بدلاً من إعادة التوجيه
+    const serveSPA = () => env.ASSETS.fetch(new Request(url.origin + "/"));
+
+    // إذا لم يكن هناك رقم مباراة، نعرض الصفحة الرئيسية
     if (!fixtureId) {
-        return Response.redirect(url.origin + "/", 302);
+        return serveSPA();
     }
 
     if (!env.API_SPORTS_KEY || !env.GEMINI_API_KEY) {
-        return new Response("API Keys are missing in Cloudflare settings.", { status: 500 });
+        return serveSPA();
     }
 
     try {
@@ -23,14 +26,14 @@ export async function onRequest(context) {
         const matchData = await matchRes.json();
        
         if (!matchData.response || matchData.response.length === 0) {
-            return Response.redirect(url.origin + "/", 302);
+            return serveSPA();
         }
 
         const match = matchData.response[0];
        
-        // حصر صفحات السيو في الدوري الإنجليزي الممتاز (ID: 39)
+        // إذا لم يكن الدوري الإنجليزي (39)، نعرض الواجهة العادية ليرى الزائر النتيجة والتفاصيل
         if (String(match.league.id) !== "39") {
-            return Response.redirect(url.origin + "/", 302);
+            return serveSPA();
         }
 
         const homeTeam = match.teams.home.name;
@@ -39,9 +42,9 @@ export async function onRequest(context) {
         const matchStr = `${homeTeam} vs ${awayTeam}`;
         const status = match.fixture.status.short;
 
-        // التأكد من أن المباراة انتهت
+        // إذا كانت المباراة لم تنتهِ بعد (Live أو مجدولة)، نعرض الواجهة العادية
         if (status !== 'FT' && status !== 'AET' && status !== 'PEN') {
-            return Response.redirect(url.origin + "/", 302);
+            return serveSPA();
         }
 
         // 2. البحث عن المقال في قاعدة البيانات (KV) أو توليده
@@ -156,7 +159,7 @@ export async function onRequest(context) {
             <div class="p-6 sm:p-10">
                 <div class="flex items-center gap-3 mb-8 border-b border-slate-800 pb-4">
                     <div class="bg-slate-800 p-2.5 rounded-xl text-blue-400">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     </div>
                     <h1 class="text-lg sm:text-xl font-black text-white uppercase tracking-widest">Match Report & Tactical Analysis</h1>
                 </div>
@@ -177,7 +180,7 @@ export async function onRequest(context) {
         return new Response(html, {
             headers: {
                 "Content-Type": "text/html; charset=utf-8",
-                "Cache-Control": "public, max-age=86400" // حفظ الصفحة في الكاش العالمي لمدة 24 ساعة
+                "Cache-Control": "public, max-age=86400"
             }
         });
 
@@ -185,4 +188,3 @@ export async function onRequest(context) {
         return new Response(`Error: ${error.message}`, { status: 500 });
     }
 }
-
