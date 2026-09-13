@@ -52,7 +52,7 @@ export async function onRequest(context) {
   };
 
   try {
-    // 1. جلب المباريات أو مباراة محددة
+    // 1. جلب المباريات أو مباراة محددة للروابط المباشرة
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const id = url.searchParams.get("id");
       if (id) {
@@ -174,17 +174,16 @@ export async function onRequest(context) {
       const articleText = aiData.candidates[0].content.parts[0].text;
      
       if (env.SPORTS_KV) {
-        // حفظ المقال
         waitUntil(env.SPORTS_KV.put(kvKey, articleText));
         
-        // 🚨 إضافة رقم المباراة فوراً إلى مصفوفة أحدث التقارير لتجنب تأخير Cloudflare KV List
+        // إضافة رقم المباراة فوراً إلى مصفوفة أحدث التقارير لتحديثها
         waitUntil((async () => {
             try {
                 let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
                 if (!recent) recent = [];
                 if (!recent.includes(fixtureId)) {
                     recent.unshift(fixtureId);
-                    recent = recent.slice(0, 10); // نحتفظ بآخر 10 مباريات فقط
+                    recent = recent.slice(0, 10);
                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                 }
                 await env.SPORTS_KV.delete("cached_latest_reports");
@@ -195,7 +194,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 6. أحدث التقارير (تم تحديثها لتكون فورية)
+    // 6. أحدث التقارير (فورية ومحدثة)
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
@@ -204,7 +203,6 @@ export async function onRequest(context) {
         return new Response(cachedList, { headers: corsHeaders });
       }
 
-      // جلب المصفوفة المباشرة بدلاً من البحث البطيء (List)
       const recentIds = await env.SPORTS_KV.get("recent_generated_reports", "json");
       if (!recentIds || recentIds.length === 0) {
         return new Response(JSON.stringify([]), { headers: corsHeaders });
@@ -219,7 +217,6 @@ export async function onRequest(context) {
       
       const reports = [];
       if (data.response) {
-        // ترتيب النتائج بناءً على ترتيب المصفوفة الأصلية (الأحدث أولاً)
         fixtureIds.forEach(id => {
             const m = data.response.find(match => String(match.fixture.id) === String(id));
             if (m) {
