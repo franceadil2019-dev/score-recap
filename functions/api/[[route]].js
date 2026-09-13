@@ -47,7 +47,7 @@ export async function onRequest(context) {
   }
 
   const langMap = {
-    en: "English", ar: "Arabic", fr: "French", es: "Spanish", de: "German",
+    en: "English", ar: "Arabic", fr: "French", es: "Spanish", pt: "Portuguese", de: "German",
     it: "Italian", sv: "Swedish", no: "Norwegian", da: "Danish"
   };
 
@@ -175,6 +175,9 @@ export async function onRequest(context) {
      
       if (env.SPORTS_KV) {
         waitUntil(env.SPORTS_KV.put(kvKey, articleText));
+        
+        // 🚨 السر هنا: مسح الذاكرة المؤقتة لقائمة "أحدث التقارير" لكي تتحدث فوراً!
+        waitUntil(env.SPORTS_KV.delete("cached_latest_reports"));
       }
 
       return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
@@ -226,7 +229,8 @@ export async function onRequest(context) {
       }
 
       const responseText = JSON.stringify(reports);
-      waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText, { expirationTtl: 3600 }));
+      // جعلنا مدة الكاش 10 دقائق فقط لتحديث أسرع
+      waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText, { expirationTtl: 600 }));
 
       return new Response(responseText, { headers: corsHeaders });
     }
