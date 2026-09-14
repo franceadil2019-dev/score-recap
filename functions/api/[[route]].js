@@ -52,7 +52,6 @@ export async function onRequest(context) {
   };
 
   try {
-    // 1. جلب المباريات أو مباراة محددة
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const id = url.searchParams.get("id");
       if (id) {
@@ -64,21 +63,18 @@ export async function onRequest(context) {
       return await getFromApiSports(`fixtures?date=${date}`, `api_fixtures_${date}`, ttl);
     }
 
-    // 2. جلب الأحداث
     if (action.includes("fetch-events") || action.includes("events")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
       return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, 60);
     }
 
-    // 3. جلب الإحصائيات
     if (action.includes("fetch-stats") || action.includes("statistics")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
       return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 60);
     }
 
-    // 4. التوقعات الذكية
     if (action.includes("predict-match") || action.includes("predict")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -132,7 +128,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 5. تقرير المباراة (مع الأساليب العشوائية ودرجة الإبداع)
+    // 5. تقرير المباراة
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -151,18 +147,6 @@ export async function onRequest(context) {
       if (env.SPORTS_KV) {
         const cachedArticle = await env.SPORTS_KV.get(kvKey);
         if (cachedArticle) {
-          waitUntil((async () => {
-              try {
-                  let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
-                  if (!recent || !Array.isArray(recent)) recent = [];
-                  if (!recent.includes(fixtureId)) {
-                      recent.unshift(fixtureId);
-                      recent = recent.slice(0, 10);
-                      await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
-                      await env.SPORTS_KV.delete("cached_latest_reports");
-                  }
-              } catch (e) {}
-          })());
           return new Response(JSON.stringify({ result: cachedArticle, source: "KV_CACHE" }), { headers: corsHeaders });
         }
       }
@@ -171,7 +155,6 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
-      // 🌟 مصفوفة الأساليب الصحفية لضمان اختلاف المقالات
       const writingStyles = [
         "Focus heavily on the tactical battle, formations, and the managers' strategic decisions.",
         "Write with high passion and drama, focusing on the emotional rollercoaster and intensity of the match.",
@@ -202,10 +185,7 @@ export async function onRequest(context) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-                temperature: 0.85, // 🌟 درجة الإبداع العالية
-                topP: 0.9
-            }
+            generationConfig: { temperature: 0.85, topP: 0.9 }
         })
       });
 
@@ -218,91 +198,49 @@ export async function onRequest(context) {
      
       if (env.SPORTS_KV) {
         waitUntil(env.SPORTS_KV.put(kvKey, articleText));
-        
-        waitUntil((async () => {
-            try {
-                let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
-                if (!recent || !Array.isArray(recent)) recent = [];
-                if (!recent.includes(fixtureId)) {
-                    recent.unshift(fixtureId);
-                    recent = recent.slice(0, 10);
-                    await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
-                }
-                await env.SPORTS_KV.delete("cached_latest_reports");
-            } catch (e) {}
-        })());
       }
 
       return new Response(JSON.stringify({ result: articleText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 6. أحدث التقارير
+    // 🌟 6. أحدث التقارير (قراءة مباشرة من KV بدون استهلاك رصيد API-Sports نهائياً!)
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
-      const cachedList = await env.SPORTS_KV.get("cached_latest_reports");
-      if (cachedList && cachedList !== "[]" && cachedList.length > 5) {
-        return new Response(cachedList, { headers: corsHeaders });
-      }
-
-      let fixtureIds = await env.SPORTS_KV.get("recent_generated_reports", "json");
-      
-      if (!fixtureIds || !Array.isArray(fixtureIds) || fixtureIds.length === 0) {
-        const listed = await env.SPORTS_KV.list({ prefix: "recap_" });
-        fixtureIds = [];
-        for (const key of listed.keys) {
-          const match = key.name.match(/recap_(?:v2_)?(\d+)/);
-          if (match && match[1] && !fixtureIds.includes(match[1])) {
-            fixtureIds.push(match[1]);
-          }
-          if (fixtureIds.length >= 10) break;
-        }
-        if (fixtureIds.length > 0) {
-           waitUntil(env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(fixtureIds)));
-        }
-      }
-
-      if (!fixtureIds || fixtureIds.length === 0) {
-        return new Response(JSON.stringify({ error: "No reports found in database yet." }), { headers: corsHeaders });
-      }
-
-      const fetchIds = fixtureIds.slice(0, 10);
-
-      const res = await fetch(`https://v3.football.api-sports.io/fixtures?ids=${fetchIds.join('-')}`, {
-        headers: { "x-apisports-key": env.API_SPORTS_KEY }
-      });
-      const data = await res.json();
-      
-      if (data.errors && Object.keys(data.errors).length > 0) {
-          return new Response(JSON.stringify({ error: "API limit reached or error fetching matches." }), { headers: corsHeaders });
-      }
-      
+      // البحث المباشر في قاعدة بياناتك عن المقالات المخزنة
+      const listed = await env.SPORTS_KV.list({ prefix: "recap_" });
       const reports = [];
-      if (data.response) {
-        fetchIds.forEach(id => {
-            const m = data.response.find(match => String(match.fixture.id) === String(id));
-            if (m) {
-                const home = m.teams.home.name;
-                const away = m.teams.away.name;
-                const slug = `${home.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}-vs-${away.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}`;
-                reports.push({
-                    fixtureId: m.fixture.id,
-                    title: `${home} vs ${away}`,
-                    url: `/match/${m.fixture.id}/${slug}`,
-                    logoHome: m.teams.home.logo,
-                    logoAway: m.teams.away.logo
-                });
+      const addedIds = new Set();
+
+      for (const key of listed.keys) {
+        const match = key.name.match(/recap_(?:v2_)?(\d+)/);
+        if (match && match[1] && !addedIds.has(match[1])) {
+          const fixtureId = match[1];
+          addedIds.add(fixtureId);
+
+          // قراءة المقال من KV لاستخراج العنوان الصحفي الذكي
+          const articleHtml = await env.SPORTS_KV.get(key.name);
+          let title = "Premier League Match Report";
+          if (articleHtml) {
+            const titleMatch = articleHtml.match(/<h2[^>]*>(.*?)<\/h2>/i);
+            if (titleMatch && titleMatch[1]) {
+              title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
             }
-        });
+          }
+
+          reports.push({
+            fixtureId: fixtureId,
+            title: title,
+            url: `/match/${fixtureId}/match-report`,
+            logoHome: "https://media.api-sports.io/football/leagues/39.png",
+            logoAway: "https://media.api-sports.io/football/leagues/39.png"
+          });
+
+          if (reports.length >= 10) break;
+        }
       }
 
-      if (reports.length > 0) {
-          const responseText = JSON.stringify(reports);
-          waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText, { expirationTtl: 600 }));
-          return new Response(responseText, { headers: corsHeaders });
-      } else {
-          return new Response(JSON.stringify({ error: "Could not format reports." }), { headers: corsHeaders });
-      }
+      return new Response(JSON.stringify(reports), { headers: corsHeaders });
     }
 
     return new Response(JSON.stringify({ error: "Route or Action Not Found" }), { status: 404, headers: corsHeaders });
