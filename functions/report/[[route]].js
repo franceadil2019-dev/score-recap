@@ -12,7 +12,6 @@ export async function onRequest(context) {
     }
 
     try {
-        // 1. أولاً: البحث عن المقال في قاعدة بياناتك (KV)
         let articleHTML = "";
         if (env.SPORTS_KV) {
             articleHTML = await env.SPORTS_KV.get(`recap_v2_${fixtureId}_en`) ||
@@ -22,13 +21,11 @@ export async function onRequest(context) {
                           "";
         }
 
-        // 2. محاولة جلب بيانات المباراة من الكاش
         let match = null;
         if (env.SPORTS_KV) {
             match = await env.SPORTS_KV.get(`api_fixture_id_${fixtureId}`, "json");
         }
 
-        // إذا لم تكن في الكاش ورصيد API متاح، نجلبها
         if (!match && env.API_SPORTS_KEY) {
             try {
                 const matchRes = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, {
@@ -44,7 +41,6 @@ export async function onRequest(context) {
             } catch (e) {}
         }
 
-        // 3. إذا لم نجد المقال، نحاول توليده إذا كانت المباراة مستوفية للشروط
         if (!articleHTML && match) {
             if (String(match.league.id) !== "39") return redirectToHome();
             const status = match.fixture.status.short;
@@ -62,29 +58,56 @@ export async function onRequest(context) {
                     }
                 } catch (e) {}
 
+                const writingStyles = [
+                    "Focus heavily on the tactical battle, formations, and the managers' strategic decisions.",
+                    "Write with high passion and drama, focusing on the emotional rollercoaster and intensity of the match.",
+                    "Focus on individual player performances, key mistakes, and moments of individual brilliance.",
+                    "Take a narrative angle, discussing how this specific result impacts the teams' season and their fans.",
+                    "Adopt a highly analytical and critical journalistic tone, questioning the losing team's performance."
+                ];
+                const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
+
                 const prompt = `Act as an expert sports journalist. Write a comprehensive, engaging match report for: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}. Events: ${eventsStr}.
+                
+                CRITICAL INSTRUCTION: ${randomStyle}
+                
                 Include: <h2>Title</h2>, <p>Introduction</p>, <p>Tactical Analysis</p>, <h3>Turning Point</h3> with <ul><li>...</li></ul>, and a strong conclusion.
                 Write in English. Return ONLY clean HTML.`;
 
                 const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
-                    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    method: "POST", 
+                    headers: { "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { temperature: 0.85, topP: 0.9 }
+                    })
                 });
                 const aiData = await aiRes.json();
                 if (aiRes.ok && aiData.candidates) {
                     articleHTML = aiData.candidates[0].content.parts[0].text;
                     if (env.SPORTS_KV) {
                         waitUntil(env.SPORTS_KV.put(`recap_v2_${fixtureId}_en`, articleHTML));
+                        waitUntil((async () => {
+                            try {
+                                let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
+                                if (!recent || !Array.isArray(recent)) recent = [];
+                                if (!recent.includes(fixtureId)) {
+                                    recent.unshift(fixtureId);
+                                    recent = recent.slice(0, 10);
+                                    await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
+                                    await env.SPORTS_KV.delete("cached_latest_reports");
+                                }
+                            } catch (e) {}
+                        })());
                     }
                 }
             }
         }
 
-        // إذا لم نجد المقال نهائياً، عندها فقط نعيد التوجيه
         if (!articleHTML) {
             return redirectToHome();
         }
 
-        // 4. استخراج تفاصيل العرض (من المباراة أو من المقال نفسه)
         let homeName = match ? match.teams.home.name : "Premier League Team";
         let awayName = match ? match.teams.away.name : "Premier League Team";
         let homeLogo = match ? match.teams.home.logo : "https://media.api-sports.io/football/leagues/39.png";
@@ -161,7 +184,7 @@ export async function onRequest(context) {
             <div class="p-6 sm:p-10">
                 <div class="flex items-center gap-3 mb-6 border-b border-slate-800 pb-4">
                     <div class="bg-slate-800 p-2.5 rounded-xl text-blue-400">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     </div>
                     <h1 class="text-base sm:text-lg font-black text-white uppercase tracking-widest">Match Report & Tactical Analysis</h1>
                 </div>
