@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en" dir="ltr" id="html-tag" class="">
 <head>
     <meta charset="UTF-8">
@@ -89,7 +88,6 @@
             </div>
            
             <div class="flex items-center gap-2 md:gap-3">
-                <!-- 🚨 زر التقارير الجديد في الأعلى -->
                 <a href="/reports" class="static-link flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-emerald-500 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors mr-1 sm:mr-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     <span class="hidden sm:inline" id="txt-nav-reports">Reports</span>
@@ -126,7 +124,6 @@
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- القسم الرئيسي (المباريات) -->
         <section id="home-section" class="lg:col-span-2 space-y-4">
             <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-none pb-1">
                 <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="-1" id="tab-yesterday">Yesterday</button>
@@ -180,7 +177,7 @@
             <div id="api-scores-container" class="space-y-4 min-h-[500px]" aria-live="polite"></div>
         </section>
 
-        <!-- 🚨 صفحة التقارير الجديدة المخصصة لأدسنس -->
+        <!-- 🚨 صفحة التقارير الجديدة -->
         <section id="page-reports" class="lg:col-span-2 hidden space-y-6" dir="ltr">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm">
                 <h1 class="text-2xl font-black text-emerald-500 mb-6 uppercase tracking-wide flex items-center gap-2" id="title-reports-page">
@@ -245,7 +242,7 @@
 
         </section>
 
-        <!-- قسم الصفحات الثابتة -->
+        <!-- قسم الصفحات الثابتة كاملة -->
         <section id="static-pages-section" class="lg:col-span-2 hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm static-page-content" dir="ltr">
             
             <div id="page-about" class="hidden">
@@ -335,7 +332,6 @@
             </div>
         </aside>
     </main>
-
     <footer class="bg-white border-t border-slate-200 dark:bg-slate-900 dark:border-slate-800 py-6 mt-auto">
         <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
             <p>© <span id="current-year">2026</span> ScoreRecap. <span id="footer-rights">All rights reserved.</span></p>
@@ -574,11 +570,8 @@
                 const response = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/generate-article?${params.toString()}`, { method: "GET", headers: { "x-action": "generate-article" }, timeout: 45000 });
                 if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || "Error"); }
                 const data = await response.json();
-                aiBox.innerHTML = `<div class="mt-5 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden"><div class="relative w-full h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Stadium Background"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div><div class="relative z-10 flex items-center gap-6 sm:gap-10"><img src="${matchCached.teams.home.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"><span class="text-white font-black text-2xl sm:text-3xl italic opacity-90 drop-shadow-lg">VS</span><img src="${matchCached.teams.away.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"></div></div><div class="p-5 sm:p-6"><div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3"><div class="flex items-center gap-3"><div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div><span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${currentT.reportTitle}</span></div></div><div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">${data.result}</div></div></div>`;
+                aiBox.innerHTML = `<div class="mt-5 bg-white dark:bg-slate-900 border-t-4 border-blue-500 dark:border-blue-600 rounded-b-xl shadow-lg relative overflow-hidden"><div class="relative w-full h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Stadium Background"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div><div class="relative z-10 flex items-center gap-6 sm:gap-10"><img src="${matchCached.teams.home.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"><span class="text-white font-black text-2xl sm:text-3xl italic opacity-90 drop-shadow-lg">VS</span><img src="${matchCached.teams.away.logo}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transform hover:scale-110 transition-transform"></div></div><div class="p-5 sm:p-6"><div class="flex items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3"><div class="flex items-center gap-3"><div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-blue-600 dark:text-blue-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div><span class="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">${currentT.reportTitle}</span></div></div><div class="text-slate-700 dark:text-slate-300 font-medium ai-article-content">${data.result}</div></div></div>`;
                 btnElement.style.display = 'none';
-                
-                setTimeout(() => { fetchReportsPage(); }, 2000);
-
             } catch (error) { aiBox.innerHTML = `<p class="text-red-500 text-xs font-bold mt-2 p-3 bg-red-100 dark:bg-red-900/20 rounded-lg text-center">${error.message || currentT.reportError}</p>`; btnElement.innerText = currentT.readReportBtn; btnElement.disabled = false; btnElement.classList.remove('opacity-50', 'cursor-not-allowed'); }
         }
 
@@ -668,19 +661,35 @@
             const activeMatchId = pathParts[1] === 'match' ? pathParts[2] : null;
 
             let filtered = [];
+            
             if (selectedLeagueId === 'all') {
-                filtered = allMatchesCached.filter(m => TOP_LEAGUES.includes(String(m.league.id)) || String(m.fixture.id) === activeMatchId);
+                filtered = allMatchesCached.filter(m => TOP_LEAGUES.includes(String(m.league.id)));
             } else {
-                filtered = allMatchesCached.filter(m => String(m.league.id) === String(selectedLeagueId) || String(m.fixture.id) === activeMatchId);
+                filtered = allMatchesCached.filter(m => String(m.league.id) === String(selectedLeagueId));
             }
 
-            if (currentSearchQuery) { const query = currentSearchQuery.toLowerCase(); filtered = filtered.filter(m => m.teams.home.name.toLowerCase().includes(query) || m.teams.away.name.toLowerCase().includes(query) || String(m.fixture.id) === activeMatchId); }
+            if (activeMatchId) {
+                const activeMatchObj = allMatchesCached.find(m => String(m.fixture.id) === activeMatchId);
+                if (activeMatchObj && TOP_LEAGUES.includes(String(activeMatchObj.league.id))) {
+                    if (!filtered.find(m => String(m.fixture.id) === activeMatchId)) {
+                        filtered.unshift(activeMatchObj);
+                    }
+                }
+            }
+
+            if (currentSearchQuery) { 
+                const query = currentSearchQuery.toLowerCase(); 
+                filtered = filtered.filter(m => m.teams.home.name.toLowerCase().includes(query) || m.teams.away.name.toLowerCase().includes(query) || String(m.fixture.id) === activeMatchId); 
+            }
             
             if (showLiveOnly) {
                 filtered = filtered.filter(m => ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(m.fixture.status.short) || String(m.fixture.id) === activeMatchId);
             }
 
-            if (!filtered || filtered.length === 0) { container.innerHTML = `<div class="bg-white border rounded-xl p-8 text-center font-medium text-slate-500 shadow-sm">${currentT.noMatches}</div>`; return; }
+            if (!filtered || filtered.length === 0) { 
+                container.innerHTML = `<div class="bg-white border rounded-xl p-8 text-center font-medium text-slate-500 shadow-sm">${currentT.noMatches}</div>`; 
+                return; 
+            }
            
             let finalHTML = '';
             const grouped = {};
