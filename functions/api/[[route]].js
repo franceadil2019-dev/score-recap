@@ -128,6 +128,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
+    // 5. تقرير المباراة (مقال طويل وأساليب مختلفة)
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -166,30 +167,46 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
+      // 🌟 مصفوفة الأساليب الصحفية المتنوعة
       const writingStyles = [
-        "Focus heavily on the tactical battle, formations, and the managers' strategic decisions.",
-        "Write with high passion and drama, focusing on the emotional rollercoaster and intensity of the match.",
-        "Focus on individual player performances, key mistakes, and moments of individual brilliance.",
-        "Take a narrative angle, discussing how this specific result impacts the teams' season and their fans.",
-        "Adopt a highly analytical and critical journalistic tone, questioning the losing team's performance."
+        "Style 1: Focus heavily on the tactical chess match between the managers, formations, defensive blocks, and pressing traps.",
+        "Style 2: Write with high emotional drama and storytelling, focusing on the fans' perspective, tension, and the psychological impact of the goals.",
+        "Style 3: Focus deeply on individual brilliance, star players who decided the game, key errors, and standout performances.",
+        "Style 4: Take a historical and macro perspective, analyzing what this specific result means for the clubs' ambitions, top-four race, or relegation battle.",
+        "Style 5: Adopt a fast-paced, action-oriented match recap style, breaking down the flow of momentum minute-by-minute based on the events.",
+        "Style 6: Focus on the physical duel, intensity, referee decisions, disciplinary actions, and how grit won or lost the match.",
+        "Style 7: Write from a technical and data-driven perspective, analyzing efficiency in front of goal, possession value, and defensive resilience."
       ];
       const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
-      const prompt = `Act as an expert sports journalist. Write a unique, comprehensive, and highly engaging match report for: ${matchStr}. Final Score: ${score}. Key Events: ${events}.
+      // 🌟 أمر توليد المقال الطويل (600+ كلمة)
+      const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League match: ${matchStr}. Final Score: ${score}. Key Events & Timeline: ${events}.
       
-      CRITICAL INSTRUCTION: ${randomStyle}
+      CRITICAL REQUIREMENT - LENGTH & DEPTH:
+      - The article MUST be at least 600 to 800 words long. Do not write a short summary. Expand on every tactical aspect.
+      - ${randomStyle}
       
-      Avoid repetitive journalistic clichés. Use varied vocabulary and dynamic sentence structures. Ensure this article feels 100% human-written and distinct from other match reports on the internet.
+      STRUCTURE THE ARTICLE IN CLEAN HTML USING THESE SECTIONS:
+      <h2>[Generate a Catchy, Journalistic, and Unique Title]</h2>
       
-      Structure the HTML exactly like this:
-      <h2>[Generate a Catchy and Unique Title]</h2>
-      <p>[Engaging Introduction]</p>
-      <p>[Main Analysis based on the critical instruction]</p>
-      <h3>Match Highlights & Turning Points</h3>
-      <ul><li>[Event 1]</li><li>[Event 2]</li></ul>
-      <p>[Strong Conclusion]</p>
+      <p>[Paragraph 1: Comprehensive Introduction (approx. 100 words) setting the stage, the stakes of the match, atmosphere, and the final outcome.]</p>
       
-      Write the ENTIRE article perfectly in ${targetLang}. Return ONLY clean HTML code without markdown wrappers.`;
+      <p>[Paragraph 2: Tactical Setup & First Half Analysis (approx. 150 words) detailing the starting formations, how both managers set up their teams, and key tactical battles on the pitch.]</p>
+      
+      <p>[Paragraph 3: Key Events & Turning Points (approx. 150 words) deeply analyzing the goals scored, major fouls, yellow/red cards, and how the momentum shifted based on the timeline: ${events}.]</p>
+      
+      <p>[Paragraph 4: Second Half Adjustments & Managerial Decisions (approx. 150 words) discussing substitutions, tactical changes made by the coaches during the break, and how they impacted the game.]</p>
+      
+      <h3>Key Match Highlights & Statistics Breakdown</h3>
+      <ul>
+        <li>[Detailed bullet point 1 about a key player or moment]</li>
+        <li>[Detailed bullet point 2 about tactical dominance or failure]</li>
+        <li>[Detailed bullet point 3 about the impact of the result on the league table]</li>
+      </ul>
+      
+      <p>[Paragraph 5: Detailed Conclusion (approx. 100 words) summarizing the standout performers, what this result means for both clubs moving forward in the Premier League season.]</p>
+      
+      Write the ENTIRE article perfectly in ${targetLang}. Ensure rich vocabulary, professional sports journalism phrasing, and zero fluff. Return ONLY clean HTML code without markdown wrappers.`;
 
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
@@ -277,7 +294,7 @@ export async function onRequest(context) {
                 reports.push({
                     fixtureId: m.fixture.id,
                     title: `${home} vs ${away}`,
-                    url: `/report/${m.fixture.id}/${slug}`, // 🌟 تم تعديل المسار إلى report
+                    url: `/report/${m.fixture.id}/${slug}`,
                     logoHome: m.teams.home.logo,
                     logoAway: m.teams.away.logo
                 });
