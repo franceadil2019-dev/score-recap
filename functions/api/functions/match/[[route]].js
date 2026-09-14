@@ -5,124 +5,98 @@ export async function onRequest(context) {
     const routeParams = context.params.route || [];
     const fixtureId = routeParams[0];
 
-    const serveSPA = () => env.ASSETS.fetch(new Request(url.origin + "/"));
+    const redirectToHome = () => Response.redirect(url.origin + "/", 302);
 
     if (!fixtureId) {
-        return serveSPA();
-    }
-
-    if (!env.API_SPORTS_KEY || !env.GEMINI_API_KEY) {
-        return serveSPA();
+        return redirectToHome();
     }
 
     try {
-        const matchRes = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, {
-            headers: { "x-apisports-key": env.API_SPORTS_KEY }
-        });
-        const matchData = await matchRes.json();
-       
-        if (!matchData.response || matchData.response.length === 0) {
-            return serveSPA();
-        }
-
-        const match = matchData.response[0];
-       
-        if (String(match.league.id) !== "39") {
-            return serveSPA();
-        }
-
-        const homeTeam = match.teams.home.name;
-        const awayTeam = match.teams.away.name;
-        const score = `${match.goals.home} - ${match.goals.away}`;
-        const matchStr = `${homeTeam} vs ${awayTeam}`;
-        const status = match.fixture.status.short;
-
-        if (status !== 'FT' && status !== 'AET' && status !== 'PEN') {
-            return serveSPA();
-        }
-
-        const lang = "en";
-        const kvKey = `recap_v2_${fixtureId}_${lang}`;
+        // 1. أولاً: البحث عن المقال في قاعدة بياناتك (KV)
         let articleHTML = "";
-
         if (env.SPORTS_KV) {
-            articleHTML = await env.SPORTS_KV.get(kvKey);
+            articleHTML = await env.SPORTS_KV.get(`recap_v2_${fixtureId}_en`) ||
+                          await env.SPORTS_KV.get(`recap_${fixtureId}_en`) ||
+                          await env.SPORTS_KV.get(`recap_v2_${fixtureId}_ar`) ||
+                          await env.SPORTS_KV.get(`recap_v2_${fixtureId}_fr`) ||
+                          "";
         }
 
-        if (!articleHTML) {
-            const eventsRes = await fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`, {
-                headers: { "x-apisports-key": env.API_SPORTS_KEY }
-            });
-            const eventsData = await eventsRes.json();
-            let eventsStr = "No specific events";
-            if (eventsData.response && eventsData.response.length > 0) {
-                eventsStr = eventsData.response.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', ');
-            }
+        // 2. محاولة جلب بيانات المباراة من الكاش
+        let match = null;
+        if (env.SPORTS_KV) {
+            match = await env.SPORTS_KV.get(`api_fixture_id_${fixtureId}`, "json");
+        }
 
-            // 🌟 مصفوفة الأساليب الصحفية لصفحات السيو
-            const writingStyles = [
-                "Focus heavily on the tactical battle, formations, and the managers' strategic decisions.",
-                "Write with high passion and drama, focusing on the emotional rollercoaster and intensity of the match.",
-                "Focus on individual player performances, key mistakes, and moments of individual brilliance.",
-                "Take a narrative angle, discussing how this specific result impacts the teams' season and their fans.",
-                "Adopt a highly analytical and critical journalistic tone, questioning the losing team's performance."
-            ];
-            const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
-
-            const prompt = `Act as an expert sports journalist. Write a unique, comprehensive, and highly engaging match report for: ${matchStr}. Final score: ${score}. Key events: ${eventsStr}.
-            
-            CRITICAL INSTRUCTION: ${randomStyle}
-            
-            Avoid repetitive journalistic clichés. Use varied vocabulary and dynamic sentence structures. Ensure this article feels 100% human-written and distinct from other match reports.
-            
-            Structure the HTML exactly like this:
-            <h2>[Generate a Catchy and Unique Title]</h2>
-            <p>[Engaging Introduction]</p>
-            <p>[Main Analysis based on the critical instruction]</p>
-            <h3>Match Highlights & Turning Points</h3>
-            <ul><li>[Event 1]</li><li>[Event 2]</li></ul>
-            <p>[Strong Conclusion]</p>
-            
-            Write the ENTIRE article perfectly in English. Return ONLY valid clean HTML code. Do NOT wrap the response in markdown blocks.`;
-
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
-                method: "POST", 
-                headers: { "Content-Type": "application/json" }, 
-                body: JSON.stringify({ 
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        temperature: 0.85, // 🌟 درجة الإبداع العالية
-                        topP: 0.9
+        // إذا لم تكن في الكاش ورصيد API متاح، نجلبها
+        if (!match && env.API_SPORTS_KEY) {
+            try {
+                const matchRes = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, {
+                    headers: { "x-apisports-key": env.API_SPORTS_KEY }
+                });
+                const matchData = await matchRes.json();
+                if (matchData.response && matchData.response.length > 0) {
+                    match = matchData.response[0];
+                    if (env.SPORTS_KV) {
+                        waitUntil(env.SPORTS_KV.put(`api_fixture_id_${fixtureId}`, JSON.stringify(match), { expirationTtl: 86400 }));
                     }
-                })
-            });
-           
-            const aiData = await aiRes.json();
-            if (aiRes.ok && aiData.candidates) {
-                articleHTML = aiData.candidates[0].content.parts[0].text;
-                if (env.SPORTS_KV) { 
-                    waitUntil(env.SPORTS_KV.put(kvKey, articleHTML));
-                    
-                    waitUntil((async () => {
-                        try {
-                            let recent = await env.SPORTS_KV.get("recent_generated_reports", "json");
-                            if (!recent || !Array.isArray(recent)) recent = [];
-                            if (!recent.includes(fixtureId)) {
-                                recent.unshift(fixtureId);
-                                recent = recent.slice(0, 10);
-                                await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
-                                await env.SPORTS_KV.delete("cached_latest_reports");
-                            }
-                        } catch (e) {}
-                    })());
                 }
-            } else {
-                articleHTML = "<p>Match report is currently being prepared. Please check back later.</p>";
+            } catch (e) {}
+        }
+
+        // 3. إذا لم نجد المقال، نحاول توليده إذا كانت المباراة مستوفية للشروط
+        if (!articleHTML && match) {
+            if (String(match.league.id) !== "39") return redirectToHome();
+            const status = match.fixture.status.short;
+            if (status !== 'FT' && status !== 'AET' && status !== 'PEN') return redirectToHome();
+
+            if (env.GEMINI_API_KEY) {
+                let eventsStr = "Key match events";
+                try {
+                    const eventsRes = await fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`, {
+                        headers: { "x-apisports-key": env.API_SPORTS_KEY }
+                    });
+                    const eventsData = await eventsRes.json();
+                    if (eventsData.response && eventsData.response.length > 0) {
+                        eventsStr = eventsData.response.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', ');
+                    }
+                } catch (e) {}
+
+                const prompt = `Act as an expert sports journalist. Write a comprehensive, engaging match report for: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}. Events: ${eventsStr}.
+                Include: <h2>Title</h2>, <p>Introduction</p>, <p>Tactical Analysis</p>, <h3>Turning Point</h3> with <ul><li>...</li></ul>, and a strong conclusion.
+                Write in English. Return ONLY clean HTML.`;
+
+                const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
+                    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const aiData = await aiRes.json();
+                if (aiRes.ok && aiData.candidates) {
+                    articleHTML = aiData.candidates[0].content.parts[0].text;
+                    if (env.SPORTS_KV) {
+                        waitUntil(env.SPORTS_KV.put(`recap_v2_${fixtureId}_en`, articleHTML));
+                    }
+                }
             }
         }
 
-        const title = `${matchStr} (${score}) - Premier League Match Report | ScoreRecap`;
-        const description = `Read the full match report, tactical breakdown, and key highlights for ${matchStr}. Final Score: ${score}.`;
+        // إذا لم نجد المقال نهائياً، عندها فقط نعيد التوجيه
+        if (!articleHTML) {
+            return redirectToHome();
+        }
+
+        // 4. استخراج تفاصيل العرض (من المباراة أو من المقال نفسه)
+        let homeName = match ? match.teams.home.name : "Premier League Team";
+        let awayName = match ? match.teams.away.name : "Premier League Team";
+        let homeLogo = match ? match.teams.home.logo : "https://media.api-sports.io/football/leagues/39.png";
+        let awayLogo = match ? match.teams.away.logo : "https://media.api-sports.io/football/leagues/39.png";
+        let score = match && match.goals.home !== null ? `${match.goals.home} - ${match.goals.away}` : "FT";
+        let matchStr = match ? `${homeName} vs ${awayName}` : "Match Report";
+
+        const titleMatch = articleHTML.match(/<h2[^>]*>(.*?)<\/h2>/i);
+        const articleHeadline = titleMatch && titleMatch[1] ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : matchStr;
+
+        const title = `${articleHeadline} | ScoreRecap`;
+        const description = `Read the full match report and tactical breakdown for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
 
         const html = `<!DOCTYPE html>
@@ -157,8 +131,8 @@ export async function onRequest(context) {
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <a href="/" class="text-2xl font-black text-emerald-500 tracking-tight">SCORE<span class="text-white">RECAP</span></a>
-            <a href="/" class="text-sm font-bold text-slate-300 hover:text-white transition-colors flex items-center gap-2">
-                &larr; Back to Scores
+            <a href="/reports" class="text-sm font-bold text-slate-300 hover:text-white transition-colors flex items-center gap-2">
+                &larr; Back to Reports
             </a>
         </div>
     </header>
@@ -170,26 +144,26 @@ export async function onRequest(context) {
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
                 <div class="relative z-10 flex items-center gap-8 sm:gap-16">
                     <div class="text-center">
-                        <img src="${match.teams.home.logo}" class="w-20 h-20 sm:w-28 sm:h-28 drop-shadow-2xl mx-auto mb-3">
-                        <span class="font-bold text-sm sm:text-base">${match.teams.home.name}</span>
+                        <img src="${homeLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mx-auto mb-2">
+                        <span class="font-bold text-xs sm:text-sm text-slate-300">${homeName}</span>
                     </div>
                     <div class="text-center">
-                        <div class="text-4xl sm:text-5xl font-black text-white drop-shadow-lg mb-1">${score}</div>
-                        <span class="text-emerald-500 font-bold text-xs sm:text-sm uppercase tracking-widest">Full Time</span>
+                        <div class="text-3xl sm:text-5xl font-black text-white drop-shadow-lg mb-1">${score}</div>
+                        <span class="text-emerald-500 font-bold text-[10px] sm:text-xs uppercase tracking-widest">Full Time</span>
                     </div>
                     <div class="text-center">
-                        <img src="${match.teams.away.logo}" class="w-20 h-20 sm:w-28 sm:h-28 drop-shadow-2xl mx-auto mb-3">
-                        <span class="font-bold text-sm sm:text-base">${match.teams.away.name}</span>
+                        <img src="${awayLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mx-auto mb-2">
+                        <span class="font-bold text-xs sm:text-sm text-slate-300">${awayName}</span>
                     </div>
                 </div>
             </div>
 
             <div class="p-6 sm:p-10">
-                <div class="flex items-center gap-3 mb-8 border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3 mb-6 border-b border-slate-800 pb-4">
                     <div class="bg-slate-800 p-2.5 rounded-xl text-blue-400">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     </div>
-                    <h1 class="text-lg sm:text-xl font-black text-white uppercase tracking-widest">Match Report & Tactical Analysis</h1>
+                    <h1 class="text-base sm:text-lg font-black text-white uppercase tracking-widest">Match Report & Tactical Analysis</h1>
                 </div>
                
                 <div class="ai-article-content">
@@ -213,6 +187,6 @@ export async function onRequest(context) {
         });
 
     } catch (error) {
-        return new Response(`Error: ${error.message}`, { status: 500 });
+        return redirectToHome();
     }
 }
