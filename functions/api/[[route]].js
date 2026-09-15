@@ -41,7 +41,7 @@ export async function onRequest(context) {
         
         let finalTtl = ttlSeconds;
         
-        // 🚨 الإصلاح: التحقق الذكي من المباريات المباشرة لتجنب تجميدها بسبب فرق التوقيت
+        // منع تجميد المباريات المباشرة حتى لو كان تاريخها أمس
         if (dataObj.response && Array.isArray(dataObj.response)) {
           const hasLiveMatches = dataObj.response.some(match => {
             if (!match.fixture || !match.fixture.status) return false;
@@ -49,7 +49,6 @@ export async function onRequest(context) {
             return ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(status);
           });
           
-          // إذا وجدنا مباراة تلعب الآن، نجبر الكاش على 60 ثانية حتى لو كان التاريخ "أمس"
           if (hasLiveMatches) {
             finalTtl = 60;
           }
@@ -145,7 +144,6 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ result: predictionText, source: "LIVE_AI" }), { headers: corsHeaders });
     }
 
-    // 5. تقرير المباراة (مقال طويل وأساليب مختلفة)
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       if (leagueId && leagueId !== "39") {
@@ -170,7 +168,7 @@ export async function onRequest(context) {
                   if (!recent || !Array.isArray(recent)) recent = [];
                   if (!recent.includes(fixtureId)) {
                       recent.unshift(fixtureId);
-                      recent = recent.slice(0, 10);
+                      recent = recent.slice(0, 50); // تم التعديل إلى 50
                       await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                       await env.SPORTS_KV.delete("cached_latest_reports"); 
                   }
@@ -184,7 +182,6 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
-      // 🌟 مصفوفة الأساليب الصحفية المتنوعة
       const writingStyles = [
         "Style 1: Focus heavily on the tactical chess match between the managers, formations, defensive blocks, and pressing traps.",
         "Style 2: Write with high emotional drama and storytelling, focusing on the fans' perspective, tension, and the psychological impact of the goals.",
@@ -196,7 +193,6 @@ export async function onRequest(context) {
       ];
       const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
-      // 🌟 أمر توليد المقال الطويل (600+ كلمة)
       const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League match: ${matchStr}. Final Score: ${score}. Key Events & Timeline: ${events}.
       
       CRITICAL REQUIREMENT - LENGTH & DEPTH:
@@ -249,7 +245,7 @@ export async function onRequest(context) {
                 if (!recent || !Array.isArray(recent)) recent = [];
                 if (!recent.includes(fixtureId)) {
                     recent.unshift(fixtureId);
-                    recent = recent.slice(0, 10);
+                    recent = recent.slice(0, 50); // تم التعديل إلى 50
                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                 }
                 await env.SPORTS_KV.delete("cached_latest_reports");
@@ -278,7 +274,7 @@ export async function onRequest(context) {
           if (match && match[1] && !fixtureIds.includes(match[1])) {
             fixtureIds.push(match[1]);
           }
-          if (fixtureIds.length >= 10) break;
+          if (fixtureIds.length >= 50) break; // تم التعديل إلى 50
         }
         if (fixtureIds.length > 0) {
            waitUntil(env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(fixtureIds)));
@@ -289,7 +285,7 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "No reports found in database yet." }), { headers: corsHeaders });
       }
 
-      const fetchIds = fixtureIds.slice(0, 10);
+      const fetchIds = fixtureIds.slice(0, 50); // تم التعديل إلى 50
 
       const res = await fetch(`https://v3.football.api-sports.io/fixtures?ids=${fetchIds.join('-')}`, {
         headers: { "x-apisports-key": env.API_SPORTS_KEY }
