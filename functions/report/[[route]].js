@@ -58,7 +58,6 @@ export async function onRequest(context) {
                     }
                 } catch (e) {}
 
-                // 🌟 مصفوفة الأساليب الصحفية لصفحات السيو
                 const writingStyles = [
                     "Style 1: Focus heavily on the tactical chess match between the managers, formations, defensive blocks, and pressing traps.",
                     "Style 2: Write with high emotional drama and storytelling, focusing on the fans' perspective, tension, and the psychological impact of the goals.",
@@ -70,7 +69,6 @@ export async function onRequest(context) {
                 ];
                 const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
-                // 🌟 أمر توليد المقال الطويل (600+ كلمة)
                 const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League fixture: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}. Events: ${eventsStr}.
                 
                 CRITICAL REQUIREMENT - LENGTH & DEPTH:
@@ -118,7 +116,7 @@ export async function onRequest(context) {
                                 if (!recent || !Array.isArray(recent)) recent = [];
                                 if (!recent.includes(fixtureId)) {
                                     recent.unshift(fixtureId);
-                                    recent = recent.slice(0, 10);
+                                    recent = recent.slice(0, 50); // تم التعديل ليتوافق مع 50 مقال
                                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                                     await env.SPORTS_KV.delete("cached_latest_reports");
                                 }
@@ -147,6 +145,9 @@ export async function onRequest(context) {
         const description = `Read the full match report and tactical breakdown for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
 
+        // 🚨 رابط الصورة الجديد والموثوق (صورة ملعب ليلية عالية الجودة)
+        const stadiumImage = "https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1200&auto=format&fit=crop";
+
         const html = `<!DOCTYPE html>
 <html lang="en" dir="ltr" class="dark">
 <head>
@@ -160,7 +161,7 @@ export async function onRequest(context) {
     <meta property="og:description" content="${description}">
     <meta property="og:type" content="article">
     <meta property="og:url" content="${canonicalUrl}">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1200&auto=format&fit=crop">
+    <meta property="og:image" content="${stadiumImage}">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class', } </script>
@@ -179,7 +180,7 @@ export async function onRequest(context) {
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <a href="/" class="text-2xl font-black text-emerald-500 tracking-tight">SCORE<span class="text-white">RECAP</span></a>
-            <a href="/reports" class="text-sm font-bold text-slate-300 hover:text-white transition-colors flex items-center gap-2">
+            <a href="/reports" class="text-sm font-bold text-slate-300 hover:text-emerald-400 transition-colors flex items-center gap-2">
                 &larr; Back to Reports
             </a>
         </div>
@@ -188,30 +189,30 @@ export async function onRequest(context) {
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
         <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
             <div class="relative w-full h-56 sm:h-72 bg-slate-950 flex items-center justify-center overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1200&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-30" alt="Stadium">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
-                <div class="relative z-10 flex items-center gap-8 sm:gap-16">
-                    <div class="text-center">
-                        <img src="${homeLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mx-auto mb-2">
-                        <span class="font-bold text-xs sm:text-sm text-slate-300">${homeName}</span>
+                <img src="${stadiumImage}" class="absolute inset-0 w-full h-full object-cover opacity-30" alt="Football Stadium">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+                <div class="relative z-10 flex items-center gap-8 sm:gap-16 w-full px-4 justify-center">
+                    <div class="text-center w-1/3 flex flex-col items-center">
+                        <img src="${homeLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mb-3">
+                        <span class="font-bold text-xs sm:text-sm text-slate-200 line-clamp-1">${homeName}</span>
                     </div>
-                    <div class="text-center">
-                        <div class="text-3xl sm:text-5xl font-black text-white drop-shadow-lg mb-1">${score}</div>
-                        <span class="text-emerald-500 font-bold text-xs sm:text-sm uppercase tracking-widest">Full Time</span>
+                    <div class="text-center w-1/3 flex flex-col items-center justify-center">
+                        <div class="text-4xl sm:text-5xl font-black text-white drop-shadow-lg mb-2 tracking-wider">${score}</div>
+                        <span class="bg-emerald-500/20 text-emerald-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-500/30">Full Time</span>
                     </div>
-                    <div class="text-center">
-                        <img src="${awayLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mx-auto mb-2">
-                        <span class="font-bold text-xs sm:text-sm text-slate-300">${awayName}</span>
+                    <div class="text-center w-1/3 flex flex-col items-center">
+                        <img src="${awayLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mb-3">
+                        <span class="font-bold text-xs sm:text-sm text-slate-200 line-clamp-1">${awayName}</span>
                     </div>
                 </div>
             </div>
 
             <div class="p-6 sm:p-10">
                 <div class="flex items-center gap-3 mb-6 border-b border-slate-800 pb-4">
-                    <div class="bg-slate-800 p-2.5 rounded-xl text-blue-400">
+                    <div class="bg-slate-800 p-2.5 rounded-xl text-emerald-400 shadow-inner">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     </div>
-                    <h1 class="text-base sm:text-lg font-black text-white uppercase tracking-widest">Match Report & Tactical Analysis</h1>
+                    <h1 class="text-base sm:text-lg font-black text-slate-200 uppercase tracking-widest">Match Report & Tactical Analysis</h1>
                 </div>
                
                 <div class="ai-article-content">
