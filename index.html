@@ -89,7 +89,7 @@
            
             <div class="flex items-center gap-2 md:gap-3">
                 <a href="/reports" class="static-link flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-emerald-500 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors mr-1 sm:mr-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     <span class="hidden sm:inline" id="txt-nav-reports">Reports</span>
                 </a>
 
@@ -177,7 +177,6 @@
             <div id="api-scores-container" class="space-y-4 min-h-[500px]" aria-live="polite"></div>
         </section>
 
-        <!-- 🚨 صفحة التقارير الجديدة -->
         <section id="page-reports" class="lg:col-span-2 hidden space-y-6" dir="ltr">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm">
                 <h1 class="text-2xl font-black text-emerald-500 mb-6 uppercase tracking-wide flex items-center gap-2" id="title-reports-page">
@@ -189,7 +188,6 @@
             </div>
         </section>
 
-        <!-- 🚨 مسار الألعاب المنعزل (Game Zone) -->
         <section id="page-game" class="lg:col-span-2 hidden space-y-8" dir="ltr">
             
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm text-center">
@@ -242,7 +240,6 @@
 
         </section>
 
-        <!-- قسم الصفحات الثابتة كاملة -->
         <section id="static-pages-section" class="lg:col-span-2 hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm static-page-content" dir="ltr">
             
             <div id="page-about" class="hidden">
@@ -887,45 +884,95 @@
             startFlickGK();
         }
 
+        let allReportsCachedData = [];
+        let currentReportPage = 1;
+        const REPORTS_PER_PAGE = 10;
+
         async function fetchReportsPage() {
             const container = document.getElementById('reports-page-container');
             const currentT = translations[currentLang] || translations['en'];
             if(!container) return;
-            container.innerHTML = `<div class="col-span-full flex justify-center py-10"><div class="spinner"></div></div>`;
-            try {
-                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/latest-reports?t=${new Date().getTime()}`, { headers: { "x-action": "latest-reports" }, timeout: 15000 });
-                const reports = await res.json();
-                
-                if (reports.error) {
-                    container.innerHTML = `<p class="col-span-full text-sm text-red-500 text-center font-bold py-10">⚠️ ${reports.error}</p>`;
+            
+            if (allReportsCachedData.length === 0) {
+                container.innerHTML = `<div class="col-span-full flex justify-center py-10"><div class="spinner"></div></div>`;
+                try {
+                    const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/latest-reports?t=${new Date().getTime()}`, { headers: { "x-action": "latest-reports" }, timeout: 15000 });
+                    const reports = await res.json();
+                    
+                    if (reports.error) {
+                        container.innerHTML = `<p class="col-span-full text-sm text-red-500 text-center font-bold py-10">⚠️ ${reports.error}</p>`;
+                        return;
+                    }
+                    allReportsCachedData = reports;
+                } catch (err) {
+                    container.innerHTML = `<p class="col-span-full text-sm text-red-500 text-center py-10">Failed to load reports. Please try again later.</p>`;
                     return;
                 }
-
-                if (reports && reports.length > 0) {
-                    let html = '';
-                    reports.forEach(r => {
-                        html += `
-                        <a href="${r.url}" class="group block bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors shadow-sm">
-                            <div class="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900">
-                                <img src="${r.logoHome}" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform">
-                                <span class="text-xs font-black text-slate-400 uppercase">VS</span>
-                                <img src="${r.logoAway}" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform">
-                            </div>
-                            <div class="p-4">
-                                <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1 block">Tactical Analysis</span>
-                                <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug">${r.title}</h3>
-                            </div>
-                        </a>
-                        `;
-                    });
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = `<p class="col-span-full text-sm text-slate-500 text-center italic py-10" id="txt-no-reports">${currentT.noReports}</p>`;
-                }
-            } catch (err) {
-                container.innerHTML = `<p class="col-span-full text-sm text-red-500 text-center py-10">Failed to load reports. Please try again later.</p>`;
             }
+            currentReportPage = 1;
+            renderReports();
         }
+
+        function renderReports() {
+            const container = document.getElementById('reports-page-container');
+            const currentT = translations[currentLang] || translations['en'];
+
+            if (!allReportsCachedData || allReportsCachedData.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-sm text-slate-500 text-center italic py-10" id="txt-no-reports">${currentT.noReports}</p>`;
+                return;
+            }
+
+            const totalPages = Math.ceil(allReportsCachedData.length / REPORTS_PER_PAGE);
+            const startIndex = (currentReportPage - 1) * REPORTS_PER_PAGE;
+            const endIndex = startIndex + REPORTS_PER_PAGE;
+            const itemsToShow = allReportsCachedData.slice(startIndex, endIndex);
+
+            let html = '';
+            itemsToShow.forEach(r => {
+                html += `
+                <a href="${r.url}" class="group block bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors shadow-sm">
+                    <div class="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900">
+                        <img src="${r.logoHome}" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform">
+                        <span class="text-xs font-black text-slate-400 uppercase">VS</span>
+                        <img src="${r.logoAway}" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform">
+                    </div>
+                    <div class="p-4">
+                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1 block">Tactical Analysis</span>
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug">${r.title}</h3>
+                    </div>
+                </a>
+                `;
+            });
+
+            if (totalPages > 1) {
+                html += `<div class="col-span-full flex justify-center items-center gap-2 mt-6" dir="ltr">`;
+                
+                html += `<button onclick="changeReportPage(${currentReportPage - 1})" class="px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${currentReportPage === 1 ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}" ${currentReportPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
+
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === currentReportPage) {
+                        html += `<button class="px-3 py-1.5 rounded-lg text-sm font-bold bg-emerald-500 text-white shadow-sm">${i}</button>`;
+                    } else {
+                        html += `<button onclick="changeReportPage(${i})" class="px-3 py-1.5 rounded-lg text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors">${i}</button>`;
+                    }
+                }
+
+                html += `<button onclick="changeReportPage(${currentReportPage + 1})" class="px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${currentReportPage === totalPages ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}" ${currentReportPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+                
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        window.changeReportPage = function(page) {
+            currentReportPage = page;
+            renderReports();
+            const titleElement = document.getElementById('title-reports-page');
+            if (titleElement) {
+                titleElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
 
         document.addEventListener("DOMContentLoaded", () => {
             initTheme();
