@@ -38,7 +38,24 @@ export async function onRequest(context) {
     try {
       const dataObj = JSON.parse(dataText);
       if (env.SPORTS_KV && res.ok && (!dataObj.errors || Object.keys(dataObj.errors).length === 0)) {
-        const safeTtl = Math.max(ttlSeconds, 60);
+        
+        let finalTtl = ttlSeconds;
+        
+        // 🚨 الإصلاح: التحقق الذكي من المباريات المباشرة لتجنب تجميدها بسبب فرق التوقيت
+        if (dataObj.response && Array.isArray(dataObj.response)) {
+          const hasLiveMatches = dataObj.response.some(match => {
+            if (!match.fixture || !match.fixture.status) return false;
+            const status = match.fixture.status.short;
+            return ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(status);
+          });
+          
+          // إذا وجدنا مباراة تلعب الآن، نجبر الكاش على 60 ثانية حتى لو كان التاريخ "أمس"
+          if (hasLiveMatches) {
+            finalTtl = 60;
+          }
+        }
+
+        const safeTtl = Math.max(finalTtl, 60);
         waitUntil(env.SPORTS_KV.put(kvKey, dataText, { expirationTtl: safeTtl }));
       }
     } catch (e) {}
