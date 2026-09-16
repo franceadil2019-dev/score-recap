@@ -145,28 +145,25 @@ export async function onRequest(context) {
         const description = `Read the full match report and tactical breakdown for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
 
-        // 🚨 مصفوفة تحتوي على 15 صورة ملعب عالية الجودة
+        // 🚨 10 صور احترافية جداً (ملاعب وجماهير) مضمونة التحميل
         const stadiumImages = [
-            "https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1574629810360-7efbbcb27a4e?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1577223625816-7546f13df25d?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1589487391730-58f20eb2c308?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1518091043644-c1d44570a2c9?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1600250395378-9622269c9b0e?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1551280857-2b9bbe5240f5?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1431324155629-1a6bbe23b9d1?q=80&w=1200&auto=format&fit=crop"
+            "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80", // ملعب ليلي
+            "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=1200&q=80", // جماهير حماسية
+            "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80", // ملعب واسع
+            "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?auto=format&fit=crop&w=1200&q=80", // أرضية الملعب
+            "https://images.unsplash.com/photo-1574629810360-7efbbcb27a4e?auto=format&fit=crop&w=1200&q=80", // زاوية الملعب
+            "https://images.unsplash.com/photo-1589487391730-58f20eb2c308?auto=format&fit=crop&w=1200&q=80", // جماهير بألوان نارية
+            "https://images.unsplash.com/photo-1518091043644-c1d44570a2c9?auto=format&fit=crop&w=1200&q=80", // مدرجات
+            "https://images.unsplash.com/photo-1600250395378-9622269c9b0e?auto=format&fit=crop&w=1200&q=80", // من زاوية اللاعبين
+            "https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=1200&q=80", // أضواء الملعب
+            "https://images.unsplash.com/photo-1518605368461-1e1252220a77?auto=format&fit=crop&w=1200&q=80"  // كشافات الإضاءة
         ];
         
-        // 🚨 اختيار صورة عشوائية بناءً على رقم الـ fixtureId لكي تظل الصورة ثابتة لنفس المقال دائماً
         const randomImageIndex = parseInt(fixtureId) % stadiumImages.length;
         const stadiumImage = stadiumImages[randomImageIndex];
+        
+        // صورة احتياطية قوية جداً في حال فشل أي صورة عشوائية
+        const fallbackImage = "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80";
 
         const html = `<!DOCTYPE html>
 <html lang="en" dir="ltr" class="dark">
@@ -209,9 +206,11 @@ export async function onRequest(context) {
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
         <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
             <div class="relative w-full h-56 sm:h-72 bg-slate-900 flex items-center justify-center overflow-hidden">
-                <!-- الصورة واضحة تماماً 100% -->
-                <img src="${stadiumImage}" class="absolute inset-0 w-full h-full object-cover" alt="Football Stadium">
-                <!-- طبقة تظليل خفيفة جداً (40%) لضمان قراءة النص الأبيض -->
+                
+                <!-- 🚨 كود الحماية (onerror): إذا فشلت الصورة في التحميل، سيضع الصورة الاحتياطية فوراً -->
+                <img src="${stadiumImage}" onerror="this.onerror=null;this.src='${fallbackImage}';" class="absolute inset-0 w-full h-full object-cover" alt="Match Background">
+                
+                <!-- طبقة تظليل خفيفة (40%) لضمان قراءة النص الأبيض بوضوح -->
                 <div class="absolute inset-0 bg-black/40"></div>
                 <!-- تدرج لوني خفيف من الأسفل ليدمج الصورة مع باقي الصفحة -->
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
