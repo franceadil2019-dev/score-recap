@@ -587,7 +587,6 @@
                 document.querySelectorAll('[id^="details-"]').forEach(el => { if (el.id !== `details-${fId}`) el.classList.add('hidden'); });
                 details.classList.remove('hidden');
                 
-                // 🚨 التعديل هنا: إزالة شرط loadedDetails.has(fId) لضمان رسم الأحداث دائماً
                 fetchMatchEvents(fId, document.getElementById(`events-list-${fId}`)); 
                 fetchMatchStats(fId); 
                 
@@ -721,20 +720,21 @@
                         } else { customSection = `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.reportExclusive}</div>`; }
                     }
 
+                    // 🚨 التعديل هنا: تكبير الشعارات (w-6 h-6) وعرض الاسم كاملاً (بدون truncate) في الهواتف والحاسوب
                     html += `<div class="match-row-container group" data-fixture-id="${fId}">
                             <a href="${matchUrl}" class="match-row-header block p-3 md:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors" data-fixture-id="${fId}">
                                 <div class="flex justify-between items-center">
-                                    <div class="w-[40%] text-right font-bold text-slate-700 dark:text-slate-200 flex items-center justify-end gap-1.5 sm:gap-2">
-                                        <span class="text-[11px] sm:text-sm truncate">${homeName}</span>
-                                        <img src="${match.teams.home.logo}" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0">
+                                    <div class="w-[40%] text-right font-bold text-slate-700 dark:text-slate-200 flex items-center justify-end gap-2">
+                                        <span class="text-xs sm:text-sm leading-tight">${homeName}</span>
+                                        <img src="${match.teams.home.logo}" class="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 object-contain drop-shadow-sm">
                                     </div>
                                     <div class="w-[20%] text-center flex flex-col items-center px-1">
                                         <div class="text-[9px] sm:text-[10px] text-slate-400 mb-0.5 font-semibold tracking-wider">${statusText}</div>
                                         <div dir="ltr" class="bg-slate-100 dark:bg-slate-950 px-2 sm:px-3 py-1 rounded-md text-slate-800 dark:text-slate-100 font-black text-sm sm:text-lg shadow-sm border border-slate-200 dark:border-slate-800/50 w-full whitespace-nowrap text-center">${hScore} - ${aScore}</div>
                                     </div>
-                                    <div class="w-[40%] text-left font-bold text-slate-700 dark:text-slate-200 flex items-center justify-start gap-1.5 sm:gap-2">
-                                        <img src="${match.teams.away.logo}" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0">
-                                        <span class="text-[11px] sm:text-sm truncate">${awayName}</span>
+                                    <div class="w-[40%] text-left font-bold text-slate-700 dark:text-slate-200 flex items-center justify-start gap-2">
+                                        <img src="${match.teams.away.logo}" class="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 object-contain drop-shadow-sm">
+                                        <span class="text-xs sm:text-sm leading-tight">${awayName}</span>
                                     </div>
                                 </div>
                             </a>
