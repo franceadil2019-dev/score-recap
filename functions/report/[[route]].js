@@ -187,11 +187,14 @@ export async function onRequest(context) {
 
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
         <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-            <div class="relative w-full h-56 sm:h-72 bg-slate-800 flex items-center justify-center overflow-hidden">
-                <!-- تم تفتيح الصورة هنا بجعل opacity-60 بدلاً من 30 -->
-                <img src="${stadiumImage}" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" alt="Football Stadium">
-                <!-- تم تخفيف التدرج الأسود ليكون أكثر شفافية -->
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+            <div class="relative w-full h-56 sm:h-72 bg-slate-900 flex items-center justify-center overflow-hidden">
+                <!-- الصورة واضحة تماماً 100% -->
+                <img src="${stadiumImage}" class="absolute inset-0 w-full h-full object-cover" alt="Football Stadium">
+                <!-- طبقة تظليل خفيفة جداً (40%) لضمان قراءة النص الأبيض -->
+                <div class="absolute inset-0 bg-black/40"></div>
+                <!-- تدرج لوني خفيف من الأسفل ليدمج الصورة مع باقي الصفحة -->
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                
                 <div class="relative z-10 flex items-center gap-8 sm:gap-16 w-full px-4 justify-center">
                     <div class="text-center w-1/3 flex flex-col items-center">
                         <img src="${homeLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mb-3">
