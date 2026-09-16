@@ -145,7 +145,28 @@ export async function onRequest(context) {
         const description = `Read the full match report and tactical breakdown for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
 
-        const stadiumImage = "https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1200&auto=format&fit=crop";
+        // 🚨 مصفوفة تحتوي على 15 صورة ملعب عالية الجودة
+        const stadiumImages = [
+            "https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1518605368461-1e1252220a77?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1574629810360-7efbbcb27a4e?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1577223625816-7546f13df25d?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1589487391730-58f20eb2c308?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1518091043644-c1d44570a2c9?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1600250395378-9622269c9b0e?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1551280857-2b9bbe5240f5?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1431324155629-1a6bbe23b9d1?q=80&w=1200&auto=format&fit=crop"
+        ];
+        
+        // 🚨 اختيار صورة عشوائية بناءً على رقم الـ fixtureId لكي تظل الصورة ثابتة لنفس المقال دائماً
+        const randomImageIndex = parseInt(fixtureId) % stadiumImages.length;
+        const stadiumImage = stadiumImages[randomImageIndex];
 
         const html = `<!DOCTYPE html>
 <html lang="en" dir="ltr" class="dark">
