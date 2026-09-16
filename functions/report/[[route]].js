@@ -116,7 +116,7 @@ export async function onRequest(context) {
                                 if (!recent || !Array.isArray(recent)) recent = [];
                                 if (!recent.includes(fixtureId)) {
                                     recent.unshift(fixtureId);
-                                    recent = recent.slice(0, 50); // تم التعديل ليتوافق مع 50 مقال
+                                    recent = recent.slice(0, 50);
                                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                                     await env.SPORTS_KV.delete("cached_latest_reports");
                                 }
@@ -145,7 +145,6 @@ export async function onRequest(context) {
         const description = `Read the full match report and tactical breakdown for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
 
-        // 🚨 رابط الصورة الجديد والموثوق (صورة ملعب ليلية عالية الجودة)
         const stadiumImage = "https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1200&auto=format&fit=crop";
 
         const html = `<!DOCTYPE html>
@@ -188,21 +187,23 @@ export async function onRequest(context) {
 
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
         <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-            <div class="relative w-full h-56 sm:h-72 bg-slate-950 flex items-center justify-center overflow-hidden">
-                <img src="${stadiumImage}" class="absolute inset-0 w-full h-full object-cover opacity-30" alt="Football Stadium">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+            <div class="relative w-full h-56 sm:h-72 bg-slate-800 flex items-center justify-center overflow-hidden">
+                <!-- تم تفتيح الصورة هنا بجعل opacity-60 بدلاً من 30 -->
+                <img src="${stadiumImage}" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" alt="Football Stadium">
+                <!-- تم تخفيف التدرج الأسود ليكون أكثر شفافية -->
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
                 <div class="relative z-10 flex items-center gap-8 sm:gap-16 w-full px-4 justify-center">
                     <div class="text-center w-1/3 flex flex-col items-center">
                         <img src="${homeLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mb-3">
-                        <span class="font-bold text-xs sm:text-sm text-slate-200 line-clamp-1">${homeName}</span>
+                        <span class="font-bold text-xs sm:text-sm text-white drop-shadow-md line-clamp-1">${homeName}</span>
                     </div>
                     <div class="text-center w-1/3 flex flex-col items-center justify-center">
-                        <div class="text-4xl sm:text-5xl font-black text-white drop-shadow-lg mb-2 tracking-wider">${score}</div>
-                        <span class="bg-emerald-500/20 text-emerald-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-500/30">Full Time</span>
+                        <div class="text-4xl sm:text-5xl font-black text-white drop-shadow-2xl mb-2 tracking-wider">${score}</div>
+                        <span class="bg-slate-900/80 text-emerald-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-500/50 backdrop-blur-sm">Full Time</span>
                     </div>
                     <div class="text-center w-1/3 flex flex-col items-center">
                         <img src="${awayLogo}" class="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-2xl mb-3">
-                        <span class="font-bold text-xs sm:text-sm text-slate-200 line-clamp-1">${awayName}</span>
+                        <span class="font-bold text-xs sm:text-sm text-white drop-shadow-md line-clamp-1">${awayName}</span>
                     </div>
                 </div>
             </div>
