@@ -616,7 +616,6 @@
                     } else {
                         fetchSingleMatch(fId);
                     }
-                    return; 
                 } 
             }
             else if (path === '/reports') {
@@ -720,7 +719,6 @@
                         } else { customSection = `<div class="text-center text-[10px] text-slate-400 py-3 mt-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">${currentT.reportExclusive}</div>`; }
                     }
 
-                    // 🚨 التعديل هنا: تكبير الشعارات (w-6 h-6) وعرض الاسم كاملاً (بدون truncate) في الهواتف والحاسوب
                     html += `<div class="match-row-container group" data-fixture-id="${fId}">
                             <a href="${matchUrl}" class="match-row-header block p-3 md:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors" data-fixture-id="${fId}">
                                 <div class="flex justify-between items-center">
@@ -1070,7 +1068,7 @@
 
                 if (e.target.closest('.predict-btn')) { const btn = e.target.closest('.predict-btn'); loadPrediction(btn.getAttribute('data-fixture-id'), btn.getAttribute('data-league-id'), btn.getAttribute('data-home'), btn.getAttribute('data-away'), btn); return; }
                 if (e.target.closest('.article-btn')) { const btn = e.target.closest('.article-btn'); loadMatchArticle(btn.getAttribute('data-fixture-id'), btn.getAttribute('data-league-id'), btn); return; }
-                const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState(null, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState(null, '', '/'); handleRoute(); } else { openMatch(fId); } }
+                const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState({ path: href }, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState({ path: '/' }, '', '/'); handleRoute(); } else { openMatch(fId); } }
             });
            
             document.querySelectorAll('.static-link').forEach(link => {
@@ -1078,7 +1076,7 @@
                     e.preventDefault();
                     const href = link.getAttribute('href');
                     if (window.location.pathname !== href) {
-                        history.pushState(null, '', href);
+                        history.pushState({ path: href }, '', href);
                         handleRoute();
                         if(href === '/game') {
                             startPenalty();
@@ -1090,7 +1088,7 @@
                 });
             });
 
-            const logoLink = document.getElementById('logo-link'); if(logoLink) { logoLink.addEventListener('click', (e) => { e.preventDefault(); history.pushState(null, '', '/'); handleRoute(); }); }
+            const logoLink = document.getElementById('logo-link'); if(logoLink) { logoLink.addEventListener('click', (e) => { e.preventDefault(); history.pushState({ path: '/' }, '', '/'); handleRoute(); }); }
             window.addEventListener('popstate', handleRoute);
         });
     </script>
