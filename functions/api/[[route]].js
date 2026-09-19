@@ -168,10 +168,10 @@ export async function onRequest(context) {
                   if (!recent || !Array.isArray(recent)) recent = [];
                   if (!recent.includes(fixtureId)) {
                       recent.unshift(fixtureId);
-                      recent = recent.slice(0, 50); // تم التعديل إلى 50
+                      recent = recent.slice(0, 100); // 🚨 تم التعديل هنا إلى 100
                       await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
-                      await env.SPORTS_KV.delete("cached_latest_reports"); 
                   }
+                  await env.SPORTS_KV.delete("cached_latest_reports");
               } catch (e) {}
           })());
           return new Response(JSON.stringify({ result: cachedArticle, source: "KV_CACHE" }), { headers: corsHeaders });
@@ -193,33 +193,52 @@ export async function onRequest(context) {
       ];
       const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
-      const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League match: ${matchStr}. Final Score: ${score}. Key Events & Timeline: ${events}.
+      const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League match: ${matchStr}. Final Score: ${score}. 
       
-      CRITICAL REQUIREMENT - LENGTH & DEPTH:
-      - The article MUST be at least 600 to 800 words long. Do not write a short summary. Expand on every tactical aspect.
+      Here is a timeline of events provided by an automated system: ${events}.
+      
+      CRITICAL INSTRUCTION TO PREVENT HALLUCINATIONS:
+      The automated event timeline provided above might contain errors, glitches, or names of players from entirely different matches. 
+      YOU MUST APPLY STRICT LOGIC:
+      1. ONLY focus on the two teams playing in this specific match.
+      2. If the timeline mentions players that obviously do not play for these two specific clubs, YOU MUST IGNORE THOSE NAMES COMPLETELY. Do not include them in your article.
+      3. Build your narrative based primarily on the final score and general tactical concepts, rather than relying heavily on the potentially flawed event timeline.
+      
+      CRITICAL REQUIREMENT - LENGTH & STRUCTURE:
+      - The article MUST be at least 600 to 800 words long.
+      - DO NOT write long, boring blocks of text. Break the text into short, readable paragraphs (maximum 3-4 sentences per paragraph).
+      - USE MULTIPLE SUBHEADINGS (<h3>) to divide the article logically.
       - ${randomStyle}
       
-      STRUCTURE THE ARTICLE IN CLEAN HTML USING THESE SECTIONS:
-      <h2>[Generate a Catchy, Journalistic, and Unique Title]</h2>
+      STRUCTURE THE ARTICLE EXACTLY IN THIS HTML FORMAT (Do not use markdown wrappers like \`\`\`html):
       
-      <p>[Paragraph 1: Comprehensive Introduction (approx. 100 words) setting the stage, the stakes of the match, atmosphere, and the final outcome.]</p>
+      <h2>[Generate a Catchy, Journalistic, and Unique Main Title]</h2>
       
-      <p>[Paragraph 2: Tactical Setup & First Half Analysis (approx. 150 words) detailing the starting formations, how both managers set up their teams, and key tactical battles on the pitch.]</p>
+      <p>[Short, punchy introduction (max 80 words) summarizing the atmosphere and the final result.]</p>
       
-      <p>[Paragraph 3: Key Events & Turning Points (approx. 150 words) deeply analyzing the goals scored, major fouls, yellow/red cards, and how the momentum shifted based on the timeline: ${events}.]</p>
+      <h3>Tactical Setup & First Half</h3>
+      <p>[Paragraph detailing the expected starting formations and early tactical battles between the two sides.]</p>
+      <p>[Paragraph discussing the flow of the first half, possession dominance, and tactical approaches.]</p>
       
-      <p>[Paragraph 4: Second Half Adjustments & Managerial Decisions (approx. 150 words) discussing substitutions, tactical changes made by the coaches during the break, and how they impacted the game.]</p>
+      <h3>Turning Points & Key Moments</h3>
+      <p>[Paragraph deeply analyzing how the goals were likely constructed based on the final scoreline and team styles.]</p>
+      <p>[Paragraph explaining how momentum shifted during the game.]</p>
       
-      <h3>Key Match Highlights & Statistics Breakdown</h3>
+      <h3>Managerial Decisions & Second Half</h3>
+      <p>[Paragraph discussing tactical changes or adjustments made during the break.]</p>
+      <p>[Paragraph analyzing the impact of these tactical shifts on the final outcome.]</p>
+      
+      <h3>Match Highlights & Statistics Breakdown</h3>
       <ul>
-        <li>[Detailed bullet point 1 about a key player or moment]</li>
-        <li>[Detailed bullet point 2 about tactical dominance or failure]</li>
-        <li>[Detailed bullet point 3 about the impact of the result on the league table]</li>
+        <li><strong>Tactical Battle:</strong> [Analysis of a specific area of the pitch where the game was won or lost]</li>
+        <li><strong>Key Moment:</strong> [Detail a crucial tactical moment that defined the match]</li>
+        <li><strong>Big Picture:</strong> [What this result means for both clubs moving forward in the season]</li>
       </ul>
       
-      <p>[Paragraph 5: Detailed Conclusion (approx. 100 words) summarizing the standout performers, what this result means for both clubs moving forward in the Premier League season.]</p>
+      <h3>Final Thoughts</h3>
+      <p>[A strong concluding paragraph summarizing the match and looking ahead to the teams' next challenges.]</p>
       
-      Write the ENTIRE article perfectly in ${targetLang}. Ensure rich vocabulary, professional sports journalism phrasing, and zero fluff. Return ONLY clean HTML code without markdown wrappers.`;
+      Write the ENTIRE article perfectly in ${targetLang}. Ensure rich vocabulary and professional sports journalism phrasing.`;
 
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
@@ -245,7 +264,7 @@ export async function onRequest(context) {
                 if (!recent || !Array.isArray(recent)) recent = [];
                 if (!recent.includes(fixtureId)) {
                     recent.unshift(fixtureId);
-                    recent = recent.slice(0, 50); // تم التعديل إلى 50
+                    recent = recent.slice(0, 100); // 🚨 تم التعديل هنا إلى 100
                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                 }
                 await env.SPORTS_KV.delete("cached_latest_reports");
@@ -274,7 +293,7 @@ export async function onRequest(context) {
           if (match && match[1] && !fixtureIds.includes(match[1])) {
             fixtureIds.push(match[1]);
           }
-          if (fixtureIds.length >= 50) break; // تم التعديل إلى 50
+          if (fixtureIds.length >= 100) break; // 🚨 تم التعديل هنا إلى 100
         }
         if (fixtureIds.length > 0) {
            waitUntil(env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(fixtureIds)));
@@ -285,7 +304,7 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "No reports found in database yet." }), { headers: corsHeaders });
       }
 
-      const fetchIds = fixtureIds.slice(0, 50); // تم التعديل إلى 50
+      const fetchIds = fixtureIds.slice(0, 100); // 🚨 تم التعديل هنا إلى 100
 
       const res = await fetch(`https://v3.football.api-sports.io/fixtures?ids=${fetchIds.join('-')}`, {
         headers: { "x-apisports-key": env.API_SPORTS_KEY }
