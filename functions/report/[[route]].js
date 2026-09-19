@@ -69,8 +69,16 @@ export async function onRequest(context) {
                 ];
                 const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
-                // 🚨 الـ Prompt الجديد: صارم جداً بخصوص تقسيم الفقرات والعناوين الفرعية
-                const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League fixture: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}. Events: ${eventsStr}.
+                const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League fixture: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}. 
+                
+                Here is a timeline of events provided by an automated system: ${eventsStr}.
+                
+                CRITICAL INSTRUCTION TO PREVENT HALLUCINATIONS:
+                The automated event timeline provided above might contain errors, glitches, or names of players from entirely different matches. 
+                YOU MUST APPLY STRICT LOGIC:
+                1. ONLY focus on the two teams playing: ${match.teams.home.name} and ${match.teams.away.name}.
+                2. If the timeline mentions players that obviously do not play for ${match.teams.home.name} or ${match.teams.away.name}, YOU MUST IGNORE THOSE NAMES COMPLETELY. Do not include them in your article.
+                3. Build your narrative based primarily on the final score and general tactical concepts, rather than relying heavily on the potentially flawed event timeline.
                 
                 CRITICAL REQUIREMENT - LENGTH & STRUCTURE:
                 - The article MUST be at least 600 to 800 words long.
@@ -82,25 +90,25 @@ export async function onRequest(context) {
                 
                 <h2>[Generate a Catchy, Journalistic, and Unique Main Title]</h2>
                 
-                <p>[Short, punchy introduction (max 80 words) summarizing the atmosphere and the final result.]</p>
+                <p>[Short, punchy introduction (max 80 words) summarizing the atmosphere and the final result between ${match.teams.home.name} and ${match.teams.away.name}.]</p>
                 
                 <h3>Tactical Setup & First Half</h3>
-                <p>[Paragraph detailing the starting formations and early tactical battles.]</p>
-                <p>[Paragraph discussing the flow of the first half and any early chances.]</p>
+                <p>[Paragraph detailing the expected starting formations and early tactical battles between the two sides.]</p>
+                <p>[Paragraph discussing the flow of the first half, possession dominance, and tactical approaches.]</p>
                 
-                <h3>Turning Points & Key Events</h3>
-                <p>[Paragraph deeply analyzing the goals scored, major fouls, or cards based on this timeline: ${eventsStr}.]</p>
-                <p>[Paragraph explaining how these events shifted the momentum of the game.]</p>
+                <h3>Turning Points & Key Moments</h3>
+                <p>[Paragraph deeply analyzing how the goals were likely constructed based on the final scoreline and team styles.]</p>
+                <p>[Paragraph explaining how momentum shifted during the game.]</p>
                 
                 <h3>Managerial Decisions & Second Half</h3>
-                <p>[Paragraph discussing substitutions and tactical changes made during the break.]</p>
-                <p>[Paragraph analyzing the impact of these changes on the final outcome.]</p>
+                <p>[Paragraph discussing tactical changes or adjustments made during the break.]</p>
+                <p>[Paragraph analyzing the impact of these tactical shifts on the final outcome.]</p>
                 
-                <h3>Standout Performers & Key Stats</h3>
+                <h3>Match Highlights & Statistics Breakdown</h3>
                 <ul>
-                  <li><strong>[Player Name]:</strong> [Detailed analysis of their performance]</li>
                   <li><strong>Tactical Battle:</strong> [Analysis of a specific area of the pitch where the game was won or lost]</li>
-                  <li><strong>Big Picture:</strong> [What this means for the league table]</li>
+                  <li><strong>Key Moment:</strong> [Detail a crucial tactical moment that defined the match]</li>
+                  <li><strong>Big Picture:</strong> [What this result means for both clubs moving forward in the season]</li>
                 </ul>
                 
                 <h3>Final Thoughts</h3>
@@ -127,7 +135,7 @@ export async function onRequest(context) {
                                 if (!recent || !Array.isArray(recent)) recent = [];
                                 if (!recent.includes(fixtureId)) {
                                     recent.unshift(fixtureId);
-                                    recent = recent.slice(0, 50);
+                                    recent = recent.slice(0, 100);
                                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                                     await env.SPORTS_KV.delete("cached_latest_reports");
                                 }
