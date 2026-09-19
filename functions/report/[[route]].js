@@ -69,33 +69,44 @@ export async function onRequest(context) {
                 ];
                 const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
+                // 🚨 الـ Prompt الجديد: صارم جداً بخصوص تقسيم الفقرات والعناوين الفرعية
                 const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League fixture: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}. Events: ${eventsStr}.
                 
-                CRITICAL REQUIREMENT - LENGTH & DEPTH:
-                - The article MUST be at least 600 to 800 words long. Do not write a short summary. Expand on every tactical aspect.
+                CRITICAL REQUIREMENT - LENGTH & STRUCTURE:
+                - The article MUST be at least 600 to 800 words long.
+                - DO NOT write long, boring blocks of text. Break the text into short, readable paragraphs (maximum 3-4 sentences per paragraph).
+                - USE MULTIPLE SUBHEADINGS (<h3>) to divide the article logically.
                 - ${randomStyle}
                 
-                STRUCTURE THE ARTICLE IN CLEAN HTML USING THESE SECTIONS:
-                <h2>[Generate a Catchy, Journalistic, and Unique Title]</h2>
+                STRUCTURE THE ARTICLE EXACTLY IN THIS HTML FORMAT (Do not use markdown wrappers like \`\`\`html):
                 
-                <p>[Paragraph 1: Comprehensive Introduction (approx. 100 words) setting the stage, the stakes of the match, atmosphere, and the final outcome.]</p>
+                <h2>[Generate a Catchy, Journalistic, and Unique Main Title]</h2>
                 
-                <p>[Paragraph 2: Tactical Setup & First Half Analysis (approx. 150 words) detailing the starting formations, how both managers set up their teams, and key tactical battles on the pitch.]</p>
+                <p>[Short, punchy introduction (max 80 words) summarizing the atmosphere and the final result.]</p>
                 
-                <p>[Paragraph 3: Key Events & Turning Points (approx. 150 words) deeply analyzing the goals scored, major fouls, yellow/red cards, and how the momentum shifted based on the timeline: ${eventsStr}.]</p>
+                <h3>Tactical Setup & First Half</h3>
+                <p>[Paragraph detailing the starting formations and early tactical battles.]</p>
+                <p>[Paragraph discussing the flow of the first half and any early chances.]</p>
                 
-                <p>[Paragraph 4: Second Half Adjustments & Managerial Decisions (approx. 150 words) discussing substitutions, tactical changes made by the coaches during the break, and how they impacted the game.]</p>
+                <h3>Turning Points & Key Events</h3>
+                <p>[Paragraph deeply analyzing the goals scored, major fouls, or cards based on this timeline: ${eventsStr}.]</p>
+                <p>[Paragraph explaining how these events shifted the momentum of the game.]</p>
                 
-                <h3>Key Match Highlights & Statistics Breakdown</h3>
+                <h3>Managerial Decisions & Second Half</h3>
+                <p>[Paragraph discussing substitutions and tactical changes made during the break.]</p>
+                <p>[Paragraph analyzing the impact of these changes on the final outcome.]</p>
+                
+                <h3>Standout Performers & Key Stats</h3>
                 <ul>
-                  <li>[Detailed bullet point 1 about a key player or moment]</li>
-                  <li>[Detailed bullet point 2 about tactical dominance or failure]</li>
-                  <li>[Detailed bullet point 3 about the impact of the result on the league table]</li>
+                  <li><strong>[Player Name]:</strong> [Detailed analysis of their performance]</li>
+                  <li><strong>Tactical Battle:</strong> [Analysis of a specific area of the pitch where the game was won or lost]</li>
+                  <li><strong>Big Picture:</strong> [What this means for the league table]</li>
                 </ul>
                 
-                <p>[Paragraph 5: Detailed Conclusion (approx. 100 words) summarizing the standout performers, what this result means for both clubs moving forward in the Premier League season.]</p>
+                <h3>Final Thoughts</h3>
+                <p>[A strong concluding paragraph summarizing the match and looking ahead to the teams' next challenges.]</p>
                 
-                Write the ENTIRE article perfectly in English. Ensure rich vocabulary, professional sports journalism phrasing, and zero fluff. Return ONLY clean HTML code without markdown wrappers.`;
+                Write the ENTIRE article perfectly in English. Ensure rich vocabulary and professional sports journalism phrasing.`;
 
                 const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
                     method: "POST", 
@@ -152,7 +163,6 @@ export async function onRequest(context) {
         const description = `Read the full match report and tactical breakdown for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
 
-        // 🚨 30 صورة احترافية ومتنوعة للملاعب والجماهير
         const stadiumImages = [
             "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=1200&q=80",
