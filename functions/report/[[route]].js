@@ -137,6 +137,13 @@ export async function onRequest(context) {
         let awayLogo = match ? match.teams.away.logo : "https://media.api-sports.io/football/leagues/39.png";
         let score = match && match.goals.home !== null ? `${match.goals.home} - ${match.goals.away}` : "FT";
         let matchStr = match ? `${homeName} vs ${awayName}` : "Match Report";
+        
+        let matchDateStr = "";
+        if (match && match.fixture && match.fixture.date) {
+            const dateObj = new Date(match.fixture.date);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            matchDateStr = dateObj.toLocaleDateString('en-US', options);
+        }
 
         const titleMatch = articleHTML.match(/<h2[^>]*>(.*?)<\/h2>/i);
         const articleHeadline = titleMatch && titleMatch[1] ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : matchStr;
@@ -145,6 +152,7 @@ export async function onRequest(context) {
         const description = `Read the full match report and tactical breakdown for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
 
+        // 🚨 30 صورة احترافية ومتنوعة للملاعب والجماهير
         const stadiumImages = [
             "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=1200&q=80",
@@ -155,7 +163,27 @@ export async function onRequest(context) {
             "https://images.unsplash.com/photo-1518091043644-c1d44570a2c9?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1600250395378-9622269c9b0e?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1518605368461-1e1252220a77?auto=format&fit=crop&w=1200&q=80"
+            "https://images.unsplash.com/photo-1518605368461-1e1252220a77?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1511886929837-3e6d64c12519?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1543351017-ce54d012461f?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1508344928928-71e1b53a2eb0?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1563299796-b25e0a9e24fb?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1524015368236-fb8dc40bce31?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1431324155629-1a6bbe23b9d1?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1519068737630-e5bf200009d8?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1509564324749-472b15bf2830?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1552318414-a95781a9657b?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1518602164598-40235b43f05c?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1587325150937-21013770335e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1569325983-20a23dc84976?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1551280857-2b9bbe5240f5?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1520627702-832f05eb7d94?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1540755910-18e388cb2809?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1580929285093-45543c72e4b3?auto=format&fit=crop&w=1200&q=80"
         ];
         
         const randomImageIndex = parseInt(fixtureId) % stadiumImages.length;
@@ -204,16 +232,14 @@ export async function onRequest(context) {
         <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
             <div class="relative w-full h-64 sm:h-72 bg-slate-900 flex items-center justify-center overflow-hidden">
                 
-                <img src="${stadiumImage}" onerror="this.onerror=null;this.src='${fallbackImage}';" class="absolute inset-0 w-full h-full object-cover" alt="Match Background">
+                <img src="${stadiumImage}" onerror="this.onerror=null;this.src='${fallbackImage}';" class="absolute inset-0 w-full h-full object-cover" alt="Stadium atmosphere for ${homeName} vs ${awayName} match">
                 
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
                 
                 <div class="relative z-10 flex items-center gap-4 sm:gap-16 w-full px-2 sm:px-4 justify-center">
                     <div class="text-center w-[40%] sm:w-1/3 flex flex-col items-center">
-                        <!-- تم تكبير الشعار هنا: w-20 h-20 للموبايل -->
-                        <img src="${homeLogo}" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-3">
-                        <!-- إزالة line-clamp-1 للسماح بالاسم الكامل -->
+                        <img src="${homeLogo}" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-3" alt="${homeName} official logo">
                         <span class="font-bold text-xs sm:text-sm text-white drop-shadow-md leading-tight px-1">${homeName}</span>
                     </div>
                     <div class="text-center w-[20%] sm:w-1/3 flex flex-col items-center justify-center">
@@ -221,20 +247,24 @@ export async function onRequest(context) {
                         <span class="bg-slate-900/80 text-emerald-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-500/50 backdrop-blur-sm whitespace-nowrap">Full Time</span>
                     </div>
                     <div class="text-center w-[40%] sm:w-1/3 flex flex-col items-center">
-                        <!-- تم تكبير الشعار هنا: w-20 h-20 للموبايل -->
-                        <img src="${awayLogo}" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-3">
-                        <!-- إزالة line-clamp-1 للسماح بالاسم الكامل -->
+                        <img src="${awayLogo}" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-3" alt="${awayName} official logo">
                         <span class="font-bold text-xs sm:text-sm text-white drop-shadow-md leading-tight px-1">${awayName}</span>
                     </div>
                 </div>
             </div>
 
             <div class="p-6 sm:p-10">
-                <div class="flex items-center gap-3 mb-6 border-b border-slate-800 pb-4">
-                    <div class="bg-slate-800 p-2.5 rounded-xl text-emerald-400 shadow-inner">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-slate-800 p-2.5 rounded-xl text-emerald-400 shadow-inner">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        </div>
+                        <h1 class="text-base sm:text-lg font-black text-slate-200 uppercase tracking-widest">Tactical Analysis</h1>
                     </div>
-                    <h1 class="text-base sm:text-lg font-black text-slate-200 uppercase tracking-widest">Match Report & Tactical Analysis</h1>
+                    <div class="flex items-center gap-2 text-slate-400 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span class="text-xs font-bold tracking-wide">${matchDateStr}</span>
+                    </div>
                 </div>
                
                 <div class="ai-article-content">
