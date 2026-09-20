@@ -41,7 +41,6 @@ export async function onRequest(context) {
        
         let finalTtl = ttlSeconds;
        
-        // منع تجميد المباريات المباشرة حتى لو كان تاريخها أمس
         if (dataObj.response && Array.isArray(dataObj.response)) {
           const hasLiveMatches = dataObj.response.some(match => {
             if (!match.fixture || !match.fixture.status) return false;
@@ -66,6 +65,14 @@ export async function onRequest(context) {
     en: "English", ar: "Arabic", fr: "French", es: "Spanish", pt: "Portuguese", de: "German",
     it: "Italian", sv: "Swedish", no: "Norwegian", da: "Danish"
   };
+
+  // إعدادات الأمان لمنع حظر المصطلحات الرياضية
+  const safetySettings = [
+    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+  ];
 
   try {
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
@@ -122,18 +129,20 @@ export async function onRequest(context) {
       Write the ENTIRE response perfectly in ${targetLang}.
       Return ONLY valid HTML (use <p> and <strong> for emphasis). Do not wrap inside markdown code blocks.`;
 
-      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.8, topP: 0.9 }
+            generationConfig: { temperature: 0.8, topP: 0.9 },
+            safetySettings: safetySettings
         })
       });
 
       const aiData = await aiRes.json();
       if (!aiRes.ok || !aiData.candidates) {
-        return new Response(JSON.stringify({ error: `Gemini Error` }), { status: 500, headers: corsHeaders });
+        const errMsg = aiData.error ? aiData.error.message : "Unknown Gemini Error";
+        return new Response(JSON.stringify({ error: `API Error: ${errMsg}` }), { status: 500, headers: corsHeaders });
       }
 
       let predictionText = aiData.candidates[0].content.parts[0].text;
@@ -184,7 +193,6 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
-      // جلب التشكيلة الأساسية لمنع الهلوسة
       let lineupsStr = "Lineups unavailable";
       try {
           const lineupsRes = await fetch(`https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixtureId}`, {
@@ -247,18 +255,20 @@ export async function onRequest(context) {
      
       Write the ENTIRE article perfectly in ${targetLang}. Ensure professional sports journalism phrasing. Return ONLY valid clean HTML code.`;
 
-      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.35, topP: 0.9 }
+            generationConfig: { temperature: 0.35, topP: 0.9 },
+            safetySettings: safetySettings
         })
       });
 
       const aiData = await aiRes.json();
       if (!aiRes.ok || !aiData.candidates) {
-        return new Response(JSON.stringify({ error: `Gemini Error` }), { status: 500, headers: corsHeaders });
+        const errMsg = aiData.error ? aiData.error.message : "Unknown Gemini Error";
+        return new Response(JSON.stringify({ error: `API Error: ${errMsg}` }), { status: 500, headers: corsHeaders });
       }
 
       let articleText = aiData.candidates[0].content.parts[0].text;
