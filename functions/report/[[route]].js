@@ -47,14 +47,28 @@ export async function onRequest(context) {
             if (status !== 'FT' && status !== 'AET' && status !== 'PEN') return redirectToHome();
 
             if (env.GEMINI_API_KEY) {
-                let eventsStr = "Key match events";
+                let eventsStr = "No specific events";
+                let lineupsStr = "Lineups unavailable";
+
                 try {
                     const eventsRes = await fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`, {
                         headers: { "x-apisports-key": env.API_SPORTS_KEY }
                     });
                     const eventsData = await eventsRes.json();
                     if (eventsData.response && eventsData.response.length > 0) {
-                        eventsStr = eventsData.response.map(ev => `${ev.time.elapsed}' ${ev.type} ${ev.player.name}`).join(', ');
+                        eventsStr = eventsData.response.map(ev => `${ev.time.elapsed}' ${ev.type} (${ev.detail || ''}) ${ev.player?.name || ''}`).join(', ');
+                    }
+                } catch (e) {}
+
+                try {
+                    const lineupsRes = await fetch(`https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixtureId}`, {
+                        headers: { "x-apisports-key": env.API_SPORTS_KEY }
+                    });
+                    const lineupsData = await lineupsRes.json();
+                    if (lineupsData.response && lineupsData.response.length >= 2) {
+                        const homeXI = lineupsData.response[0].startXI?.map(p => p.player.name).join(', ') || '';
+                        const awayXI = lineupsData.response[1].startXI?.map(p => p.player.name).join(', ') || '';
+                        lineupsStr = `${match.teams.home.name} XI: [${homeXI}] | ${match.teams.away.name} XI: [${awayXI}]`;
                     }
                 } catch (e) {}
 
@@ -71,18 +85,18 @@ export async function onRequest(context) {
 
                 const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive match report for the Premier League fixture: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}.
                
-                Here is the ONLY factual timeline of events you have: ${eventsStr}.
+                Official Match Events: ${eventsStr}
+                Official Starting Lineups: ${lineupsStr}
                
                 CRITICAL ANTI-HALLUCINATION RULES (YOU MUST OBEY THESE):
-                1. DO NOT mention ANY specific player names UNLESS they are explicitly written in the events timeline provided above.
-                2. If you need to describe the gameplay but don't have player names, use general terms like "the home side's defense", "the midfield pivot", "the visiting goalkeeper", or "the attacking line".
-                3. DO NOT guess or assume any player is on the pitch based on your training data. Stick ONLY to the provided events.
+                1. ONLY mention players explicitly listed in the match events or lineups above. Do NOT invent or guess any other players.
+                2. If you need to describe the gameplay but don't have specific player names, use general terms like "the home side's defense", "the midfield pivot", "the visiting goalkeeper", or "the attacking line".
                
-                CRITICAL REQUIREMENT - LENGTH & EXPANSION:
+                CRITICAL REQUIREMENT - LENGTH & EXPANSION (FOR ADSENSE):
                 - The article MUST be at least 600 words long.
                 - To reach this length WITHOUT inventing facts or names, you MUST expand deeply on:
                   * Tactical theories (e.g., pressing traps, low blocks, transition play).
-                  * Managerial philosophies and expected formations.
+                  * Managerial philosophies and how the starting lineups reflect them.
                   * The psychological impact of the scoreline on the teams.
                   * What this specific result means for the clubs' broader season objectives (title race, European spots, or relegation battle).
                 - Break the text into short, readable paragraphs.
@@ -91,27 +105,23 @@ export async function onRequest(context) {
                 STRUCTURE THE ARTICLE EXACTLY IN THIS HTML FORMAT (Do not use markdown wrappers like \`\`\`html):
                
                 <h2>[Generate a Catchy, Journalistic Main Title]</h2>
-               
                 <p>[Punchy introduction summarizing the atmosphere and the final result.]</p>
                
-                <h3>Tactical Setup & Managerial Approach</h3>
-                <p>[Deep dive into the expected tactical battle, formations, and philosophies. Expand on this to increase word count.]</p>
-                <p>[Analyze how the teams likely tried to control the midfield and possession.]</p>
+                <h3>Tactical Setup & Starting Lineups</h3>
+                <p>[Deep dive into the expected tactical battle, formations, and philosophies based on the lineups. Expand on this to increase word count.]</p>
                
                 <h3>Match Flow & Key Moments</h3>
                 <p>[Analyze the goals and key events explicitly mentioned in the timeline. If events are sparse, focus on the physical battle and defensive resilience.]</p>
-                <p>[Discuss the psychological shifts and momentum changes during the match.]</p>
                
                 <h3>Broader Implications & Season Objectives</h3>
                 <p>[Discuss deeply what this result means for both clubs moving forward in the league. Expand on this to increase word count.]</p>
-                <p>[Analyze the areas of improvement needed for the losing side, or the strengths of the winning side.]</p>
                
                 <h3>Final Thoughts</h3>
                 <p>[A strong concluding paragraph summarizing the tactical chess match.]</p>
                
-                Write the ENTIRE article perfectly in English. Ensure professional sports journalism phrasing.`;
+                Write the ENTIRE article perfectly in English. Ensure professional sports journalism phrasing. Return ONLY valid clean HTML code.`;
 
-                const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
+                const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -121,7 +131,9 @@ export async function onRequest(context) {
                 });
                 const aiData = await aiRes.json();
                 if (aiRes.ok && aiData.candidates) {
-                    articleHTML = aiData.candidates[0].content.parts[0].text;
+                    let rawHTML = aiData.candidates[0].content.parts[0].text;
+                    articleHTML = rawHTML.replace(/^```html\s*/i, '').replace(/\s*```$/i, '').trim();
+                    
                     if (env.SPORTS_KV) {
                         waitUntil(env.SPORTS_KV.put(`recap_v2_${fixtureId}_en`, articleHTML));
                         waitUntil((async () => {
