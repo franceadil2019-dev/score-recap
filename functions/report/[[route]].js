@@ -45,6 +45,9 @@ export async function onRequest(context) {
             if (String(match.league.id) !== "39") return redirectToHome();
             const status = match.fixture.status.short;
             if (status !== 'FT' && status !== 'AET' && status !== 'PEN') return redirectToHome();
+            
+            // منع توليد مقالات للمباريات المستقبلية (البيانات الوهمية)
+            if (new Date(match.fixture.date) > new Date()) return redirectToHome();
 
             if (env.GEMINI_API_KEY) {
                 let eventsStr = "No specific events";
@@ -121,14 +124,24 @@ export async function onRequest(context) {
                
                 Write the ENTIRE article perfectly in English. Ensure professional sports journalism phrasing. Return ONLY valid clean HTML code.`;
 
-                const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`, {
+                // إعدادات الأمان
+                const safetySettings = [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                ];
+
+                const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${env.GEMINI_API_KEY}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.35, topP: 0.9 }
+                        generationConfig: { temperature: 0.35, topP: 0.9 },
+                        safetySettings: safetySettings
                     })
                 });
+                
                 const aiData = await aiRes.json();
                 if (aiRes.ok && aiData.candidates) {
                     let rawHTML = aiData.candidates[0].content.parts[0].text;
