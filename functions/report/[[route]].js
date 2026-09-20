@@ -61,67 +61,62 @@ export async function onRequest(context) {
                 const writingStyles = [
                     "Style 1: Focus heavily on the tactical chess match between the managers, formations, defensive blocks, and pressing traps.",
                     "Style 2: Write with high emotional drama and storytelling, focusing on the fans' perspective, tension, and the psychological impact of the goals.",
-                    "Style 3: Focus deeply on individual brilliance, star players who decided the game, key errors, and standout performances.",
+                    "Style 3: Focus deeply on individual brilliance, key errors, and standout performances without inventing names.",
                     "Style 4: Take a historical and macro perspective, analyzing what this specific result means for the clubs' ambitions, top-four race, or relegation battle.",
-                    "Style 5: Adopt a fast-paced, action-oriented match recap style, breaking down the flow of momentum minute-by-minute based on the events.",
-                    "Style 6: Focus on the physical duel, intensity, referee decisions, disciplinary actions, and how grit won or lost the match.",
-                    "Style 7: Write from a technical and data-driven perspective, analyzing efficiency in front of goal, possession value, and defensive resilience."
+                    "Style 5: Adopt a fast-paced, action-oriented match recap style, breaking down the flow of momentum based on the scoreline.",
+                    "Style 6: Focus on the physical duel, intensity, defensive resilience, and how grit won or lost the match.",
+                    "Style 7: Write from a technical and data-driven perspective, analyzing efficiency in front of goal and possession value."
                 ];
                 const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
-                const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive, highly detailed, and deep match report for the Premier League fixture: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}. 
-                
-                Here is a timeline of events provided by an automated system: ${eventsStr}.
-                
-                CRITICAL INSTRUCTION TO PREVENT HALLUCINATIONS:
-                The automated event timeline provided above might contain errors, glitches, or names of players from entirely different matches. 
-                YOU MUST APPLY STRICT LOGIC:
-                1. ONLY focus on the two teams playing: ${match.teams.home.name} and ${match.teams.away.name}.
-                2. If the timeline mentions players that obviously do not play for ${match.teams.home.name} or ${match.teams.away.name}, YOU MUST IGNORE THOSE NAMES COMPLETELY. Do not include them in your article.
-                3. Build your narrative based primarily on the final score and general tactical concepts, rather than relying heavily on the potentially flawed event timeline.
-                
-                CRITICAL REQUIREMENT - LENGTH & STRUCTURE:
-                - The article MUST be at least 600 to 800 words long.
-                - DO NOT write long, boring blocks of text. Break the text into short, readable paragraphs (maximum 3-4 sentences per paragraph).
-                - USE MULTIPLE SUBHEADINGS (<h3>) to divide the article logically.
+                const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive match report for the Premier League fixture: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}.
+               
+                Here is the ONLY factual timeline of events you have: ${eventsStr}.
+               
+                CRITICAL ANTI-HALLUCINATION RULES (YOU MUST OBEY THESE):
+                1. DO NOT mention ANY specific player names UNLESS they are explicitly written in the events timeline provided above.
+                2. If you need to describe the gameplay but don't have player names, use general terms like "the home side's defense", "the midfield pivot", "the visiting goalkeeper", or "the attacking line".
+                3. DO NOT guess or assume any player is on the pitch based on your training data. Stick ONLY to the provided events.
+               
+                CRITICAL REQUIREMENT - LENGTH & EXPANSION:
+                - The article MUST be at least 600 words long.
+                - To reach this length WITHOUT inventing facts or names, you MUST expand deeply on:
+                  * Tactical theories (e.g., pressing traps, low blocks, transition play).
+                  * Managerial philosophies and expected formations.
+                  * The psychological impact of the scoreline on the teams.
+                  * What this specific result means for the clubs' broader season objectives (title race, European spots, or relegation battle).
+                - Break the text into short, readable paragraphs.
                 - ${randomStyle}
-                
+               
                 STRUCTURE THE ARTICLE EXACTLY IN THIS HTML FORMAT (Do not use markdown wrappers like \`\`\`html):
-                
-                <h2>[Generate a Catchy, Journalistic, and Unique Main Title]</h2>
-                
-                <p>[Short, punchy introduction (max 80 words) summarizing the atmosphere and the final result between ${match.teams.home.name} and ${match.teams.away.name}.]</p>
-                
-                <h3>Tactical Setup & First Half</h3>
-                <p>[Paragraph detailing the expected starting formations and early tactical battles between the two sides.]</p>
-                <p>[Paragraph discussing the flow of the first half, possession dominance, and tactical approaches.]</p>
-                
-                <h3>Turning Points & Key Moments</h3>
-                <p>[Paragraph deeply analyzing how the goals were likely constructed based on the final scoreline and team styles.]</p>
-                <p>[Paragraph explaining how momentum shifted during the game.]</p>
-                
-                <h3>Managerial Decisions & Second Half</h3>
-                <p>[Paragraph discussing tactical changes or adjustments made during the break.]</p>
-                <p>[Paragraph analyzing the impact of these tactical shifts on the final outcome.]</p>
-                
-                <h3>Match Highlights & Statistics Breakdown</h3>
-                <ul>
-                  <li><strong>Tactical Battle:</strong> [Analysis of a specific area of the pitch where the game was won or lost]</li>
-                  <li><strong>Key Moment:</strong> [Detail a crucial tactical moment that defined the match]</li>
-                  <li><strong>Big Picture:</strong> [What this result means for both clubs moving forward in the season]</li>
-                </ul>
-                
+               
+                <h2>[Generate a Catchy, Journalistic Main Title]</h2>
+               
+                <p>[Punchy introduction summarizing the atmosphere and the final result.]</p>
+               
+                <h3>Tactical Setup & Managerial Approach</h3>
+                <p>[Deep dive into the expected tactical battle, formations, and philosophies. Expand on this to increase word count.]</p>
+                <p>[Analyze how the teams likely tried to control the midfield and possession.]</p>
+               
+                <h3>Match Flow & Key Moments</h3>
+                <p>[Analyze the goals and key events explicitly mentioned in the timeline. If events are sparse, focus on the physical battle and defensive resilience.]</p>
+                <p>[Discuss the psychological shifts and momentum changes during the match.]</p>
+               
+                <h3>Broader Implications & Season Objectives</h3>
+                <p>[Discuss deeply what this result means for both clubs moving forward in the league. Expand on this to increase word count.]</p>
+                <p>[Analyze the areas of improvement needed for the losing side, or the strengths of the winning side.]</p>
+               
                 <h3>Final Thoughts</h3>
-                <p>[A strong concluding paragraph summarizing the match and looking ahead to the teams' next challenges.]</p>
-                
-                Write the ENTIRE article perfectly in English. Ensure rich vocabulary and professional sports journalism phrasing.`;
+                <p>[A strong concluding paragraph summarizing the tactical chess match.]</p>
+               
+                Write the ENTIRE article perfectly in English. Ensure professional sports journalism phrasing.`;
 
                 const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
-                    method: "POST", 
-                    headers: { "Content-Type": "application/json" }, 
-                    body: JSON.stringify({ 
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.85, topP: 0.9 }
+                        generationConfig: { temperature: 0.35, topP: 0.9 }
                     })
                 });
                 const aiData = await aiRes.json();
@@ -156,7 +151,7 @@ export async function onRequest(context) {
         let awayLogo = match ? match.teams.away.logo : "https://media.api-sports.io/football/leagues/39.png";
         let score = match && match.goals.home !== null ? `${match.goals.home} - ${match.goals.away}` : "FT";
         let matchStr = match ? `${homeName} vs ${awayName}` : "Match Report";
-        
+       
         let matchDateStr = "";
         if (match && match.fixture && match.fixture.date) {
             const dateObj = new Date(match.fixture.date);
@@ -203,7 +198,7 @@ export async function onRequest(context) {
             "https://images.unsplash.com/photo-1540755910-18e388cb2809?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1580929285093-45543c72e4b3?auto=format&fit=crop&w=1200&q=80"
         ];
-        
+       
         const randomImageIndex = parseInt(fixtureId) % stadiumImages.length;
         const stadiumImage = stadiumImages[randomImageIndex];
         const fallbackImage = "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80";
@@ -249,12 +244,12 @@ export async function onRequest(context) {
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
         <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
             <div class="relative w-full h-64 sm:h-72 bg-slate-900 flex items-center justify-center overflow-hidden">
-                
+               
                 <img src="${stadiumImage}" onerror="this.onerror=null;this.src='${fallbackImage}';" class="absolute inset-0 w-full h-full object-cover" alt="Stadium atmosphere for ${homeName} vs ${awayName} match">
-                
+               
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
-                
+               
                 <div class="relative z-10 flex items-center gap-4 sm:gap-16 w-full px-2 sm:px-4 justify-center">
                     <div class="text-center w-[40%] sm:w-1/3 flex flex-col items-center">
                         <img src="${homeLogo}" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-3" alt="${homeName} official logo">
