@@ -121,7 +121,6 @@ export async function onRequest(context) {
       Write the ENTIRE response perfectly in ${targetLang}.
       Return ONLY valid HTML (use <p> and <strong> for emphasis). Do not wrap inside markdown code blocks.`;
 
-      // تم إرجاع الموديل إلى gemini-3.1-pro-preview كما طلبت
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -247,7 +246,6 @@ export async function onRequest(context) {
      
       Write the ENTIRE article perfectly in ${targetLang}. Ensure professional sports journalism phrasing. Return ONLY valid clean HTML code.`;
 
-      // تم إرجاع الموديل إلى gemini-3.1-pro-preview كما طلبت
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -346,7 +344,8 @@ export async function onRequest(context) {
 
       if (reports.length > 0) {
           const responseText = JSON.stringify(reports);
-          waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText, { expirationTtl: 600 }));
+          // التعديل هنا: تم إزالة وقت الانتهاء لتبقى قائمة التقارير للأبد ولا تستهلك الـ API
+          waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText));
           return new Response(responseText, { headers: corsHeaders });
       } else {
           return new Response(JSON.stringify({ error: "Could not format reports." }), { headers: corsHeaders });
