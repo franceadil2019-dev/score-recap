@@ -80,14 +80,22 @@ export async function onRequest(context) {
 
     if (action.includes("fetch-events") || action.includes("events")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
+      const status = url.searchParams.get("status");
       if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
-      return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, 60);
+      
+      // التعديل: إذا كانت المباراة منتهية، احفظ الأحداث لمدة 24 ساعة (86400) بدلاً من 60 ثانية
+      const ttl = ['FT', 'AET', 'PEN'].includes(status) ? 86400 : 60;
+      return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, ttl);
     }
 
     if (action.includes("fetch-stats") || action.includes("statistics")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
+      const status = url.searchParams.get("status");
       if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
-      return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, 60);
+      
+      // التعديل: إذا كانت المباراة منتهية، احفظ الإحصائيات لمدة 24 ساعة (86400) بدلاً من 60 ثانية
+      const ttl = ['FT', 'AET', 'PEN'].includes(status) ? 86400 : 60;
+      return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, ttl);
     }
 
     if (action.includes("predict-match") || action.includes("predict")) {
@@ -344,7 +352,6 @@ export async function onRequest(context) {
 
       if (reports.length > 0) {
           const responseText = JSON.stringify(reports);
-          // التعديل هنا: تم إزالة وقت الانتهاء لتبقى قائمة التقارير للأبد ولا تستهلك الـ API
           waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText));
           return new Response(responseText, { headers: corsHeaders });
       } else {
