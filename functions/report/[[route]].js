@@ -35,7 +35,8 @@ export async function onRequest(context) {
                 if (matchData.response && matchData.response.length > 0) {
                     match = matchData.response[0];
                     if (env.SPORTS_KV) {
-                        waitUntil(env.SPORTS_KV.put(`api_fixture_id_${fixtureId}`, JSON.stringify(match), { expirationTtl: 86400 }));
+                        // التعديل هنا: تم إزالة وقت الانتهاء لتبقى تفاصيل المباراة المنتهية للأبد
+                        waitUntil(env.SPORTS_KV.put(`api_fixture_id_${fixtureId}`, JSON.stringify(match)));
                     }
                 }
             } catch (e) {}
@@ -124,7 +125,6 @@ export async function onRequest(context) {
                
                 Write the ENTIRE article perfectly in English. Ensure professional sports journalism phrasing. Return ONLY valid clean HTML code.`;
 
-                // تم إرجاع الموديل إلى gemini-3.1-pro-preview كما طلبت
                 const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
