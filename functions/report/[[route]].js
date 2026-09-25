@@ -35,7 +35,6 @@ export async function onRequest(context) {
                 if (matchData.response && matchData.response.length > 0) {
                     match = matchData.response[0];
                     if (env.SPORTS_KV) {
-                        // التعديل هنا: تم إزالة وقت الانتهاء لتبقى تفاصيل المباراة المنتهية للأبد
                         waitUntil(env.SPORTS_KV.put(`api_fixture_id_${fixtureId}`, JSON.stringify(match)));
                     }
                 }
@@ -47,7 +46,6 @@ export async function onRequest(context) {
             const status = match.fixture.status.short;
             if (status !== 'FT' && status !== 'AET' && status !== 'PEN') return redirectToHome();
             
-            // منع توليد مقالات للمباريات المستقبلية (البيانات الوهمية)
             if (new Date(match.fixture.date) > new Date()) return redirectToHome();
 
             if (env.GEMINI_API_KEY) {
@@ -220,6 +218,36 @@ export async function onRequest(context) {
         const stadiumImage = stadiumImages[randomImageIndex];
         const fallbackImage = "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80";
 
+        // --- بداية إضافة Schema Markup ---
+        const schemaMarkup = {
+            "@context": "https://schema.org",
+            "@type": "SportsArticle",
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": canonicalUrl
+            },
+            "headline": title,
+            "description": description,
+            "image": [stadiumImage],
+            "datePublished": match.fixture.date,
+            "dateModified": match.fixture.date,
+            "author": {
+                "@type": "Organization",
+                "name": "ScoreRecap",
+                "url": url.origin
+            },
+            "publisher": {
+                "@type": "Organization",
+                "name": "ScoreRecap",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://media.api-sports.io/football/leagues/39.png"
+                }
+            }
+        };
+        const schemaJson = JSON.stringify(schemaMarkup);
+        // --- نهاية إضافة Schema Markup ---
+
         const html = `<!DOCTYPE html>
 <html lang="en" dir="ltr" class="dark">
 <head>
@@ -229,11 +257,17 @@ export async function onRequest(context) {
     <meta name="description" content="${description}">
     <link rel="canonical" href="${canonicalUrl}">
    
+    <!-- Open Graph SEO -->
     <meta property="og:title" content="${title}">
     <meta property="og:description" content="${description}">
     <meta property="og:type" content="article">
     <meta property="og:url" content="${canonicalUrl}">
     <meta property="og:image" content="${stadiumImage}">
+
+    <!-- Schema Markup for Google SEO -->
+    <script type="application/ld+json">
+        ${schemaJson}
+    </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class', } </script>
@@ -252,9 +286,7 @@ export async function onRequest(context) {
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <a href="/" class="text-2xl font-black text-emerald-500 tracking-tight">SCORE<span class="text-white">RECAP</span></a>
-            <a href="/reports" class="text-sm font-bold text-slate-300 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                &larr; Back to Reports
-            </a>
+            <!-- تم حذف زر Back to Reports من هنا -->
         </div>
     </header>
 
