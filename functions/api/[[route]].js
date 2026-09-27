@@ -75,6 +75,22 @@ export async function onRequest(context) {
   };
 
   try {
+    // --- الإضافة الجديدة: كود جلب جدول الترتيب ---
+    if (action.includes("standings")) {
+      const leagueId = url.searchParams.get("league") || "39";
+      
+      // تحديد الموسم الحالي برمجياً (الموسم الكروي يبدأ في شهر 8)
+      const date = new Date();
+      const currentYear = date.getFullYear();
+      const season = date.getMonth() < 7 ? currentYear - 1 : currentYear; 
+      
+      const kvKey = `api_standings_${leagueId}_${season}`;
+      
+      // جلب الترتيب وحفظه في الكاش لمدة ساعة واحدة (3600 ثانية) لتوفير الرصيد
+      return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, kvKey, 3600);
+    }
+    // ----------------------------------------------
+
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const id = url.searchParams.get("id");
       if (id) {
@@ -211,7 +227,6 @@ export async function onRequest(context) {
                       recent = recent.slice(0, 100);
                       await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                   }
-                  // مسح الكاش القديم لتحديث القائمة
                   await env.SPORTS_KV.delete("cached_latest_recaps_v1");
               } catch (e) {}
           })());
@@ -314,7 +329,6 @@ export async function onRequest(context) {
                     recent = recent.slice(0, 100);
                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                 }
-                // مسح الكاش القديم لتحديث القائمة
                 await env.SPORTS_KV.delete("cached_latest_recaps_v1");
             } catch (e) {}
         })());
@@ -326,7 +340,6 @@ export async function onRequest(context) {
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
-      // التعديل هنا: تغيير اسم الكاش لإجبار السيرفر على توليد قائمة جديدة بالروابط الصحيحة
       const cachedList = await env.SPORTS_KV.get("cached_latest_recaps_v1");
       if (cachedList && cachedList !== "[]" && cachedList.length > 5) {
         return new Response(cachedList, { headers: corsHeaders });
@@ -375,7 +388,6 @@ export async function onRequest(context) {
                 reports.push({
                     fixtureId: m.fixture.id,
                     title: `${home} vs ${away}`,
-                    // التعديل هنا: الرابط الجديد recap
                     url: `/recap/${m.fixture.id}/${slug}`,
                     logoHome: m.teams.home.logo,
                     logoAway: m.teams.away.logo
@@ -386,7 +398,6 @@ export async function onRequest(context) {
 
       if (reports.length > 0) {
           const responseText = JSON.stringify(reports);
-          // حفظ القائمة الجديدة في الكاش الجديد
           waitUntil(env.SPORTS_KV.put("cached_latest_recaps_v1", responseText));
           return new Response(responseText, { headers: corsHeaders });
       } else {
