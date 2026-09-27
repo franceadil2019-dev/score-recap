@@ -33,6 +33,10 @@
         html[dir="rtl"] .drop-options { left: auto; right: 0; }
         html[dir="rtl"] .drop-opt { text-align: right; }
 
+        /* التعديل الجديد: إصلاح قائمة اللغات على الهواتف */
+        #lang-options-menu { left: auto !important; right: 0 !important; }
+        html[dir="rtl"] #lang-options-menu { right: auto !important; left: 0 !important; }
+
         .ai-article-content h2 { font-size: 1.25rem; font-weight: 900; margin-top: 1rem; margin-bottom: 0.75rem; color: #2563eb; }
         .dark .ai-article-content h2 { color: #60a5fa; }
         .ai-article-content h3 { font-size: 1rem; font-weight: 800; margin-top: 1rem; margin-bottom: 0.5rem; color: #334155; }
@@ -74,11 +78,13 @@
         #j-ball:active { transform: translateX(-50%) scale(0.9); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200">
+<!-- التعديل الجديد: إضافة pt-16 للـ body -->
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200 pt-16">
 
     <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
-    <header class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 shadow-sm">
+    <!-- التعديل الجديد: تغيير sticky إلى fixed w-full -->
+    <header class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 fixed w-full top-0 z-50 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 shadow-sm">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <a href="/" class="text-xl md:text-2xl font-black text-emerald-500 tracking-tight whitespace-nowrap" id="logo-link">SCORE<span class="text-slate-800 dark:text-white">RECAP</span></a>
