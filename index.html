@@ -49,7 +49,7 @@
         .vote-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1em; }
         html[dir="rtl"] .vote-select { background-position: left 0.5rem center; }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
@@ -125,6 +125,21 @@
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
        
         <section id="home-section" class="lg:col-span-2 space-y-4">
+            
+            <!-- بداية قسم التقارير المميزة (Featured Recaps) المضاف حديثاً -->
+            <div id="featured-recaps-container" class="mb-6 hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                        <span class="text-emerald-500">📰</span> <span id="txt-featured-reports">Featured Recaps</span>
+                    </h2>
+                    <a href="/reports" class="static-link text-xs font-bold text-emerald-500 hover:text-emerald-600 transition-colors">View All &rarr;</a>
+                </div>
+                <div id="featured-recaps-list" class="flex gap-4 overflow-x-auto custom-scrollbar pb-2 snap-x">
+                    <!-- سيتم حقن المقالات هنا عبر الجافاسكريبت -->
+                </div>
+            </div>
+            <!-- نهاية قسم التقارير المميزة -->
+
             <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-none pb-1">
                 <button class="date-tab px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="-1" id="tab-yesterday">Yesterday</button>
                 <button class="date-tab date-tab-active px-5 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 transition-all" data-offset="0" id="tab-today">Today</button>
@@ -372,7 +387,6 @@
             document.getElementById('html-tag').dir = lang === 'ar' ? 'rtl' : 'ltr';
             safeSetText('tab-yesterday', t.yesterday); safeSetText('tab-today', t.todayTab); safeSetText('tab-tomorrow', t.tomorrow);
             
-            // التعديل: إبقاء الدوري الإنجليزي فقط في الترجمة
             safeSetText('opt-pl', t.pl);
             
             safeSetText('ad-label', t.ad); safeSetText('ad-banner', t.adBanner); safeSetText('footer-rights', t.rights);
@@ -418,6 +432,46 @@
                     }
                 });
             }, 60000);
+        }
+
+        // الدالة الجديدة لجلب وعرض التقارير المميزة
+        async function fetchFeaturedReports() {
+            const container = document.getElementById('featured-recaps-container');
+            const list = document.getElementById('featured-recaps-list');
+            
+            try {
+                const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/latest-reports?t=${new Date().getTime()}`, { headers: { "x-action": "latest-reports" }, timeout: 10000 });
+                const reports = await res.json();
+                
+                if (!reports.error && Array.isArray(reports) && reports.length > 0) {
+                    const topReports = reports.slice(0, 4);
+                    let html = '';
+                    
+                    topReports.forEach(r => {
+                        const names = r.title.split(' vs ');
+                        const homeName = names[0] || 'Home';
+                        const awayName = names[1] || 'Away';
+                        
+                        html += `
+                        <a href="${r.url}" class="snap-start flex-shrink-0 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-500 transition-all group block">
+                            <div class="p-3 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                                <img src="${r.logoHome}" class="w-8 h-8 object-contain group-hover:scale-110 transition-transform">
+                                <span class="text-[9px] font-black text-slate-400 uppercase">VS</span>
+                                <img src="${r.logoAway}" class="w-8 h-8 object-contain group-hover:scale-110 transition-transform">
+                            </div>
+                            <div class="p-3">
+                                <span class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1 block">Tactical Analysis</span>
+                                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-2 leading-relaxed group-hover:text-emerald-500 transition-colors">${r.title}</h3>
+                            </div>
+                        </a>`;
+                    });
+                    
+                    list.innerHTML = html;
+                    container.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("Failed to load featured reports", err);
+            }
         }
 
         async function fetchLiveMatches(isManualRefresh = false) {
@@ -726,8 +780,30 @@
                 filtered = filtered.filter(m => ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(m.fixture.status.short) || String(m.fixture.id) === activeMatchId);
             }
 
+            // التعديل هنا: شاشة "لا توجد مباريات" المحسنة لأدسنس
             if (!filtered || filtered.length === 0) {
-                container.innerHTML = `<div class="bg-white border rounded-xl p-8 text-center font-medium text-slate-500 shadow-sm">${currentT.noMatches}</div>`;
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center shadow-sm mb-6 transition-colors">
+                        <div class="text-4xl mb-3">⚽</div>
+                        <p class="font-bold text-lg text-slate-700 dark:text-slate-200 mb-2">${currentT.noMatches}</p>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Explore our latest tactical analysis or play some games while waiting for the next kick-off.</p>
+                        
+                        <div class="flex flex-col sm:flex-row justify-center gap-3">
+                            <a href="/reports" class="static-link inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-md">
+                                📰 ${currentT.navReports || "Read Reports"}
+                            </a>
+                            <a href="/game" class="static-link inline-flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-md">
+                                🎮 ${currentT.gameZone || "Play Games"}
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- SEO Text for AdSense -->
+                    <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-sm transition-colors text-left" dir="ltr">
+                        <h3 class="font-black text-lg mb-2 text-slate-800 dark:text-slate-100">Welcome to ScoreRecap</h3>
+                        <p>While there are no live matches matching your criteria right now, ScoreRecap remains your ultimate destination for comprehensive football coverage. We specialize in transforming raw match data into compelling narratives and tactical breakdowns. Explore our AI-generated match reports to catch up on recent Premier League action, test your football skills in our interactive Game Zone, or check back later for real-time updates, live scores, and in-depth statistics.</p>
+                    </div>
+                `;
                 return;
             }
            
@@ -1037,6 +1113,10 @@
             initTheme();
             initLanguage();
             startLocalClock();
+            
+            // استدعاء دالة جلب التقارير المميزة عند تحميل الصفحة
+            fetchFeaturedReports();
+            
             fetchLiveMatches();
             setInterval(() => fetchLiveMatches(false), APP_CONFIG.autoRefreshInterval);
            
