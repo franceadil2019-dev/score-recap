@@ -33,7 +33,6 @@
         html[dir="rtl"] .drop-options { left: auto; right: 0; }
         html[dir="rtl"] .drop-opt { text-align: right; }
 
-        /* التعديل الجديد: إصلاح قائمة اللغات على الهواتف */
         #lang-options-menu { left: auto !important; right: 0 !important; }
         html[dir="rtl"] #lang-options-menu { right: auto !important; left: 0 !important; }
 
@@ -78,12 +77,10 @@
         #j-ball:active { transform: translateX(-50%) scale(0.9); }
     </style>
 </head>
-<!-- التعديل الجديد: إضافة pt-16 للـ body -->
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans flex flex-col min-h-screen transition-colors duration-200 pt-16">
 
     <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- التعديل الجديد: تغيير sticky إلى fixed w-full -->
     <header class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 fixed w-full top-0 z-50 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 shadow-sm">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -348,7 +345,7 @@
         function saveToCache(key, data) { sessionStorage.setItem(key, JSON.stringify(data)); }
 
         const TOP_LEAGUES = ["39"];
-        const teamNamesAR = { "Arsenal": "أرسنال", "Aston Villa": "أستون فيلا", "Bournemouth": "بورنموث", "Brentford": "برينتفورد", "Brighton": "برايتون", "Chelsea": "تشيلسي", "Crystal Palace": "كريستال بالاس", "Everton": "إيفرتون", "Fulham": "فولهام", "Liverpool": "ليفربول", "Luton": "لوتون تاون", "Manchester City": "مانشستر سيتي", "Manchester United": "مانشستر يونايتد", "Newcastle": "نيوكاسل", "Nottingham Forest": "نوتينغهام فورست", "Sheffield Utd": "شيفيلد", "Tottenham": "توتنهام", "West Ham": "وست هام", "Wolverhampton": "وولفرهامبتون", "Real Madrid": "ريال مدريد", "Barcelona": "برشلونة", "Atletico Madrid": "أتلتيكو مدريد", "Sevilla": "إشبيلية", "Valencia": "فالنسيا", "Villarreal": "فياريال", "Real Sociedad": "ريال سوسيداد", "Athletic Club": "أتلتيك بيلباو", "Real Betis": "ريال بيتيس", "Girona": "جيرونا", "Juventus": "يوفنتوس", "AC Milan": "ميلان", "Inter": "إنتر ميلان", "Napoli": "نابولي", "Roma": "روما", "Lazio": "لاتسيو", "Atalanta": "أتالانتا", "Fiorentina": "فيورنتينا", "Bayern Munich": "بايرن ميونخ", "Borussia Dortmund": "دورتموند", "Bayer Leverkusen": "ليفركوزن", "RB Leipzig": "لايبزيغ", "Stuttgart": "شتوتغارت", "Paris Saint Germain": "باريس سان جيرمان", "Marseille": "مارسيليا", "Lyon": "ليون", "Monaco": "موناكو", "Lille": "ليل", "Al Hilal": "الهلال", "Al Nassr": "النصر", "Al Ittihad": "الاتحاد", "Al Ahli": "الأهلي", "Al Shabab": "الشباب", "Al Ettifaq": "الاتفاق", "Al Taawoun": "التعاون", "Al Wehda": "الوحدة", "Al Raed": "الرائد", "Al Fayha": "الفيحاء", "Damac FC": "ضمك", "Abha": "أبها", "Al Khaleej": "الخليج", "Al Hazem": "الحزم", "Al Okhdood": "الأخدود", "Al Riyadh": "الرياض", "Al Fateh": "الفتح", "Wydad AC": "الوداد الرياضي", "Raja Casablanca": "الرجاء الرياضي", "AS FAR Rabat": "الجيش الملكي", "RSB Berkane": "نهضة بركان", "Al Ahly": "الأهلي", "Zamalek SC": "الزمالك", "Esperance Tunis": "الترجي", "Mamelodi Sundowns": "صن داونز", "Inter Miami": "إنتر ميامي", "LA Galaxy": "لوس أنجلوس جالاكسي", "New York City FC": "نيويورك سيتي" };
+        const teamNamesAR = { "Arsenal": "أرسنال", "Aston Villa": "أستون فيلا", "Bournemouth": "بورنموث", "Brentford": "برينتفورد", "Brighton": "برايتون", "Chelsea": "تشيلسي", "Crystal Palace": "كريستال بالاس", "Everton": "إيفرتون", "Fulham": "فولهام", "Liverpool": "ليفربول", "Luton": "لوتون تاون", "Manchester City": "مانشستر سيتي", "Manchester United": "مانشستر يونايتد", "Newcastle": "نيوكاسل", "Nottingham Forest": "نوتينغهام فورست", "Sheffield Utd": "شيفيلد", "Tottenham": "توتنهام", "West Ham": "وست هام", "Wolverhampton": "وولفرهامبتون", "Real Madrid": "ريال مدريد", "Barcelona": "برشلونة", "Atletico Madrid": "أتلتيكو مدريد", "Sevilla": "إشبيلية", "Valencia": "فالنسيا", "Villarreal": "فياريال", "Real Sociedad": "ريال سوسيداد", "Athletic Club": "أتلتيك بيلباو", "Real Betis": "ريال بيتيس", "Girona": "جيرونا", "Juventus": "يوفنتوس", "AC Milan": "ميلان", "Inter": "إنتر ميلان", "Napoli": "نابولي", "Roma": "روما", "Lazio": "لاتسيو", "Atalanta": "أتالانتا", "Fiorentina": "فيورنتينا", "Bayern Munich": "بايرن ميونخ", "Borussia Dortmund": "دورتموند", "Bayer Leverkusen": "ليفركوزن", "RB Leipzig": "لايبزيغ", "Stuttgart": "شتوتغارت", "Paris Saint Germain": "باريس سان جيرمان", "Marseille": "مارسيليا", "Lyon": "ليون", "Monaco": "موناكو", "Lille": "ليل", "Al Hilal": "الهلال", "Al Nassr": "النصر", "Al Ittihad": "الاتحاد", "Al Ahli": "الأهلي", "Al Shabab": "الشباب", "Al Ett কুল": "الاتفاق", "Al Taawoun": "التعاون", "Al Wehda": "الوحدة", "Al Raed": "الرائد", "Al Fayha": "الفيحاء", "Damac FC": "ضمك", "Abha": "أبها", "Al Khaleej": "الخليج", "Al Hazem": "الحزم", "Al Okhdood": "الأخدود", "Al Riyadh": "الرياض", "Al Fateh": "الفتح", "Wydad AC": "الوداد الرياضي", "Raja Casablanca": "الرجاء الرياضي", "AS FAR Rabat": "الجيش الملكي", "RSB Berkane": "نهضة بركان", "Al Ahly": "الأهلي", "Zamalek SC": "الزمالك", "Esperance Tunis": "الترجي", "Mamelodi Sundowns": "صن داونز", "Inter Miami": "إنتر ميامي", "LA Galaxy": "لوس أنجلوس جالاكسي", "New York City FC": "نيويورك سيتي" };
        
         function getLeagueNameLocal(leagueId, defaultName, lang) { if (lang !== 'ar') return defaultName; const leaguesAR = { "2": "دوري أبطال أوروبا", "12": "دوري أبطال أفريقيا", "39": "الدوري الإنجليزي", "40": "دوري البطولة الإنجليزية", "61": "الدوري الفرنسي", "78": "الدوري الألماني", "135": "الدوري الإيطالي", "140": "الدوري الإسباني", "307": "الدوري السعودي", "253": "الدوري الأمريكي", "71": "الدوري البرازيلي", "200": "البطولة المغربية", "113": "الدوري السويدي", "103": "الدوري النرويجي", "119": "الدوري الدنماركي" }; return leaguesAR[leagueId] || defaultName; }
         function getTeamName(name, lang) { if (lang === 'ar') { for (let key in teamNamesAR) { if (name.toLowerCase().includes(key.toLowerCase())) return teamNamesAR[key]; } } return name; }
@@ -738,6 +735,13 @@
                 document.title = "Privacy Policy | ScoreRecap";
                 document.getElementById('static-pages-section').classList.remove('hidden');
                 document.getElementById('page-privacy').classList.remove('hidden');
+            }
+            // التعديل الجديد: إضافة مسار الترتيب لدالة التوجيه الرئيسية
+            else if (path === '/standings') {
+                document.title = "Premier League Standings | ScoreRecap";
+                const standingsPage = document.getElementById('page-standings');
+                if (standingsPage) standingsPage.classList.remove('hidden');
+                if (typeof fetchAndRenderStandings === 'function') fetchAndRenderStandings();
             }
             else {
                 document.title = (translations[currentLang] || translations['en']).title || "ScoreRecap | Scores";
