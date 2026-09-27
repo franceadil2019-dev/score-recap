@@ -126,7 +126,7 @@
        
         <section id="home-section" class="lg:col-span-2 space-y-4">
             
-            <!-- بداية قسم التقارير المميزة (Featured Recaps) المضاف حديثاً -->
+            <!-- بداية قسم التقارير المميزة (Featured Recaps) -->
             <div id="featured-recaps-container" class="mb-6 hidden">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
@@ -402,7 +402,11 @@
             if(reportsTitle) reportsTitle.innerHTML = `📰 ${t.titleReportsPage || "Latest Match Reports"}`;
 
             const searchInput = document.getElementById('search-input'); if(searchInput) searchInput.placeholder = t.search;
-            const leagueTextEl = document.getElementById('current-league-text'); if(leagueTextEl) leagueTextEl.innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
+            
+            // التعديل: إجبار القائمة المنسدلة على عرض الدوري الإنجليزي فقط لتجنب ظهور "كل الدوريات"
+            const leagueTextEl = document.getElementById('current-league-text'); 
+            if(leagueTextEl) leagueTextEl.innerText = t['pl'] || "Premier League";
+            
             handleRoute(); filterAndRenderMatches();
         }
 
@@ -434,7 +438,7 @@
             }, 60000);
         }
 
-        // الدالة الجديدة لجلب وعرض التقارير المميزة
+        // الدالة الخاصة بجلب التقارير المميزة
         async function fetchFeaturedReports() {
             const container = document.getElementById('featured-recaps-container');
             const list = document.getElementById('featured-recaps-list');
@@ -453,7 +457,7 @@
                         const awayName = names[1] || 'Away';
                         
                         html += `
-                        <a href="${r.url}" class="snap-start flex-shrink-0 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-500 transition-all group block">
+                        <a href="${r.url}" class="static-link snap-start flex-shrink-0 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-500 transition-all group block">
                             <div class="p-3 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                                 <img src="${r.logoHome}" class="w-8 h-8 object-contain group-hover:scale-110 transition-transform">
                                 <span class="text-[9px] font-black text-slate-400 uppercase">VS</span>
@@ -756,15 +760,12 @@
 
             let filtered = [];
            
-            if (selectedLeagueId === 'all') {
-                filtered = allMatchesCached.filter(m => TOP_LEAGUES.includes(String(m.league.id)));
-            } else {
-                filtered = allMatchesCached.filter(m => String(m.league.id) === String(selectedLeagueId));
-            }
+            // التعديل: إجبار الفلترة دائماً على الدوري الإنجليزي (39)
+            filtered = allMatchesCached.filter(m => String(m.league.id) === '39');
 
             if (activeMatchId) {
                 const activeMatchObj = allMatchesCached.find(m => String(m.fixture.id) === activeMatchId);
-                if (activeMatchObj && TOP_LEAGUES.includes(String(activeMatchObj.league.id))) {
+                if (activeMatchObj && String(activeMatchObj.league.id) === '39') {
                     if (!filtered.find(m => String(m.fixture.id) === activeMatchId)) {
                         filtered.unshift(activeMatchObj);
                     }
@@ -780,7 +781,6 @@
                 filtered = filtered.filter(m => ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(m.fixture.status.short) || String(m.fixture.id) === activeMatchId);
             }
 
-            // التعديل هنا: شاشة "لا توجد مباريات" المحسنة لأدسنس
             if (!filtered || filtered.length === 0) {
                 container.innerHTML = `
                     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center shadow-sm mb-6 transition-colors">
@@ -798,7 +798,6 @@
                         </div>
                     </div>
 
-                    <!-- SEO Text for AdSense -->
                     <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-sm transition-colors text-left" dir="ltr">
                         <h3 class="font-black text-lg mb-2 text-slate-800 dark:text-slate-100">Welcome to ScoreRecap</h3>
                         <p>While there are no live matches matching your criteria right now, ScoreRecap remains your ultimate destination for comprehensive football coverage. We specialize in transforming raw match data into compelling narratives and tactical breakdowns. Explore our AI-generated match reports to catch up on recent Premier League action, test your football skills in our interactive Game Zone, or check back later for real-time updates, live scores, and in-depth statistics.</p>
@@ -1114,7 +1113,7 @@
             initLanguage();
             startLocalClock();
             
-            // استدعاء دالة جلب التقارير المميزة عند تحميل الصفحة
+            // جلب التقارير المميزة عند تحميل الصفحة
             fetchFeaturedReports();
             
             fetchLiveMatches();
@@ -1165,7 +1164,7 @@
                     document.getElementById('current-league-flag').src = btn.getAttribute('data-flag');
                     selectedLeagueTranslationKey = btn.getAttribute('data-key');
                     const t = translations[currentLang] || translations['en'];
-                    document.getElementById('current-league-text').innerText = t[selectedLeagueTranslationKey] || t['allLeagues'];
+                    document.getElementById('current-league-text').innerText = t[selectedLeagueTranslationKey] || t['pl'];
                     filterAndRenderMatches();
                     document.getElementById('league-options-menu').classList.remove('show');
                 });
@@ -1193,8 +1192,10 @@
                 const link = e.target.closest('a.match-row-header'); if (link) { e.preventDefault(); const fId = link.getAttribute('data-fixture-id'); const href = link.getAttribute('href'); if (window.location.pathname !== href) { history.pushState({ path: href }, '', href); } const details = document.getElementById(`details-${fId}`); if (details && !details.classList.contains('hidden')) { details.classList.add('hidden'); history.pushState({ path: '/' }, '', '/'); handleRoute(); } else { openMatch(fId); } }
             });
            
-            document.querySelectorAll('.static-link').forEach(link => {
-                link.addEventListener('click', (e) => {
+            // التعديل الجذري هنا (Event Delegation) لحل مشكلة الروابط
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('.static-link');
+                if (link) {
                     e.preventDefault();
                     const href = link.getAttribute('href');
                     if (window.location.pathname !== href) {
@@ -1207,7 +1208,7 @@
                         }
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
-                });
+                }
             });
 
             const logoLink = document.getElementById('logo-link'); if(logoLink) { logoLink.addEventListener('click', (e) => { e.preventDefault(); history.pushState({ path: '/' }, '', '/'); handleRoute(); }); }
