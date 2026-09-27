@@ -20,13 +20,12 @@ export async function onRequest(context) {
     return new Response(JSON.stringify({ error: "API_SPORTS_KEY is missing" }), { status: 500, headers: corsHeaders });
   }
 
-  // 🛡️ دالة الحماية 1: التحقق الصارم من أن رقم المباراة يحتوي على أرقام فقط (منع البوتات وثغرات الحقن)
+  // 🛡️ دالة الحماية 1: التحقق الصارم من أن رقم المباراة يحتوي على أرقام فقط
   const isValidId = (id) => {
     return id && /^\d{1,10}$/.test(id);
   };
 
-  // 🛡️ دالة الحماية 2: قائمة الدوريات المسموح للذكاء الاصطناعي بتوليد تقارير لها (لحماية رصيد Gemini و API)
-  // يمكنك إضافة أرقام الدوريات الأخرى هنا مستقبلاً، مثال: ["39", "140", "135"]
+  // 🛡️ دالة الحماية 2: قائمة الدوريات المسموح للذكاء الاصطناعي بتوليد تقارير لها
   const ALLOWED_LEAGUES = ["39"]; 
 
   async function getFromApiSports(endpoint, kvKey, ttlSeconds) {
@@ -79,7 +78,6 @@ export async function onRequest(context) {
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const id = url.searchParams.get("id");
       if (id) {
-        // حماية: رفض أي طلب يحتوي على حروف في الـ ID
         if (!isValidId(id)) {
             return new Response(JSON.stringify({ error: "Invalid ID format. Numbers only." }), { status: 400, headers: corsHeaders });
         }
@@ -87,7 +85,6 @@ export async function onRequest(context) {
       }
       
       const date = url.searchParams.get("date") || new Date().toISOString().split('T')[0];
-      // حماية: التحقق من صيغة التاريخ (YYYY-MM-DD)
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
           return new Response(JSON.stringify({ error: "Invalid date format." }), { status: 400, headers: corsHeaders });
       }
@@ -101,7 +98,6 @@ export async function onRequest(context) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       const status = url.searchParams.get("status");
       
-      // حماية: رفض الطلب إذا كان الـ ID مفقوداً أو يحتوي على حروف
       if (!isValidId(fixtureId)) {
           return new Response(JSON.stringify({ error: "Invalid or missing fixture ID." }), { status: 400, headers: corsHeaders });
       }
@@ -114,7 +110,6 @@ export async function onRequest(context) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       const status = url.searchParams.get("status");
       
-      // حماية: رفض الطلب إذا كان الـ ID مفقوداً أو يحتوي على حروف
       if (!isValidId(fixtureId)) {
           return new Response(JSON.stringify({ error: "Invalid or missing fixture ID." }), { status: 400, headers: corsHeaders });
       }
@@ -126,13 +121,11 @@ export async function onRequest(context) {
     if (action.includes("predict-match") || action.includes("predict")) {
       const leagueId = url.searchParams.get("leagueId");
       
-      // حماية مرنة: التحقق مما إذا كان الدوري ضمن القائمة المسموحة
       if (leagueId && !ALLOWED_LEAGUES.includes(leagueId)) {
         return new Response(JSON.stringify({ error: "Predictions are currently restricted to specific leagues to manage resources." }), { status: 403, headers: corsHeaders });
       }
 
       const fixtureId = url.searchParams.get("fixtureId");
-      // حماية الـ ID
       if (!isValidId(fixtureId)) {
           return new Response(JSON.stringify({ error: "Invalid fixture ID." }), { status: 400, headers: corsHeaders });
       }
@@ -189,13 +182,11 @@ export async function onRequest(context) {
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
       
-      // حماية مرنة: التحقق مما إذا كان الدوري ضمن القائمة المسموحة
       if (leagueId && !ALLOWED_LEAGUES.includes(leagueId)) {
         return new Response(JSON.stringify({ error: "Match recaps are currently restricted to specific leagues to manage resources." }), { status: 403, headers: corsHeaders });
       }
 
       const fixtureId = url.searchParams.get("fixtureId");
-      // حماية الـ ID
       if (!isValidId(fixtureId)) {
           return new Response(JSON.stringify({ error: "Invalid fixture ID." }), { status: 400, headers: corsHeaders });
       }
@@ -220,7 +211,8 @@ export async function onRequest(context) {
                       recent = recent.slice(0, 100);
                       await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                   }
-                  await env.SPORTS_KV.delete("cached_latest_reports");
+                  // مسح الكاش القديم لتحديث القائمة
+                  await env.SPORTS_KV.delete("cached_latest_recaps_v1");
               } catch (e) {}
           })());
           return new Response(JSON.stringify({ result: cachedArticle, source: "KV_CACHE" }), { headers: corsHeaders });
@@ -322,7 +314,8 @@ export async function onRequest(context) {
                     recent = recent.slice(0, 100);
                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                 }
-                await env.SPORTS_KV.delete("cached_latest_reports");
+                // مسح الكاش القديم لتحديث القائمة
+                await env.SPORTS_KV.delete("cached_latest_recaps_v1");
             } catch (e) {}
         })());
       }
@@ -333,7 +326,8 @@ export async function onRequest(context) {
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
-      const cachedList = await env.SPORTS_KV.get("cached_latest_reports");
+      // التعديل هنا: تغيير اسم الكاش لإجبار السيرفر على توليد قائمة جديدة بالروابط الصحيحة
+      const cachedList = await env.SPORTS_KV.get("cached_latest_recaps_v1");
       if (cachedList && cachedList !== "[]" && cachedList.length > 5) {
         return new Response(cachedList, { headers: corsHeaders });
       }
@@ -381,7 +375,8 @@ export async function onRequest(context) {
                 reports.push({
                     fixtureId: m.fixture.id,
                     title: `${home} vs ${away}`,
-                    url: `/report/${m.fixture.id}/${slug}`,
+                    // التعديل هنا: الرابط الجديد recap
+                    url: `/recap/${m.fixture.id}/${slug}`,
                     logoHome: m.teams.home.logo,
                     logoAway: m.teams.away.logo
                 });
@@ -391,7 +386,8 @@ export async function onRequest(context) {
 
       if (reports.length > 0) {
           const responseText = JSON.stringify(reports);
-          waitUntil(env.SPORTS_KV.put("cached_latest_reports", responseText));
+          // حفظ القائمة الجديدة في الكاش الجديد
+          waitUntil(env.SPORTS_KV.put("cached_latest_recaps_v1", responseText));
           return new Response(responseText, { headers: corsHeaders });
       } else {
           return new Response(JSON.stringify({ error: "Could not format reports." }), { headers: corsHeaders });
