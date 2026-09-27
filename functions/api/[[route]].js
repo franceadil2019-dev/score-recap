@@ -20,6 +20,15 @@ export async function onRequest(context) {
     return new Response(JSON.stringify({ error: "API_SPORTS_KEY is missing" }), { status: 500, headers: corsHeaders });
   }
 
+  // 🛡️ دالة الحماية 1: التحقق الصارم من أن رقم المباراة يحتوي على أرقام فقط (منع البوتات وثغرات الحقن)
+  const isValidId = (id) => {
+    return id && /^\d{1,10}$/.test(id);
+  };
+
+  // 🛡️ دالة الحماية 2: قائمة الدوريات المسموح للذكاء الاصطناعي بتوليد تقارير لها (لحماية رصيد Gemini و API)
+  // يمكنك إضافة أرقام الدوريات الأخرى هنا مستقبلاً، مثال: ["39", "140", "135"]
+  const ALLOWED_LEAGUES = ["39"]; 
+
   async function getFromApiSports(endpoint, kvKey, ttlSeconds) {
     if (env.SPORTS_KV) {
       try {
@@ -70,9 +79,19 @@ export async function onRequest(context) {
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const id = url.searchParams.get("id");
       if (id) {
+        // حماية: رفض أي طلب يحتوي على حروف في الـ ID
+        if (!isValidId(id)) {
+            return new Response(JSON.stringify({ error: "Invalid ID format. Numbers only." }), { status: 400, headers: corsHeaders });
+        }
         return await getFromApiSports(`fixtures?id=${id}`, `api_fixture_id_${id}`, 60);
       }
+      
       const date = url.searchParams.get("date") || new Date().toISOString().split('T')[0];
+      // حماية: التحقق من صيغة التاريخ (YYYY-MM-DD)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          return new Response(JSON.stringify({ error: "Invalid date format." }), { status: 400, headers: corsHeaders });
+      }
+
       const today = new Date().toISOString().split('T')[0];
       const ttl = (date === today) ? 60 : 86400;
       return await getFromApiSports(`fixtures?date=${date}`, `api_fixtures_${date}`, ttl);
@@ -81,9 +100,12 @@ export async function onRequest(context) {
     if (action.includes("fetch-events") || action.includes("events")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       const status = url.searchParams.get("status");
-      if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
       
-      // التعديل: إذا كانت المباراة منتهية، احفظ الأحداث لمدة 24 ساعة (86400) بدلاً من 60 ثانية
+      // حماية: رفض الطلب إذا كان الـ ID مفقوداً أو يحتوي على حروف
+      if (!isValidId(fixtureId)) {
+          return new Response(JSON.stringify({ error: "Invalid or missing fixture ID." }), { status: 400, headers: corsHeaders });
+      }
+      
       const ttl = ['FT', 'AET', 'PEN'].includes(status) ? 86400 : 60;
       return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, ttl);
     }
@@ -91,20 +113,30 @@ export async function onRequest(context) {
     if (action.includes("fetch-stats") || action.includes("statistics")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       const status = url.searchParams.get("status");
-      if (!fixtureId) return new Response(JSON.stringify({ error: "Missing fixture ID" }), { status: 400, headers: corsHeaders });
       
-      // التعديل: إذا كانت المباراة منتهية، احفظ الإحصائيات لمدة 24 ساعة (86400) بدلاً من 60 ثانية
+      // حماية: رفض الطلب إذا كان الـ ID مفقوداً أو يحتوي على حروف
+      if (!isValidId(fixtureId)) {
+          return new Response(JSON.stringify({ error: "Invalid or missing fixture ID." }), { status: 400, headers: corsHeaders });
+      }
+      
       const ttl = ['FT', 'AET', 'PEN'].includes(status) ? 86400 : 60;
       return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, ttl);
     }
 
     if (action.includes("predict-match") || action.includes("predict")) {
       const leagueId = url.searchParams.get("leagueId");
-      if (leagueId && leagueId !== "39") {
-        return new Response(JSON.stringify({ error: "Predictions available only for Premier League." }), { status: 403, headers: corsHeaders });
+      
+      // حماية مرنة: التحقق مما إذا كان الدوري ضمن القائمة المسموحة
+      if (leagueId && !ALLOWED_LEAGUES.includes(leagueId)) {
+        return new Response(JSON.stringify({ error: "Predictions are currently restricted to specific leagues to manage resources." }), { status: 403, headers: corsHeaders });
       }
 
       const fixtureId = url.searchParams.get("fixtureId");
+      // حماية الـ ID
+      if (!isValidId(fixtureId)) {
+          return new Response(JSON.stringify({ error: "Invalid fixture ID." }), { status: 400, headers: corsHeaders });
+      }
+
       const homeTeam = url.searchParams.get("homeTeam");
       const awayTeam = url.searchParams.get("awayTeam");
       const languageCode = url.searchParams.get("language") || "en";
@@ -123,7 +155,7 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "GEMINI_API_KEY is missing" }), { status: 500, headers: corsHeaders });
       }
 
-      const prompt = `Act as an expert football analyst. Write a short, engaging tactical preview for the upcoming Premier League match between ${homeTeam} and ${awayTeam}.
+      const prompt = `Act as an expert football analyst. Write a short, engaging tactical preview for the upcoming match between ${homeTeam} and ${awayTeam}.
       Focus on team form, key tactical battles, and who has the upper hand.
       IMPORTANT: DO NOT predict an exact numerical score (like 2-1). Just analyze the expected flow of the game and the likely outcome (e.g., a tight draw, a comfortable home win, etc.).
       Write the ENTIRE response perfectly in ${targetLang}.
@@ -156,11 +188,18 @@ export async function onRequest(context) {
 
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
-      if (leagueId && leagueId !== "39") {
-        return new Response(JSON.stringify({ error: "Match reports available only for Premier League." }), { status: 403, headers: corsHeaders });
+      
+      // حماية مرنة: التحقق مما إذا كان الدوري ضمن القائمة المسموحة
+      if (leagueId && !ALLOWED_LEAGUES.includes(leagueId)) {
+        return new Response(JSON.stringify({ error: "Match recaps are currently restricted to specific leagues to manage resources." }), { status: 403, headers: corsHeaders });
       }
 
       const fixtureId = url.searchParams.get("fixtureId");
+      // حماية الـ ID
+      if (!isValidId(fixtureId)) {
+          return new Response(JSON.stringify({ error: "Invalid fixture ID." }), { status: 400, headers: corsHeaders });
+      }
+
       const matchStr = url.searchParams.get("matchStr");
       const score = url.searchParams.get("score");
       const events = url.searchParams.get("events");
