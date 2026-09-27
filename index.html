@@ -79,7 +79,7 @@
     <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
     <header class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <a href="/" class="text-xl md:text-2xl font-black text-emerald-500 tracking-tight whitespace-nowrap" id="logo-link">SCORE<span class="text-slate-800 dark:text-white">RECAP</span></a>
                 <button id="btn-refresh" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-all active:scale-95" aria-label="Refresh matches">
@@ -122,9 +122,9 @@
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <main class="flex-grow max-w-5xl mx-auto w-full px-4 py-6">
        
-        <section id="home-section" class="lg:col-span-2 space-y-4">
+        <section id="home-section" class="space-y-4">
             
             <!-- بداية قسم التقارير المميزة (Latest Recaps) -->
             <div id="featured-recaps-container" class="mb-6 hidden">
@@ -180,7 +180,7 @@
             <div id="api-scores-container" class="space-y-4 min-h-[500px]" aria-live="polite"></div>
         </section>
 
-        <section id="page-reports" class="lg:col-span-2 hidden space-y-6" dir="ltr">
+        <section id="page-reports" class="hidden space-y-6" dir="ltr">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm">
                 <h1 class="text-2xl font-black text-emerald-500 mb-6 uppercase tracking-wide flex items-center gap-2" id="title-reports-page">
                     📰 Latest Match Recaps
@@ -191,7 +191,7 @@
             </div>
         </section>
 
-        <section id="page-game" class="lg:col-span-2 hidden space-y-8" dir="ltr">
+        <section id="page-game" class="hidden space-y-8" dir="ltr">
            
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm text-center">
                 <h1 class="text-2xl font-black text-emerald-500 mb-2 uppercase tracking-wide">Penalty Shootout ⚽</h1>
@@ -243,7 +243,7 @@
 
         </section>
 
-        <section id="static-pages-section" class="lg:col-span-2 hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm static-page-content" dir="ltr">
+        <section id="static-pages-section" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm static-page-content" dir="ltr">
            
             <div id="page-about" class="hidden">
                 <h1>Welcome to ScoreRecap</h1>
@@ -323,17 +323,9 @@
             </div>
         </section>
 
-        <aside class="space-y-6">
-            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl p-4 text-center sticky top-24 shadow-sm">
-                <span id="ad-label" class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Advertisement</span>
-                <div class="bg-slate-100 border-dashed border-2 border-slate-300 dark:bg-slate-950 dark:border-slate-800 rounded-lg h-64 flex items-center justify-center mt-2 transition-colors">
-                    <p id="ad-banner" class="text-slate-500 dark:text-slate-600 text-sm font-medium">Ad Banner Space</p>
-                </div>
-            </div>
-        </aside>
     </main>
     <footer class="bg-white border-t border-slate-200 dark:bg-slate-900 dark:border-slate-800 py-6 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
             <p>© <span id="current-year">2026</span> ScoreRecap. <span id="footer-rights">All rights reserved.</span></p>
             <div class="flex flex-wrap justify-center gap-4 font-bold">
                 <a href="/game" class="static-link text-emerald-500 hover:text-emerald-600 transition-colors" id="link-game">Game Zone 🎮</a>
@@ -454,8 +446,9 @@
                         const homeName = names[0] || 'Home';
                         const awayName = names[1] || 'Away';
                         
+                        // تم حذف كلاس static-link من هنا لكي تفتح المقالة بشكل صحيح
                         html += `
-                        <a href="${r.url}" class="static-link snap-start flex-shrink-0 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-500 transition-all group block">
+                        <a href="${r.url}" class="snap-start flex-shrink-0 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-500 transition-all group block">
                             <div class="p-3 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                                 <img src="${r.logoHome}" class="w-8 h-8 object-contain group-hover:scale-110 transition-transform">
                                 <span class="text-[9px] font-black text-slate-400 uppercase">VS</span>
