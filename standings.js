@@ -1,55 +1,5 @@
-// standings.js - ملف مستقل لجدول الترتيب الاحترافي (مُحسن للهواتف)
+// standings.js - ملف جلب ورسم بيانات الترتيب فقط
 
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. إضافة زر "الترتيب" في القائمة العلوية
-    const navReportsBtn = document.querySelector('a[href="/recaps"]');
-    if (navReportsBtn) {
-        const standingsBtn = document.createElement('a');
-        standingsBtn.href = "/standings";
-        standingsBtn.className = "static-link flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-emerald-500 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors mr-1 sm:mr-2";
-        standingsBtn.innerHTML = `
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-            <span class="hidden sm:inline">Standings</span>
-        `;
-        navReportsBtn.parentNode.insertBefore(standingsBtn, navReportsBtn.nextSibling);
-    }
-
-    // 2. إنشاء قسم الجدول
-    const mainContainer = document.querySelector('main');
-    if (mainContainer) {
-        const standingsSection = document.createElement('section');
-        standingsSection.id = "page-standings";
-        standingsSection.className = "hidden space-y-6 lg:col-span-2 w-full overflow-hidden"; // تم إضافة overflow-hidden هنا لمنع خروج القسم عن الشاشة
-        standingsSection.dir = "ltr";
-        standingsSection.innerHTML = `
-            <div id="standings-table-container" class="w-full max-w-4xl mx-auto"></div>
-        `;
-        const gameSection = document.getElementById('page-game');
-        if (gameSection) {
-            mainContainer.insertBefore(standingsSection, gameSection);
-        } else {
-            mainContainer.appendChild(standingsSection);
-        }
-    }
-
-    // 3. نظام التوجيه
-    const originalHandleRoute = window.handleRoute;
-    window.handleRoute = function() {
-        const standingsPage = document.getElementById('page-standings');
-        if (standingsPage) standingsPage.classList.add('hidden');
-        
-        if (originalHandleRoute) originalHandleRoute();
-
-        if (window.location.pathname === '/standings') {
-            document.getElementById('home-section').classList.add('hidden');
-            document.title = "Premier League Standings | ScoreRecap";
-            if (standingsPage) standingsPage.classList.remove('hidden');
-            fetchAndRenderStandings();
-        }
-    };
-});
-
-// دالة مساعدة لرسم مربعات حالة الفريق (Form)
 function renderFormBoxes(formString) {
     if (!formString) return '<span class="text-slate-400">-</span>';
     return formString.split('').map(char => {
@@ -60,7 +10,6 @@ function renderFormBoxes(formString) {
     }).join('');
 }
 
-// 4. دالة جلب ورسم الجدول الاحترافي
 async function fetchAndRenderStandings() {
     const container = document.getElementById('standings-table-container');
     if (!container || container.innerHTML.includes('<table')) return;
@@ -77,8 +26,6 @@ async function fetchAndRenderStandings() {
             
             let tableHTML = `
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
-                
-                <!-- Header -->
                 <div class="bg-gradient-to-r from-cyan-500 to-blue-600 p-4 sm:p-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="bg-white p-1.5 rounded-full shadow-md flex-shrink-0">
@@ -90,10 +37,8 @@ async function fetchAndRenderStandings() {
                         Season ${leagueInfo.season}
                     </div>
                 </div>
-
-                <!-- Table Container (هنا تم حل مشكلة الهواتف بجعل الجدول قابلاً للتمرير) -->
                 <div class="w-full overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-sm text-left min-w-[600px]"> <!-- min-w-[600px] تضمن عدم تداخل الأعمدة في الشاشات الصغيرة -->
+                    <table class="w-full text-sm text-left min-w-[600px]">
                         <thead class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-800">
                             <tr>
                                 <th class="px-3 py-3 text-center w-10">Pos</th>
@@ -148,20 +93,11 @@ async function fetchAndRenderStandings() {
                         </tbody>
                     </table>
                 </div>
-                
-                <!-- Legend -->
                 <div class="bg-slate-50 dark:bg-slate-950/50 p-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded bg-emerald-500 flex-shrink-0"></span> Champions League
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded bg-blue-500 flex-shrink-0"></span> Europa League
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded bg-red-500 flex-shrink-0"></span> Relegation
-                    </div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 flex-shrink-0"></span> Champions League</div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-500 flex-shrink-0"></span> Europa League</div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500 flex-shrink-0"></span> Relegation</div>
                 </div>
-
             </div>`;
             
             container.innerHTML = tableHTML;
