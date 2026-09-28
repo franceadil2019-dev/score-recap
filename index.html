@@ -96,10 +96,15 @@
                     <span class="hidden sm:inline" id="txt-nav-reports">Recaps</span>
                 </a>
                 
-                <!-- زر الترتيب تمت إضافته هنا بشكل ثابت -->
                 <a href="/standings" class="static-link flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-emerald-500 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors mr-1 sm:mr-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     <span class="hidden sm:inline" id="txt-nav-standings">Standings</span>
+                </a>
+
+                <!-- زر الهدافين تمت إضافته هنا بشكل ثابت -->
+                <a href="/topscorers" class="static-link flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-emerald-500 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors mr-1 sm:mr-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                    <span class="hidden sm:inline" id="txt-nav-topscorers">Top Scorers</span>
                 </a>
 
                 <button id="btn-theme-toggle" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-all text-slate-600 dark:text-emerald-400" aria-label="Toggle dark mode">
@@ -197,9 +202,25 @@
             </div>
         </section>
 
-        <!-- قسم الترتيب تمت إضافته هنا بشكل ثابت -->
         <section id="page-standings" class="hidden space-y-6 lg:col-span-2 w-full overflow-hidden" dir="ltr">
             <div id="standings-table-container" class="w-full max-w-4xl mx-auto"></div>
+        </section>
+
+        <!-- قسم الهدافين تمت إضافته هنا بشكل ثابت -->
+        <section id="page-topscorers" class="hidden space-y-6 lg:col-span-2 w-full" dir="ltr">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <h1 class="text-xl sm:text-2xl font-black text-emerald-500 uppercase tracking-wide flex items-center gap-2">
+                        🔥 Premier League Top Scorers
+                    </h1>
+                    <div id="topscorers-season-badge" class="hidden text-emerald-700 dark:text-emerald-100 font-bold text-[10px] sm:text-sm bg-emerald-100 dark:bg-emerald-600/20 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/30 whitespace-nowrap">
+                    </div>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">
+                    Discover the current top scorers of the Premier League. Track your favorite players' goals and overall performance in the race for the Golden Boot.
+                </p>
+                <div id="topscorers-list-container" class="w-full max-w-4xl mx-auto"></div>
+            </div>
         </section>
 
         <section id="page-game" class="hidden space-y-8" dir="ltr">
@@ -707,9 +728,12 @@
             document.getElementById('page-privacy').classList.add('hidden');
             document.getElementById('page-game').classList.add('hidden');
             
-            // التعديل: إخفاء قسم الترتيب بشكل افتراضي
             const standingsPage = document.getElementById('page-standings');
             if (standingsPage) standingsPage.classList.add('hidden');
+            
+            // التعديل الجديد: إخفاء صفحة الهدافين افتراضياً
+            const scorersPage = document.getElementById('page-topscorers');
+            if (scorersPage) scorersPage.classList.add('hidden');
 
             if (path.startsWith('/match/')) {
                 document.getElementById('home-section').classList.remove('hidden');
@@ -751,11 +775,16 @@
                 document.getElementById('static-pages-section').classList.remove('hidden');
                 document.getElementById('page-privacy').classList.remove('hidden');
             }
-            // التعديل: توجيه صفحة الترتيب
             else if (path === '/standings') {
                 document.title = "Premier League Standings | ScoreRecap";
                 if (standingsPage) standingsPage.classList.remove('hidden');
                 if (typeof fetchAndRenderStandings === 'function') fetchAndRenderStandings();
+            }
+            // التعديل الجديد: إضافة مسار الهدافين للتوجيه
+            else if (path === '/topscorers') {
+                document.title = "Top Scorers | ScoreRecap";
+                if (scorersPage) scorersPage.classList.remove('hidden');
+                if (typeof fetchAndRenderTopScorers === 'function') fetchAndRenderTopScorers();
             }
             else {
                 document.title = (translations[currentLang] || translations['en']).title || "ScoreRecap | Scores";
