@@ -95,6 +95,12 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                     <span class="hidden sm:inline" id="txt-nav-reports">Recaps</span>
                 </a>
+                
+                <!-- زر الترتيب تمت إضافته هنا بشكل ثابت -->
+                <a href="/standings" class="static-link flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-emerald-500 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors mr-1 sm:mr-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <span class="hidden sm:inline" id="txt-nav-standings">Standings</span>
+                </a>
 
                 <button id="btn-theme-toggle" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-all text-slate-600 dark:text-emerald-400" aria-label="Toggle dark mode">
                     <svg id="theme-icon-sun" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
@@ -189,6 +195,11 @@
                     <div class="col-span-full flex justify-center py-10"><div class="spinner"></div></div>
                 </div>
             </div>
+        </section>
+
+        <!-- قسم الترتيب تمت إضافته هنا بشكل ثابت -->
+        <section id="page-standings" class="hidden space-y-6 lg:col-span-2 w-full overflow-hidden" dir="ltr">
+            <div id="standings-table-container" class="w-full max-w-4xl mx-auto"></div>
         </section>
 
         <section id="page-game" class="hidden space-y-8" dir="ltr">
@@ -345,7 +356,7 @@
         function saveToCache(key, data) { sessionStorage.setItem(key, JSON.stringify(data)); }
 
         const TOP_LEAGUES = ["39"];
-        const teamNamesAR = { "Arsenal": "أرسنال", "Aston Villa": "أستون فيلا", "Bournemouth": "بورنموث", "Brentford": "برينتفورد", "Brighton": "برايتون", "Chelsea": "تشيلسي", "Crystal Palace": "كريستال بالاس", "Everton": "إيفرتون", "Fulham": "فولهام", "Liverpool": "ليفربول", "Luton": "لوتون تاون", "Manchester City": "مانشستر سيتي", "Manchester United": "مانشستر يونايتد", "Newcastle": "نيوكاسل", "Nottingham Forest": "نوتينغهام فورست", "Sheffield Utd": "شيفيلد", "Tottenham": "توتنهام", "West Ham": "وست هام", "Wolverhampton": "وولفرهامبتون", "Real Madrid": "ريال مدريد", "Barcelona": "برشلونة", "Atletico Madrid": "أتلتيكو مدريد", "Sevilla": "إشبيلية", "Valencia": "فالنسيا", "Villarreal": "فياريال", "Real Sociedad": "ريال سوسيداد", "Athletic Club": "أتلتيك بيلباو", "Real Betis": "ريال بيتيس", "Girona": "جيرونا", "Juventus": "يوفنتوس", "AC Milan": "ميلان", "Inter": "إنتر ميلان", "Napoli": "نابولي", "Roma": "روما", "Lazio": "لاتسيو", "Atalanta": "أتالانتا", "Fiorentina": "فيورنتينا", "Bayern Munich": "بايرن ميونخ", "Borussia Dortmund": "دورتموند", "Bayer Leverkusen": "ليفركوزن", "RB Leipzig": "لايبزيغ", "Stuttgart": "شتوتغارت", "Paris Saint Germain": "باريس سان جيرمان", "Marseille": "مارسيليا", "Lyon": "ليون", "Monaco": "موناكو", "Lille": "ليل", "Al Hilal": "الهلال", "Al Nassr": "النصر", "Al Ittihad": "الاتحاد", "Al Ahli": "الأهلي", "Al Shabab": "الشباب", "Al Ett কুল": "الاتفاق", "Al Taawoun": "التعاون", "Al Wehda": "الوحدة", "Al Raed": "الرائد", "Al Fayha": "الفيحاء", "Damac FC": "ضمك", "Abha": "أبها", "Al Khaleej": "الخليج", "Al Hazem": "الحزم", "Al Okhdood": "الأخدود", "Al Riyadh": "الرياض", "Al Fateh": "الفتح", "Wydad AC": "الوداد الرياضي", "Raja Casablanca": "الرجاء الرياضي", "AS FAR Rabat": "الجيش الملكي", "RSB Berkane": "نهضة بركان", "Al Ahly": "الأهلي", "Zamalek SC": "الزمالك", "Esperance Tunis": "الترجي", "Mamelodi Sundowns": "صن داونز", "Inter Miami": "إنتر ميامي", "LA Galaxy": "لوس أنجلوس جالاكسي", "New York City FC": "نيويورك سيتي" };
+        const teamNamesAR = { "Arsenal": "أرسنال", "Aston Villa": "أستون فيلا", "Bournemouth": "بورنموث", "Brentford": "برينتفورد", "Brighton": "برايتون", "Chelsea": "تشيلسي", "Crystal Palace": "كريستال بالاس", "Everton": "إيفرتون", "Fulham": "فولهام", "Liverpool": "ليفربول", "Luton": "لوتون تاون", "Manchester City": "مانشستر سيتي", "Manchester United": "مانشستر يونايتد", "Newcastle": "نيوكاسل", "Nottingham Forest": "نوتينغهام فورست", "Sheffield Utd": "شيفيلد", "Tottenham": "توتنهام", "West Ham": "وست هام", "Wolverhampton": "وولفرهامبتون", "Real Madrid": "ريال مدريد", "Barcelona": "برشلونة", "Atletico Madrid": "أتلتيكو مدريد", "Sevilla": "إشبيلية", "Valencia": "فالنسيا", "Villarreal": "فياريال", "Real Sociedad": "ريال سوسيداد", "Athletic Club": "أتلتيك بيلباو", "Real Betis": "ريال بيتيس", "Girona": "جيرونا", "Juventus": "يوفنتوس", "AC Milan": "ميلان", "Inter": "إنتر ميلان", "Napoli": "نابولي", "Roma": "روما", "Lazio": "لاتسيو", "Atalanta": "أتالانتا", "Fiorentina": "فيورنتينا", "Bayern Munich": "بايرن ميونخ", "Borussia Dortmund": "دورتموند", "Bayer Leverkusen": "ليفركوزن", "RB Leipzig": "لايبزيغ", "Stuttgart": "شتوتغارت", "Paris Saint Germain": "باريس سان جيرمان", "Marseille": "مارسيليا", "Lyon": "ليون", "Monaco": "موناكو", "Lille": "ليل", "Al Hilal": "الهلال", "Al Nassr": "النصر", "Al Ittihad": "الاتحاد", "Al Ahli": "الأهلي", "Al Shabab": "الشباب", "Al Ettifaq": "الاتفاق", "Al Taawoun": "التعاون", "Al Wehda": "الوحدة", "Al Raed": "الرائد", "Al Fayha": "الفيحاء", "Damac FC": "ضمك", "Abha": "أبها", "Al Khaleej": "الخليج", "Al Hazem": "الحزم", "Al Okhdood": "الأخدود", "Al Riyadh": "الرياض", "Al Fateh": "الفتح", "Wydad AC": "الوداد الرياضي", "Raja Casablanca": "الرجاء الرياضي", "AS FAR Rabat": "الجيش الملكي", "RSB Berkane": "نهضة بركان", "Al Ahly": "الأهلي", "Zamalek SC": "الزمالك", "Esperance Tunis": "الترجي", "Mamelodi Sundowns": "صن داونز", "Inter Miami": "إنتر ميامي", "LA Galaxy": "لوس أنجلوس جالاكسي", "New York City FC": "نيويورك سيتي" };
        
         function getLeagueNameLocal(leagueId, defaultName, lang) { if (lang !== 'ar') return defaultName; const leaguesAR = { "2": "دوري أبطال أوروبا", "12": "دوري أبطال أفريقيا", "39": "الدوري الإنجليزي", "40": "دوري البطولة الإنجليزية", "61": "الدوري الفرنسي", "78": "الدوري الألماني", "135": "الدوري الإيطالي", "140": "الدوري الإسباني", "307": "الدوري السعودي", "253": "الدوري الأمريكي", "71": "الدوري البرازيلي", "200": "البطولة المغربية", "113": "الدوري السويدي", "103": "الدوري النرويجي", "119": "الدوري الدنماركي" }; return leaguesAR[leagueId] || defaultName; }
         function getTeamName(name, lang) { if (lang === 'ar') { for (let key in teamNamesAR) { if (name.toLowerCase().includes(key.toLowerCase())) return teamNamesAR[key]; } } return name; }
@@ -695,6 +706,10 @@
             document.getElementById('page-contact').classList.add('hidden');
             document.getElementById('page-privacy').classList.add('hidden');
             document.getElementById('page-game').classList.add('hidden');
+            
+            // التعديل: إخفاء قسم الترتيب بشكل افتراضي
+            const standingsPage = document.getElementById('page-standings');
+            if (standingsPage) standingsPage.classList.add('hidden');
 
             if (path.startsWith('/match/')) {
                 document.getElementById('home-section').classList.remove('hidden');
@@ -736,10 +751,9 @@
                 document.getElementById('static-pages-section').classList.remove('hidden');
                 document.getElementById('page-privacy').classList.remove('hidden');
             }
-            // التعديل الجديد: إضافة مسار الترتيب لدالة التوجيه الرئيسية
+            // التعديل: توجيه صفحة الترتيب
             else if (path === '/standings') {
                 document.title = "Premier League Standings | ScoreRecap";
-                const standingsPage = document.getElementById('page-standings');
                 if (standingsPage) standingsPage.classList.remove('hidden');
                 if (typeof fetchAndRenderStandings === 'function') fetchAndRenderStandings();
             }
