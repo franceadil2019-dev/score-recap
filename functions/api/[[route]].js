@@ -75,21 +75,32 @@ export async function onRequest(context) {
   };
 
   try {
-    // --- الإضافة الجديدة: كود جلب جدول الترتيب ---
+    // --- كود جلب جدول الترتيب ---
     if (action.includes("standings")) {
       const leagueId = url.searchParams.get("league") || "39";
       
-      // تحديد الموسم الحالي برمجياً (الموسم الكروي يبدأ في شهر 8)
       const date = new Date();
       const currentYear = date.getFullYear();
       const season = date.getMonth() < 7 ? currentYear - 1 : currentYear; 
       
       const kvKey = `api_standings_${leagueId}_${season}`;
       
-      // جلب الترتيب وحفظه في الكاش لمدة ساعة واحدة (3600 ثانية) لتوفير الرصيد
       return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, kvKey, 3600);
     }
-    // ----------------------------------------------
+
+    // --- كود جلب قائمة الهدافين ---
+    if (action.includes("topscorers")) {
+      const leagueId = url.searchParams.get("league") || "39";
+      
+      const date = new Date();
+      const currentYear = date.getFullYear();
+      const season = date.getMonth() < 7 ? currentYear - 1 : currentYear; 
+      
+      const kvKey = `api_topscorers_${leagueId}_${season}`;
+      
+      // جلب الهدافين وحفظهم في الكاش لمدة 24 ساعة (86400 ثانية) لتوفير الرصيد
+      return await getFromApiSports(`players/topscorers?league=${leagueId}&season=${season}`, kvKey, 86400);
+    }
 
     if (action.includes("fetch-matches") || action.includes("fixtures")) {
       const id = url.searchParams.get("id");
