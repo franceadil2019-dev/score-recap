@@ -1,6 +1,5 @@
-// topscorers.js - ملف جلب ورسم بيانات الهدافين مع نصوص الـ SEO والأسئلة الشائعة
+// topscorers.js - ملف جلب ورسم بيانات الهدافين مع النص الترحيبي والأسئلة الشائعة
 
-// دالة ذكية لتحويل اسم البلد إلى كود العلم
 function getCountryCode(countryName) {
     const map = {
         "England": "gb-eng", "Norway": "no", "Brazil": "br", "France": "fr", "Egypt": "eg",
@@ -16,7 +15,6 @@ function getCountryCode(countryName) {
     return map[countryName] || null;
 }
 
-// دالة مساعدة لإنشاء قسم الأسئلة الشائعة (FAQ) لصفحة الهدافين
 function generateTopScorersFAQ() {
     const faqs = [
         { q: "What happens if two players finish with the same number of goals?", a: "In the Premier League, if two or more players finish the season with the exact same number of goals, the Golden Boot award is shared among them. Unlike some other tournaments, assists or minutes played are not used as tiebreakers." },
@@ -61,8 +59,6 @@ function generateTopScorersFAQ() {
     });
 
     faqHTML += `</div></div>`;
-    
-    // إضافة كود Schema للـ SEO
     faqHTML += `<script type="application/ld+json">${JSON.stringify(schemaData)}<\/script>`;
     
     return faqHTML;
@@ -88,7 +84,12 @@ async function fetchAndRenderTopScorers() {
 
             const topPlayers = data.response.slice(0, 15);
             
+            // إضافة النص الترحيبي (SEO Text) فوق الجدول
             let listHTML = `
+            <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 sm:p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-sm mb-6">
+                <p>Welcome to the ultimate race for the Golden Boot at <strong>ScoreRecap</strong>. Our top scorers table highlights the most lethal attackers and clinical finishers currently dominating English football. We track every goal to bring you an accurate, up-to-date ranking of the players making the biggest impact for their clubs. Dive into the stats below to see who is leading the charge this season.</p>
+            </div>
+
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <!-- Header -->
                 <div class="flex items-center p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-800 text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
