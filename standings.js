@@ -1,4 +1,50 @@
-// standings.js - ملف جلب ورسم بيانات الترتيب فقط
+// standings.js - ملف جدول الترتيب الاحترافي مع نصوص الـ SEO والأسئلة الشائعة
+
+document.addEventListener("DOMContentLoaded", () => {
+    const navReportsBtn = document.querySelector('a[href="/recaps"]');
+    if (navReportsBtn) {
+        const standingsBtn = document.createElement('a');
+        standingsBtn.href = "/standings";
+        standingsBtn.className = "static-link flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-emerald-500 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors mr-1 sm:mr-2";
+        standingsBtn.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <span class="hidden sm:inline">Standings</span>
+        `;
+        navReportsBtn.parentNode.insertBefore(standingsBtn, navReportsBtn.nextSibling);
+    }
+
+    const mainContainer = document.querySelector('main');
+    if (mainContainer) {
+        const standingsSection = document.createElement('section');
+        standingsSection.id = "page-standings";
+        standingsSection.className = "hidden space-y-6 lg:col-span-2 w-full overflow-hidden"; 
+        standingsSection.dir = "ltr";
+        standingsSection.innerHTML = `
+            <div id="standings-table-container" class="w-full max-w-4xl mx-auto"></div>
+        `;
+        const gameSection = document.getElementById('page-game');
+        if (gameSection) {
+            mainContainer.insertBefore(standingsSection, gameSection);
+        } else {
+            mainContainer.appendChild(standingsSection);
+        }
+    }
+
+    const originalHandleRoute = window.handleRoute;
+    window.handleRoute = function() {
+        const standingsPage = document.getElementById('page-standings');
+        if (standingsPage) standingsPage.classList.add('hidden');
+        
+        if (originalHandleRoute) originalHandleRoute();
+
+        if (window.location.pathname === '/standings') {
+            document.getElementById('home-section').classList.add('hidden');
+            document.title = "Premier League Standings | ScoreRecap";
+            if (standingsPage) standingsPage.classList.remove('hidden');
+            fetchAndRenderStandings();
+        }
+    };
+});
 
 function renderFormBoxes(formString) {
     if (!formString) return '<span class="text-slate-400">-</span>';
@@ -8,6 +54,59 @@ function renderFormBoxes(formString) {
         if (char === 'L') return `<span class="inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded bg-red-500 text-white text-[9px] sm:text-[10px] font-bold mx-[1px] shadow-sm flex-shrink-0">L</span>`;
         return '';
     }).join('');
+}
+
+// دالة مساعدة لإنشاء قسم الأسئلة الشائعة (FAQ)
+function generateFAQSection() {
+    const faqs = [
+        { q: "What happens if teams finish with the same points?", a: "At ScoreRecap, we get this question a lot! If two or more clubs finish level on points, the Premier League uses Goal Difference (GD) to separate them. If they are still tied, the total Goals Scored becomes the deciding factor." },
+        { q: "How many Premier League teams qualify for Europe?", a: "Traditionally, the top four teams in the standings secure a spot in the prestigious UEFA Champions League group stages. The team finishing fifth usually earns a place in the UEFA Europa League." },
+        { q: "How does relegation work in the Premier League?", a: "It's the harshest part of the season. The bottom three teams (positions 18, 19, and 20) at the end of the 38-game campaign are automatically relegated to the Championship, making way for three newly promoted clubs." },
+        { q: "What do the abbreviations like MP, W, D, L, and GD mean?", a: "We keep it simple: <strong>MP</strong> stands for Matches Played. <strong>W</strong>, <strong>D</strong>, and <strong>L</strong> represent Wins, Draws, and Losses. <strong>GD</strong> is Goal Difference (goals scored minus goals conceded), and <strong>Pts</strong> stands for total Points." },
+        { q: "What does the 'Form' column indicate?", a: "The 'Form' column shows a team's recent momentum over their last five matches. A green 'W' means a win, a grey 'D' is a draw, and a red 'L' indicates a loss. It’s a great way to spot winning streaks!" },
+        { q: "How many matches are played in a full season?", a: "A complete Premier League season consists of 38 matches for each club. Since there are 20 teams, every club plays each other twice—once at their home stadium and once away." }
+    ];
+
+    let faqHTML = `<div class="mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
+        <h2 class="text-xl font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+            <span class="text-emerald-500">❓</span> Frequently Asked Questions
+        </h2>
+        <div class="space-y-4">`;
+
+    let schemaData = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": []
+    };
+
+    faqs.forEach(faq => {
+        faqHTML += `
+            <details class="group border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 [&_summary::-webkit-details-marker]:hidden">
+                <summary class="flex cursor-pointer items-center justify-between gap-1.5 p-4 text-slate-900 dark:text-slate-100 font-bold">
+                    <h3 class="text-sm sm:text-base">${faq.q}</h3>
+                    <span class="shrink-0 rounded-full bg-white dark:bg-slate-700 p-1.5 text-slate-900 dark:text-white sm:p-3 group-open:-rotate-180 transition-transform duration-300 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 transition duration-300 group-open:-rotate-45" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    </span>
+                </summary>
+                <div class="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    <p>${faq.a}</p>
+                </div>
+            </details>
+        `;
+        
+        schemaData.mainEntity.push({
+            "@type": "Question",
+            "name": faq.q,
+            "acceptedAnswer": { "@type": "Answer", "text": faq.a.replace(/<[^>]*>?/gm, '') }
+        });
+    });
+
+    faqHTML += `</div></div>`;
+    
+    // إضافة كود Schema للـ SEO
+    faqHTML += `<script type="application/ld+json">${JSON.stringify(schemaData)}<\/script>`;
+    
+    return faqHTML;
 }
 
 async function fetchAndRenderStandings() {
@@ -24,8 +123,14 @@ async function fetchAndRenderStandings() {
             const leagueInfo = data.response[0].league;
             const standings = leagueInfo.standings[0];
             
+            // النص الترحيبي (SEO Text)
             let tableHTML = `
+            <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 sm:p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-sm mb-6">
+                <p>Welcome to the heartbeat of English football at <strong>ScoreRecap</strong>. Whether you're tracking a fierce title race, the battle for European spots, or the nerve-wracking relegation dogfight, our dynamically updated Premier League standings keep you right in the middle of the action. We know that every single point matters to the fans, which is why our team ensures this table reflects the latest results, goal differences, and current form. Dive into the numbers below and see exactly where your club stands this season.</p>
+            </div>
+            
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
+                <!-- Header -->
                 <div class="bg-gradient-to-r from-cyan-500 to-blue-600 p-4 sm:p-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="bg-white p-1.5 rounded-full shadow-md flex-shrink-0">
@@ -37,6 +142,8 @@ async function fetchAndRenderStandings() {
                         Season ${leagueInfo.season}
                     </div>
                 </div>
+
+                <!-- Table Container -->
                 <div class="w-full overflow-x-auto custom-scrollbar">
                     <table class="w-full text-sm text-left min-w-[600px]">
                         <thead class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-800">
@@ -93,6 +200,8 @@ async function fetchAndRenderStandings() {
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Legend -->
                 <div class="bg-slate-50 dark:bg-slate-950/50 p-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">
                     <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 flex-shrink-0"></span> Champions League</div>
                     <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-500 flex-shrink-0"></span> Europa League</div>
@@ -100,6 +209,9 @@ async function fetchAndRenderStandings() {
                 </div>
             </div>`;
             
+            // إضافة قسم الأسئلة الشائعة في النهاية
+            tableHTML += generateFAQSection();
+
             container.innerHTML = tableHTML;
         } else {
             container.innerHTML = `<div class="bg-white dark:bg-slate-900 rounded-2xl p-10 text-center border border-slate-200 dark:border-slate-800"><p class="text-slate-500 font-bold">Standings not available at the moment.</p></div>`;
