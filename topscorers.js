@@ -1,4 +1,4 @@
-// topscorers.js - ملف جلب ورسم بيانات الهدافين فقط
+// topscorers.js - ملف جلب ورسم بيانات الهدافين مع نصوص الـ SEO والأسئلة الشائعة
 
 // دالة ذكية لتحويل اسم البلد إلى كود العلم
 function getCountryCode(countryName) {
@@ -16,6 +16,58 @@ function getCountryCode(countryName) {
     return map[countryName] || null;
 }
 
+// دالة مساعدة لإنشاء قسم الأسئلة الشائعة (FAQ) لصفحة الهدافين
+function generateTopScorersFAQ() {
+    const faqs = [
+        { q: "What happens if two players finish with the same number of goals?", a: "In the Premier League, if two or more players finish the season with the exact same number of goals, the Golden Boot award is shared among them. Unlike some other tournaments, assists or minutes played are not used as tiebreakers." },
+        { q: "Are penalty kicks included in the top scorers tally?", a: "Yes, absolutely. Every goal scored during a regular Premier League match counts towards the player's total, regardless of whether it was scored from open play, a free-kick, or a penalty spot." },
+        { q: "Who holds the record for the most goals in a single Premier League season?", a: "Erling Haaland currently holds the record for the most goals in a single 38-game Premier League season, scoring an incredible 36 goals for Manchester City during the 2022-2023 campaign." },
+        { q: "How often is this top scorers table updated?", a: "At ScoreRecap, our top scorers table is updated daily. Once the day's fixtures are concluded, the data is refreshed to ensure you have the most accurate and up-to-date standings in the race for the Golden Boot." },
+        { q: "Do goals scored in cup competitions count here?", a: "No. This specific table only tracks goals scored in official English Premier League matches. Goals scored in the FA Cup, Carabao Cup, or European competitions (like the Champions League) are tracked separately." }
+    ];
+
+    let faqHTML = `<div class="mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
+        <h2 class="text-xl font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+            <span class="text-emerald-500">❓</span> Frequently Asked Questions
+        </h2>
+        <div class="space-y-4">`;
+
+    let schemaData = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": []
+    };
+
+    faqs.forEach(faq => {
+        faqHTML += `
+            <details class="group border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 [&_summary::-webkit-details-marker]:hidden">
+                <summary class="flex cursor-pointer items-center justify-between gap-1.5 p-4 text-slate-900 dark:text-slate-100 font-bold">
+                    <h3 class="text-sm sm:text-base">${faq.q}</h3>
+                    <span class="shrink-0 rounded-full bg-white dark:bg-slate-700 p-1.5 text-slate-900 dark:text-white sm:p-3 group-open:-rotate-180 transition-transform duration-300 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 transition duration-300 group-open:-rotate-45" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    </span>
+                </summary>
+                <div class="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    <p>${faq.a}</p>
+                </div>
+            </details>
+        `;
+        
+        schemaData.mainEntity.push({
+            "@type": "Question",
+            "name": faq.q,
+            "acceptedAnswer": { "@type": "Answer", "text": faq.a.replace(/<[^>]*>?/gm, '') }
+        });
+    });
+
+    faqHTML += `</div></div>`;
+    
+    // إضافة كود Schema للـ SEO
+    faqHTML += `<script type="application/ld+json">${JSON.stringify(schemaData)}<\/script>`;
+    
+    return faqHTML;
+}
+
 async function fetchAndRenderTopScorers() {
     const container = document.getElementById('topscorers-list-container');
     if (!container || container.innerHTML.includes('flex items-center')) return; 
@@ -27,7 +79,6 @@ async function fetchAndRenderTopScorers() {
         const data = await res.json();
 
         if (data.response && data.response.length > 0) {
-            // استخراج سنة الموسم وعرضها
             const seasonYear = data.response[0].statistics[0].league.season;
             const badge = document.getElementById('topscorers-season-badge');
             if(badge) {
@@ -62,7 +113,6 @@ async function fetchAndRenderTopScorers() {
                 else if (index === 1) rankClass = "text-slate-300 text-base";
                 else if (index === 2) rankClass = "text-amber-700 text-base";
 
-                // تجهيز بيانات الجنسية
                 const countryCode = getCountryCode(player.nationality);
                 const natText = player.nationality ? player.nationality.substring(0, 3).toUpperCase() : "N/A";
 
@@ -104,6 +154,10 @@ async function fetchAndRenderTopScorers() {
             });
 
             listHTML += `</div></div>`;
+            
+            // إضافة قسم الأسئلة الشائعة في النهاية
+            listHTML += generateTopScorersFAQ();
+
             container.innerHTML = listHTML;
         } else {
             container.innerHTML = `<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-10 text-center border border-slate-200 dark:border-slate-800"><p class="text-slate-500 font-bold">Top scorers data is not available at the moment.</p></div>`;
