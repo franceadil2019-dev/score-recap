@@ -1,4 +1,4 @@
-// standings.js - ملف جلب ورسم بيانات الترتيب مع نصوص الـ SEO والأسئلة الشائعة
+// standings.js - ملف جلب ورسم بيانات الترتيب مع الأسئلة الشائعة
 
 function renderFormBoxes(formString) {
     if (!formString) return '<span class="text-slate-400">-</span>';
@@ -10,7 +10,6 @@ function renderFormBoxes(formString) {
     }).join('');
 }
 
-// دالة مساعدة لإنشاء قسم الأسئلة الشائعة (FAQ)
 function generateFAQSection() {
     const faqs = [
         { q: "What happens if teams finish with the same points?", a: "At ScoreRecap, we get this question a lot! If two or more clubs finish level on points, the Premier League uses Goal Difference (GD) to separate them. If they are still tied, the total Goals Scored becomes the deciding factor." },
@@ -21,7 +20,7 @@ function generateFAQSection() {
         { q: "How many matches are played in a full season?", a: "A complete Premier League season consists of 38 matches for each club. Since there are 20 teams, every club plays each other twice—once at their home stadium and once away." }
     ];
 
-    let faqHTML = `<div class="mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
+    let faqHTML = `<div class="mt-8 bg-slate-50 dark:bg-slate-800/40 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50 p-6 sm:p-8">
         <h2 class="text-xl font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
             <span class="text-emerald-500">❓</span> Frequently Asked Questions
         </h2>
@@ -35,10 +34,10 @@ function generateFAQSection() {
 
     faqs.forEach(faq => {
         faqHTML += `
-            <details class="group border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 [&_summary::-webkit-details-marker]:hidden">
+            <details class="group border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 [&_summary::-webkit-details-marker]:hidden">
                 <summary class="flex cursor-pointer items-center justify-between gap-1.5 p-4 text-slate-900 dark:text-slate-100 font-bold">
                     <h3 class="text-sm sm:text-base">${faq.q}</h3>
-                    <span class="shrink-0 rounded-full bg-white dark:bg-slate-700 p-1.5 text-slate-900 dark:text-white sm:p-3 group-open:-rotate-180 transition-transform duration-300 shadow-sm">
+                    <span class="shrink-0 rounded-full bg-slate-50 dark:bg-slate-800 p-1.5 text-slate-900 dark:text-white sm:p-3 group-open:-rotate-180 transition-transform duration-300 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 transition duration-300 group-open:-rotate-45" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                     </span>
                 </summary>
@@ -56,8 +55,6 @@ function generateFAQSection() {
     });
 
     faqHTML += `</div></div>`;
-    
-    // إضافة كود Schema للـ SEO
     faqHTML += `<script type="application/ld+json">${JSON.stringify(schemaData)}<\/script>`;
     
     return faqHTML;
@@ -77,12 +74,7 @@ async function fetchAndRenderStandings() {
             const leagueInfo = data.response[0].league;
             const standings = leagueInfo.standings[0];
             
-            // النص الترحيبي (SEO Text)
             let tableHTML = `
-            <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 sm:p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-sm mb-6">
-                <p>Welcome to the heartbeat of English football at <strong>ScoreRecap</strong>. Whether you're tracking a fierce title race, the battle for European spots, or the nerve-wracking relegation dogfight, our dynamically updated Premier League standings keep you right in the middle of the action. We know that every single point matters to the fans, which is why our team ensures this table reflects the latest results, goal differences, and current form. Dive into the numbers below and see exactly where your club stands this season.</p>
-            </div>
-            
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-cyan-500 to-blue-600 p-4 sm:p-5 flex items-center justify-between">
@@ -90,7 +82,7 @@ async function fetchAndRenderStandings() {
                         <div class="bg-white p-1.5 rounded-full shadow-md flex-shrink-0">
                             <img src="${leagueInfo.logo}" class="w-8 h-8 sm:w-10 sm:h-10 object-contain" alt="League Logo">
                         </div>
-                        <h1 class="text-white font-black text-lg sm:text-xl tracking-wide truncate">${leagueInfo.name}</h1>
+                        <h2 class="text-white font-black text-lg sm:text-xl tracking-wide truncate">${leagueInfo.name}</h2>
                     </div>
                     <div class="text-cyan-100 font-bold text-[10px] sm:text-sm bg-black/20 px-2 sm:px-3 py-1 rounded-full backdrop-blur-sm whitespace-nowrap flex-shrink-0">
                         Season ${leagueInfo.season}
@@ -168,9 +160,9 @@ async function fetchAndRenderStandings() {
 
             container.innerHTML = tableHTML;
         } else {
-            container.innerHTML = `<div class="bg-white dark:bg-slate-900 rounded-2xl p-10 text-center border border-slate-200 dark:border-slate-800"><p class="text-slate-500 font-bold">Standings not available at the moment.</p></div>`;
+            container.innerHTML = `<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-10 text-center border border-slate-200 dark:border-slate-800"><p class="text-slate-500 font-bold">Standings not available at the moment.</p></div>`;
         }
     } catch (error) {
-        container.innerHTML = `<div class="bg-white dark:bg-slate-900 rounded-2xl p-10 text-center border border-slate-200 dark:border-slate-800"><p class="text-red-500 font-bold">Error loading standings.</p></div>`;
+        container.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 rounded-2xl p-10 text-center border border-red-200 dark:border-red-800"><p class="text-red-500 font-bold">Error loading standings.</p></div>`;
     }
 }
