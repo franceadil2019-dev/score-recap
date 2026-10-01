@@ -22,7 +22,7 @@ function generateFAQSection() {
 
     let faqHTML = `<div class="mt-8 bg-slate-50 dark:bg-slate-800/40 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50 p-6 sm:p-8">
         <h2 class="text-xl font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-            <span class="text-emerald-500">❓</span> Frequently Asked Questions
+            <span class="text-emerald-500"> </span> Frequently Asked Questions❓
         </h2>
         <div class="space-y-4">`;
 
