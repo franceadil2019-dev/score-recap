@@ -18,7 +18,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#013D72', // اللون الأزرق الداكن
+                        primary: '#013D72', // اللون الأزرق الداكن الجديد
                         primaryHover: '#012b52'
                     },
                     fontFamily: {
@@ -78,6 +78,15 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
 
+        .static-page-content h1 { font-family: 'Montserrat', sans-serif; text-transform: uppercase; font-size: 2rem; font-weight: 900; margin-bottom: 1.5rem; color: #013D72; letter-spacing: -0.025em; }
+        .static-page-content h2 { font-family: 'Montserrat', sans-serif; text-transform: uppercase; font-size: 1.4rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
+        .dark .static-page-content h2 { color: #f8fafc; border-bottom-color: #1e293b; }
+        .static-page-content p { margin-bottom: 1.25rem; line-height: 1.8; font-size: 1.05rem; color: #475569; }
+        .dark .static-page-content p { color: #cbd5e1; }
+        .static-page-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; color: #475569; line-height: 1.8; font-size: 1.05rem; }
+        .dark .static-page-content ul { color: #cbd5e1; }
+        .static-page-content li { margin-bottom: 0.5rem; }
+
         .game-bar-container { width: 100%; height: 36px; background-color: #e2e8f0; border-radius: 18px; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .dark .game-bar-container { background-color: #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
         .game-target-zone { position: absolute; left: 40%; width: 20%; height: 100%; background-color: #013D72; opacity: 0.8; }
@@ -96,7 +105,6 @@
     <header class="bg-primary border-b-0 fixed w-full top-0 z-50 shadow-lg">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <!-- تم حذف زر الـ Refresh من هنا بناءً على طلبك -->
                 <a href="/" class="text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase" id="logo-link">SCORE<span class="text-blue-200">RECAP</span></a>
             </div>
            
@@ -282,8 +290,101 @@
 
         </section>
 
+        <!-- الصفحات الثابتة مدمجة بالكامل هنا -->
         <section id="static-pages-section" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 shadow-sm static-page-content" dir="ltr">
-            <div id="static-content-container"></div>
+            
+            <div id="page-about" class="hidden">
+                <h1>Welcome to ScoreRecap</h1>
+                <p>Football is not just a game played on a pitch for 90 minutes; it is a universal language, a weekly ritual, and a passion that unites millions of fans across the globe. At <strong>ScoreRecap</strong>, we understand that true football enthusiasts crave more than just the final whistle's scoreline. They seek the story behind the goals, the tactical shifts that changed the momentum, and the comprehensive data that paints the full picture of the match.</p>
+                <h2>The ScoreRecap Vision</h2>
+                <p>ScoreRecap was founded with a singular, ambitious vision: to build the ultimate digital companion for the modern sports fan. In an era where information is abundant but clarity is rare, we strive to cut through the noise. We transform raw match data into compelling narratives, ensuring that whether you watched the game live or missed the kickoff, you always feel like you were right there in the stands.</p>
+                <h2>What Sets Us Apart?</h2>
+                <p>We believe that delivering sports news should be as dynamic and fast-paced as the sport itself. Here is what makes the ScoreRecap experience unique:</p>
+                <ul>
+                    <li><strong>Lightning-Fast Live Scores:</strong> Our robust infrastructure is designed to deliver real-time updates without frustrating delays. When a goal hits the back of the net, your screen updates instantly.</li>
+                    <li><strong>In-Depth Match Reports:</strong> We go beyond the basic statistics. Our match summaries dive into the tactical battles, highlighting key turning points, standout performances, and strategic decisions that influenced the final outcome.</li>
+                    <li><strong>Interactive Fan Experience:</strong> Football is about opinions. We provide features that allow users to test their football knowledge, make match predictions, and engage deeply with the content.</li>
+                    <li><strong>Global Accessibility:</strong> The love for football knows no borders. That is why our platform is built to support multiple languages and interfaces, ensuring fans from different regions can enjoy our content seamlessly.</li>
+                </ul>
+                <h2>Our Commitment to Quality</h2>
+                <p>Accuracy and speed are the pillars of our platform. We continuously invest in advanced technologies and reliable data sources to ensure that every piece of information, from ball possession percentages to the exact minute of a crucial substitution, is precise and trustworthy.</p>
+                <p>Thank you for choosing ScoreRecap. Whether you are tracking a heated derby, following a title race, or analyzing a relegation battle, we are here to provide you with the ultimate football coverage. Enjoy the game!</p>
+            </div>
+
+            <div id="page-contact" class="hidden">
+                <h1>Contact Us</h1>
+                <p>We are always eager to connect with our community. Whether you have a question about our platform, want to report a technical issue, have suggestions for new features, or are interested in business partnerships, our team is ready to listen.</p>
+                <p>Your feedback is the driving force behind our continuous improvement. Every message we receive helps us refine ScoreRecap to better serve football fans around the world.</p>
+                <div class="mt-8 bg-slate-50 dark:bg-slate-800/40 p-8 rounded-2xl border border-slate-200 dark:border-slate-700/50">
+                    <h2 class="!mt-0 !mb-4 border-none !pb-0">Reach Out to Our Team</h2>
+                    <p class="font-bold mb-2 text-slate-700 dark:text-slate-300">General Inquiries & Support:</p>
+                    <a href="mailto:support@scorerecap.com" class="text-primary hover:text-primaryHover transition-colors font-black text-xl tracking-wide">support@scorerecap.com</a>
+                    <p class="mt-5 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">We strive to provide prompt and helpful responses. Please allow 24 to 48 hours for our support team to get back to you during regular business days. When reporting a technical issue, please include details about your browser and device to help us assist you faster.</p>
+                </div>
+            </div>
+
+            <div id="page-privacy" class="hidden">
+                <h1>Privacy Policy</h1>
+                <p>Welcome to <strong>ScoreRecap</strong>. Your privacy and digital security are of paramount importance to us. This comprehensive Privacy Policy document outlines the specific types of information that is collected, recorded, and utilized by ScoreRecap when you visit our website (scorerecap.com).</p>
+                <p>By accessing and using our platform, you hereby consent to our Privacy Policy and agree to its terms. If you require further clarification or have specific inquiries regarding our data handling practices, please do not hesitate to contact us.</p>
+                <h2>Information Collection and Log Files</h2>
+                <p>ScoreRecap employs a standard, industry-wide procedure of utilizing log files. These files automatically log visitors when they access websites. This is a common practice among hosting companies and forms a core part of hosting services' analytics. The data collected by these log files includes:</p>
+                <ul>
+                    <li>Internet Protocol (IP) addresses.</li>
+                    <li>Browser type and version.</li>
+                    <li>Internet Service Provider (ISP).</li>
+                    <li>Date and time stamps of your visit.</li>
+                    <li>Referring and exit pages.</li>
+                    <li>The number of clicks and interactions on the site.</li>
+                </ul>
+                <p>It is important to note that this information is completely anonymous and is <strong>not linked to any information that is personally identifiable</strong>. The primary purpose of collecting this data is to analyze user trends, administer the website efficiently, track users' movement across the platform, and gather broad demographic information to improve our services.</p>
+                <h2>Cookies and Local Storage</h2>
+                <p>To enhance and personalize your browsing experience, ScoreRecap utilizes "cookies" and browser Local Storage technologies. These tools are used to store non-sensitive information regarding visitors' preferences. For example, we use Local Storage to remember your preferred language selection, your choice between Dark and Light mode themes, and any match predictions you may have made.</p>
+                <p>This localized data allows us to optimize your user experience by dynamically customizing our web page content based on your previous interactions, ensuring that the site feels tailored to your specific preferences upon every visit.</p>
+                <h2>Google DoubleClick DART Cookie and Advertising</h2>
+                <p>ScoreRecap partners with third-party vendors, including Google, to display advertisements that keep our service free for users. Google utilizes cookies, specifically known as DART cookies, to serve relevant ads to our site visitors based on their previous visits to ScoreRecap and other websites across the internet.</p>
+                <p>Visitors have the right to decline the use of DART cookies. You can opt-out of personalized advertising by visiting the Google Ad and Content Network Privacy Policy at the following URL: <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline font-bold">Google Ads Policy</a>.</p>
+                <h2>Third-Party Advertising Partners</h2>
+                <p>Some of the advertisers on our site may use cookies and web beacons. Our advertising partners, such as Google AdSense, have their own detailed Privacy Policies regarding their handling of user data. These third-party ad servers or ad networks use technologies like JavaScript, cookies, or Web Beacons within their respective advertisements and links that appear on ScoreRecap.</p>
+                <p>These technologies are sent directly to your browser, and they automatically receive your IP address when this occurs. They are utilized to measure the effectiveness and reach of their advertising campaigns and to personalize the advertising content you see on various websites. <strong>ScoreRecap has no access to, nor control over, these cookies used by third-party advertisers.</strong></p>
+                <h2>Third-Party Privacy Policies & Opting Out</h2>
+                <p>ScoreRecap's Privacy Policy does not apply to other advertisers or external websites. Therefore, we strongly advise you to consult the respective Privacy Policies of these third-party ad servers for more detailed information regarding their practices and instructions on how to opt-out of certain tracking options.</p>
+                <p>You maintain full control over your browser settings and can choose to disable cookies entirely through your individual browser options. For detailed guidance on cookie management with specific web browsers, please refer to the browsers' official websites.</p>
+                <h2>Children's Privacy Protection (COPPA)</h2>
+                <p>Protecting the privacy of young children online is a core priority for us. We actively encourage parents and guardians to observe, participate in, and monitor their children's online activities.</p>
+                <p>ScoreRecap does not knowingly collect any Personally Identifiable Information (PII) from children under the age of 13. If you believe that your child has provided such information on our website, we strongly urge you to contact us immediately. We will make our best efforts to promptly locate and securely remove such information from our records.</p>
+                <h2>Scope of this Policy</h2>
+                <p>This Privacy Policy applies strictly to our online activities and is valid exclusively for visitors to our website with regards to the information that they share and/or collect in ScoreRecap. This policy is not applicable to any information collected offline or via channels other than this specific website.</p>
+            </div>
+
+            <div id="page-terms" class="hidden">
+                <h1>Terms of Service</h1>
+                <p>Welcome to <strong>ScoreRecap</strong>. By accessing, browsing, or using our website (scorerecap.com), you acknowledge that you have read, understood, and agree to be bound by the following Terms of Service. If you do not agree with any part of these terms, please discontinue your use of our platform immediately.</p>
+                <h2>1. Nature of the Service and Content</h2>
+                <p>ScoreRecap is a digital sports media platform dedicated to providing football fans with live scores, match statistics, and tactical analysis. Our content includes data sourced from third-party providers and narratives generated through advanced analytical systems. While we are passionate about football, our platform is designed strictly for informational and entertainment purposes.</p>
+                <h2>2. Disclaimer of Accuracy and Betting</h2>
+                <p>We strive to ensure that all live scores, match events, and statistics displayed on ScoreRecap are as accurate and timely as possible. However, due to the fast-paced nature of live sports and reliance on external data feeds, <strong>we do not guarantee the absolute accuracy, completeness, or real-time delivery of any information</strong>.</p>
+                <p>Crucially, ScoreRecap is <strong>not a gambling or betting platform</strong>. The data, predictions, and tactical analyses provided on this site must not be relied upon for making financial, betting, or wagering decisions. We strictly disclaim any liability for financial losses or damages incurred by users who use our content for such purposes.</p>
+                <h2>3. Intellectual Property and Copyright</h2>
+                <p>All original content produced by ScoreRecap—including but not limited to tactical match recaps, website design, layout, graphics, and interactive features (such as the Game Zone and Fan Voting)—is the exclusive property of ScoreRecap and is protected by international copyright laws.</p>
+                <p><strong>Third-Party Assets:</strong> Team names, club logos, player images, and league emblems displayed on our platform are the intellectual property of their respective owners. They are used on ScoreRecap solely for identification and editorial purposes under the principles of "Fair Use." ScoreRecap claims no ownership over these specific trademarks.</p>
+                <h2>4. Acceptable Use Policy</h2>
+                <p>As a user of ScoreRecap, you agree to use our platform responsibly. You are strictly prohibited from:</p>
+                <ul>
+                    <li>Using automated scripts, bots, or scrapers to extract data, scores, or articles from our website.</li>
+                    <li>Attempting to interfere with our servers, APIs, or the overall security of the platform.</li>
+                    <li>Reproducing, republishing, or distributing our exclusive tactical recaps without explicit written permission and proper attribution.</li>
+                </ul>
+                <p>Violation of these rules may result in immediate blocking of your IP address and potential legal action.</p>
+                <h2>5. External Links and Third-Party Advertisements</h2>
+                <p>To keep ScoreRecap free for our users, our website features third-party advertisements (such as Google AdSense) and may contain links to external websites. We do not endorse, control, or take responsibility for the content, privacy policies, or practices of these external sites. Clicking on any advertisement or external link is done at your own risk.</p>
+                <h2>6. Interactive Features and User Data</h2>
+                <p>Features such as the "Fan Prediction" and mini-games utilize your browser's Local Storage to save your preferences and prevent duplicate voting. By using these features, you consent to this localized data storage. Please refer to our <a href="/privacy" class="text-primary font-bold hover:underline static-link">Privacy Policy</a> for detailed information on how we handle user data and cookies.</p>
+                <h2>7. Modifications to the Terms</h2>
+                <p>ScoreRecap reserves the right to update, modify, or replace these Terms of Service at any time without prior notice. It is your responsibility to check this page periodically for changes. Your continued use of the website following the posting of any changes constitutes acceptance of those modifications.</p>
+                <h2>8. Contact Information</h2>
+                <p>If you have any questions, concerns, or require clarification regarding these Terms of Service, please do not hesitate to reach out to us. You can contact our support team directly via our <a href="/contact" class="text-primary font-bold hover:underline static-link">Contact Us</a> page.</p>
+            </div>
         </section>
 
     </main>
@@ -726,6 +827,18 @@
             
             const scorersPage = document.getElementById('page-topscorers');
             if (scorersPage) scorersPage.classList.add('hidden');
+            
+            const termsPage = document.getElementById('page-terms');
+            if (termsPage) termsPage.classList.add('hidden');
+            
+            const aboutPage = document.getElementById('page-about');
+            if (aboutPage) aboutPage.classList.add('hidden');
+            
+            const contactPage = document.getElementById('page-contact');
+            if (contactPage) contactPage.classList.add('hidden');
+            
+            const privacyPage = document.getElementById('page-privacy');
+            if (privacyPage) privacyPage.classList.add('hidden');
 
             if (path.startsWith('/match/')) {
                 document.getElementById('home-section').classList.remove('hidden');
@@ -752,12 +865,25 @@
                 startJuggle();
                 startFlickGK();
             }
-            else if (['/about', '/contact', '/privacy', '/terms'].includes(path)) {
+            else if (path === '/about') {
+                document.title = "About Us | ScoreRecap";
                 document.getElementById('static-pages-section').classList.remove('hidden');
-                const pageName = path.replace('/', '');
-                if (typeof loadStaticPage === 'function') loadStaticPage(pageName);
-                const titles = { about: "About Us", contact: "Contact Us", privacy: "Privacy Policy", terms: "Terms of Service" };
-                document.title = `${titles[pageName]} | ScoreRecap`;
+                if (aboutPage) aboutPage.classList.remove('hidden');
+            }
+            else if (path === '/contact') {
+                document.title = "Contact Us | ScoreRecap";
+                document.getElementById('static-pages-section').classList.remove('hidden');
+                if (contactPage) contactPage.classList.remove('hidden');
+            }
+            else if (path === '/privacy') {
+                document.title = "Privacy Policy | ScoreRecap";
+                document.getElementById('static-pages-section').classList.remove('hidden');
+                if (privacyPage) privacyPage.classList.remove('hidden');
+            }
+            else if (path === '/terms') {
+                document.title = "Terms of Service | ScoreRecap";
+                document.getElementById('static-pages-section').classList.remove('hidden');
+                if (termsPage) termsPage.classList.remove('hidden');
             }
             else if (path === '/standings') {
                 document.title = "Premier League Standings | ScoreRecap";
@@ -1241,7 +1367,6 @@
             window.addEventListener('popstate', handleRoute);
         });
     </script>
-    <script src="/pages.js"></script>
     <script src="/standings.js"></script>
     <script src="/topscorers.js"></script>
     <script src="/voting.js"></script>
