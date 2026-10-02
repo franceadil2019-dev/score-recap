@@ -1,6 +1,5 @@
-// topscorers.js - ملف جلب ورسم بيانات الهدافين مع نصوص الـ SEO والأسئلة الشائعة
+// topscorers.js - ملف جلب ورسم بيانات الهدافين مع الأسئلة الشائعة
 
-// دالة ذكية لتحويل اسم البلد إلى كود العلم
 function getCountryCode(countryName) {
     const map = {
         "England": "gb-eng", "Norway": "no", "Brazil": "br", "France": "fr", "Egypt": "eg",
@@ -16,7 +15,6 @@ function getCountryCode(countryName) {
     return map[countryName] || null;
 }
 
-// دالة مساعدة لإنشاء قسم الأسئلة الشائعة (FAQ) لصفحة الهدافين
 function generateTopScorersFAQ() {
     const faqs = [
         { q: "What happens if two players finish with the same number of goals?", a: "In the Premier League, if two or more players finish the season with the exact same number of goals, the Golden Boot award is shared among them. Unlike some other tournaments, assists or minutes played are not used as tiebreakers." },
@@ -26,9 +24,9 @@ function generateTopScorersFAQ() {
         { q: "Do goals scored in cup competitions count here?", a: "No. This specific table only tracks goals scored in official English Premier League matches. Goals scored in the FA Cup, Carabao Cup, or European competitions (like the Champions League) are tracked separately." }
     ];
 
-    let faqHTML = `<div class="mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
+    let faqHTML = `<div class="mt-8 bg-slate-50 dark:bg-slate-800/40 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50 p-6 sm:p-8">
         <h2 class="text-xl font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-            <span class="text-emerald-500"> </span> Frequently Asked Questions❓
+            <span class="text-emerald-500">❓</span> Frequently Asked Questions
         </h2>
         <div class="space-y-4">`;
 
@@ -40,10 +38,10 @@ function generateTopScorersFAQ() {
 
     faqs.forEach(faq => {
         faqHTML += `
-            <details class="group border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 [&_summary::-webkit-details-marker]:hidden">
+            <details class="group border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 [&_summary::-webkit-details-marker]:hidden">
                 <summary class="flex cursor-pointer items-center justify-between gap-1.5 p-4 text-slate-900 dark:text-slate-100 font-bold">
                     <h3 class="text-sm sm:text-base">${faq.q}</h3>
-                    <span class="shrink-0 rounded-full bg-white dark:bg-slate-700 p-1.5 text-slate-900 dark:text-white sm:p-3 group-open:-rotate-180 transition-transform duration-300 shadow-sm">
+                    <span class="shrink-0 rounded-full bg-slate-50 dark:bg-slate-800 p-1.5 text-slate-900 dark:text-white sm:p-3 group-open:-rotate-180 transition-transform duration-300 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 transition duration-300 group-open:-rotate-45" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                     </span>
                 </summary>
@@ -61,8 +59,6 @@ function generateTopScorersFAQ() {
     });
 
     faqHTML += `</div></div>`;
-    
-    // إضافة كود Schema للـ SEO
     faqHTML += `<script type="application/ld+json">${JSON.stringify(schemaData)}<\/script>`;
     
     return faqHTML;
@@ -88,12 +84,8 @@ async function fetchAndRenderTopScorers() {
 
             const topPlayers = data.response.slice(0, 15);
             
-            // إضافة النص الترحيبي (SEO Text) فوق الجدول بناءً على اقتراحك
+            // تم حذف المربع الذي يحتوي على النص المكرر من هنا
             let listHTML = `
-            <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 sm:p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-sm mb-6">
-                <p>Welcome to the official <strong>ScoreRecap</strong> Premier League top scorers tracker. Explore the complete Golden Boot rankings, featuring live goal stats, assists, and overall performance for the top attackers in English football this season.</p>
-            </div>
-
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <!-- Header -->
                 <div class="flex items-center p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-800 text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -127,7 +119,7 @@ async function fetchAndRenderTopScorers() {
                         <!-- Player Info -->
                         <div class="flex items-center gap-3 sm:gap-5 w-1/2 sm:w-2/5">
                             <span class="font-black w-4 text-center ${rankClass}">${index + 1}</span>
-                            <img src="${player.photo}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-slate-100 dark:border-slate-700 shadow-sm group-hover:border-emerald-500 transition-colors bg-slate-100 dark:bg-slate-800" alt="${player.name}">
+                            <img src="${player.photo}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-slate-100 dark:border-slate-700 shadow-sm group-hover:border-primary transition-colors bg-slate-100 dark:bg-slate-800" alt="${player.name}">
                             <div class="flex flex-col">
                                 <span class="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 truncate max-w-[100px] sm:max-w-[180px]">${player.name}</span>
                                 <span class="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">${stats.games.position}</span>
@@ -151,7 +143,7 @@ async function fetchAndRenderTopScorers() {
                             <div class="sm:hidden flex items-center mr-2" title="${stats.team.name}">
                                 <img src="${stats.team.logo}" class="w-5 h-5 object-contain">
                             </div>
-                            <span class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 w-8 text-right pr-2">${stats.goals.total}</span>
+                            <span class="text-lg sm:text-xl font-black text-primary w-8 text-right pr-2">${stats.goals.total}</span>
                         </div>
 
                     </div>
