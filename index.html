@@ -1271,11 +1271,11 @@
         };
 
         document.addEventListener("DOMContentLoaded", () => {
-            // 1. تفعيل الأزرار أولاً لضمان عمل القائمة المنسدلة فوراً
-            document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
-            document.getElementById('btn-refresh').addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
+            // 1. تفعيل الأزرار أولاً مع حماية Optional Chaining لمنع الأخطاء
+            document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme);
+            document.getElementById('btn-refresh')?.addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
             
-            document.getElementById('btn-lang-dropdown').addEventListener('click', (e) => { 
+            document.getElementById('btn-lang-dropdown')?.addEventListener('click', (e) => { 
                 e.preventDefault(); 
                 e.stopPropagation(); 
                 toggleDropdown('lang-options-menu'); 
@@ -1290,7 +1290,7 @@
                 });
             });
 
-            document.getElementById('btn-league-dropdown').addEventListener('click', (e) => { 
+            document.getElementById('btn-league-dropdown')?.addEventListener('click', (e) => { 
                 e.preventDefault();
                 e.stopPropagation(); 
                 toggleDropdown('league-options-menu'); 
@@ -1314,7 +1314,7 @@
                 }
             });
 
-            document.getElementById('btn-live-filter').addEventListener('click', (e) => {
+            document.getElementById('btn-live-filter')?.addEventListener('click', (e) => {
                 showLiveOnly = !showLiveOnly;
                 const dot = document.getElementById('live-filter-dot');
                 if (showLiveOnly) {
@@ -1352,9 +1352,9 @@
                 }); 
             }
 
-            document.getElementById('api-scores-container').addEventListener('change', (e) => { if (e.target.classList.contains('vote-select')) { const fId = e.target.getAttribute('data-fixture-id'); const vote = e.target.value; localStorage.setItem(`vote_${fId}`, vote); showToast((translations[currentLang] || translations['en']).voteSaved, 'success'); } });
+            document.getElementById('api-scores-container')?.addEventListener('change', (e) => { if (e.target.classList.contains('vote-select')) { const fId = e.target.getAttribute('data-fixture-id'); const vote = e.target.value; localStorage.setItem(`vote_${fId}`, vote); showToast((translations[currentLang] || translations['en']).voteSaved, 'success'); } });
 
-            document.getElementById('api-scores-container').addEventListener('click', (e) => {
+            document.getElementById('api-scores-container')?.addEventListener('click', (e) => {
                 if (e.target.closest('.share-btn')) {
                     const btn = e.target.closest('.share-btn');
                     const shareTitle = btn.getAttribute('data-title');
@@ -1395,7 +1395,7 @@
             const logoLink = document.getElementById('logo-link'); if(logoLink) { logoLink.addEventListener('click', (e) => { e.preventDefault(); history.pushState({ path: '/' }, '', '/'); handleRoute(); }); }
             window.addEventListener('popstate', handleRoute);
 
-            // 2. تشغيل الوظائف الأساسية بعد تفعيل الأزرار
+            // 2. تشغيل الوظائف الأساسية
             initTheme();
             initLanguage();
             startLocalClock();
