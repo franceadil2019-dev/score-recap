@@ -47,10 +47,10 @@ export async function onRequest(context) {
         if (!articleHTML && match) {
             // التحقق مما إذا كان الدوري ضمن القائمة المسموحة
             if (!ALLOWED_LEAGUES.includes(String(match.league.id))) return redirectToHome();
-            
+           
             const status = match.fixture.status.short;
             if (status !== 'FT' && status !== 'AET' && status !== 'PEN') return redirectToHome();
-            
+           
             if (new Date(match.fixture.date) > new Date()) return redirectToHome();
 
             if (env.GEMINI_API_KEY) {
@@ -136,12 +136,12 @@ export async function onRequest(context) {
                         generationConfig: { temperature: 0.35, topP: 0.9 }
                     })
                 });
-                
+               
                 const aiData = await aiRes.json();
                 if (aiRes.ok && aiData.candidates) {
                     let rawHTML = aiData.candidates[0].content.parts[0].text;
                     articleHTML = rawHTML.replace(/^```html\s*/i, '').replace(/\s*```$/i, '').trim();
-                    
+                   
                     if (env.SPORTS_KV) {
                         waitUntil(env.SPORTS_KV.put(`recap_v2_${fixtureId}_en`, articleHTML));
                         waitUntil((async () => {
@@ -223,7 +223,6 @@ export async function onRequest(context) {
         const stadiumImage = stadiumImages[randomImageIndex];
         const fallbackImage = "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80";
 
-        // --- بداية إضافة Schema Markup ---
         const schemaMarkup = {
             "@context": "https://schema.org",
             "@type": "SportsArticle",
@@ -251,7 +250,6 @@ export async function onRequest(context) {
             }
         };
         const schemaJson = JSON.stringify(schemaMarkup);
-        // --- نهاية إضافة Schema Markup ---
 
         const html = `<!DOCTYPE html>
 <html lang="en" dir="ltr" class="dark">
@@ -274,31 +272,139 @@ export async function onRequest(context) {
         ${schemaJson}
     </script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <script> tailwind.config = { darkMode: 'class', } </script>
+    <script> 
+        tailwind.config = { 
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#013D72',
+                        primaryHover: '#012b52'
+                    },
+                    fontFamily: {
+                        heading: ['Montserrat', 'sans-serif'],
+                        body: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        } 
+    </script>
    
     <style>
-        .ai-article-content h2 { font-size: 1.5rem; font-weight: 900; margin-top: 1.5rem; margin-bottom: 1rem; color: #60a5fa; }
-        .ai-article-content h3 { font-size: 1.25rem; font-weight: 800; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #cbd5e1; }
-        .ai-article-content p { margin-bottom: 1.25rem; line-height: 1.8; font-size: 1.05rem; color: #e2e8f0; }
-        .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; font-size: 1.05rem; color: #e2e8f0; }
+        .custom-dropdown { position: relative; display: inline-block; }
+        .drop-btn { background-color: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; border-radius: 0.75rem; padding: 0.6rem 1.2rem; font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; cursor: pointer; transition: all 0.2s; font-weight: 600; width: 100%; justify-content: space-between; }
+        .dark .drop-btn { background-color: #0f172a; border: 1px solid #334155; color: white; }
+        .drop-btn:hover, .drop-btn[aria-expanded="true"] { border-color: #013D72; }
+        .drop-options { display: none; position: absolute; left: 0; top: 110%; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 0.75rem; overflow: hidden; z-index: 9999; min-width: 100%; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); max-height: 350px; overflow-y: auto; }
+        .dark .drop-options { background-color: #0f172a; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7); }
+        .drop-options.show { display: block !important; }
+        .drop-opt { width: 100%; padding: 0.6rem 1.2rem; text-align: left; display: flex; align-items: center; gap: 0.6rem; color: #334155; font-size: 0.8rem; transition: background 0.2s; font-weight: 500; border: none; background: none; cursor: pointer; }
+        .dark .drop-opt { color: #cbd5e1; }
+        .drop-opt:hover { background-color: #f1f5f9; color: #0f172a; }
+        .dark .drop-opt:hover { background-color: #1e293b; color: white; }
+        html[dir="rtl"] .drop-options { left: auto; right: 0; }
+        html[dir="rtl"] .drop-opt { text-align: right; }
+        #lang-options-menu { left: auto !important; right: 0 !important; }
+        html[dir="rtl"] #lang-options-menu { right: auto !important; left: 0 !important; }
+
+        .ai-article-content h2 { font-family: 'Montserrat', sans-serif; text-transform: uppercase; font-size: 1.5rem; font-weight: 900; margin-top: 1.5rem; margin-bottom: 1rem; color: #013D72; }
+        .dark .ai-article-content h2 { color: #60a5fa; }
+        .ai-article-content h3 { font-family: 'Montserrat', sans-serif; text-transform: uppercase; font-size: 1.25rem; font-weight: 800; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #334155; }
+        .dark .ai-article-content h3 { color: #cbd5e1; }
+        .ai-article-content p { margin-bottom: 1.25rem; line-height: 1.8; font-size: 1.05rem; color: #475569; }
+        .dark .ai-article-content p { color: #e2e8f0; }
+        .ai-article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; font-size: 1.05rem; color: #475569; }
+        .dark .ai-article-content ul { color: #e2e8f0; }
         .ai-article-content li { margin-bottom: 0.5rem; }
-        .ai-article-content strong { color: #10b981; }
+        .ai-article-content strong { color: #013D72; }
+        .dark .ai-article-content strong { color: #10b981; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+<body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-body flex flex-col min-h-screen transition-colors duration-200 pt-16">
    
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="/" class="text-2xl font-black text-emerald-500 tracking-tight">SCORE<span class="text-white">RECAP</span></a>
+    <!-- Header مطابق تماماً للصفحة الرئيسية -->
+    <header class="bg-primary border-b-0 fixed w-full top-0 z-50 shadow-lg">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="/" class="text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase">SCORE<span class="text-blue-200">RECAP</span></a>
+            </div>
+           
+            <div class="flex items-center gap-2 md:gap-3">
+                <div class="hidden md:flex items-center gap-3 mr-2">
+                    <a href="/recaps" class="flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        <span class="font-heading uppercase tracking-wide text-xs">Recaps</span>
+                    </a>
+                    <a href="/standings" class="flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        <span class="font-heading uppercase tracking-wide text-xs">Standings</span>
+                    </a>
+                    <a href="/topscorers" class="flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                        <span class="font-heading uppercase tracking-wide text-xs">Top Scorers</span>
+                    </a>
+                </div>
+
+                <button id="btn-theme-toggle" class="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white" aria-label="Toggle dark mode">
+                    <svg id="theme-icon-sun" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
+                    <svg id="theme-icon-moon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                </button>
+                
+                <div class="custom-dropdown w-[100px] md:w-40">
+                    <button id="btn-lang-dropdown" class="drop-btn px-2 md:px-4" aria-haspopup="true" aria-expanded="false" aria-controls="lang-options-menu">
+                        <div class="flex items-center gap-2">
+                            <img id="current-lang-flag" src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm shadow-sm" alt="">
+                            <span id="current-lang-text" class="truncate hidden md:inline">English</span>
+                            <span id="current-lang-code" class="truncate md:hidden text-xs font-bold uppercase">EN</span>
+                        </div>
+                        <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="lang-options-menu" class="drop-options w-40">
+                        <button class="drop-opt lang-opt" data-lang="en" data-flag="https://flagcdn.com/16x12/us.png" data-name="English" data-code="EN"><img src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm" alt=""> English</button>
+                        <button class="drop-opt lang-opt" data-lang="ar" data-flag="https://flagcdn.com/16x12/ma.png" data-name="العربية" data-code="AR"><img src="https://flagcdn.com/16x12/ma.png" class="w-4 h-3 object-cover rounded-sm" alt=""> العربية</button>
+                        <button class="drop-opt lang-opt" data-lang="fr" data-flag="https://flagcdn.com/16x12/fr.png" data-name="Français" data-code="FR"><img src="https://flagcdn.com/16x12/fr.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Français</button>
+                        <button class="drop-opt lang-opt" data-lang="es" data-flag="https://flagcdn.com/16x12/es.png" data-name="Español" data-code="ES"><img src="https://flagcdn.com/16x12/es.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Español</button>
+                        <button class="drop-opt lang-opt" data-lang="pt" data-flag="https://flagcdn.com/16x12/pt.png" data-name="Português" data-code="PT"><img src="https://flagcdn.com/16x12/pt.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Português</button>
+                        <button class="drop-opt lang-opt" data-lang="sv" data-flag="https://flagcdn.com/16x12/se.png" data-name="Svenska" data-code="SV"><img src="https://flagcdn.com/16x12/se.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Svenska</button>
+                        <button class="drop-opt lang-opt" data-lang="no" data-flag="https://flagcdn.com/16x12/no.png" data-name="Norsk" data-code="NO"><img src="https://flagcdn.com/16x12/no.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Norsk</button>
+                        <button class="drop-opt lang-opt" data-lang="da" data-flag="https://flagcdn.com/16x12/dk.png" data-name="Dansk" data-code="DA"><img src="https://flagcdn.com/16x12/dk.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Dansk</button>
+                    </div>
+                </div>
+
+                <button id="btn-mobile-menu" class="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-nav-menu" class="hidden md:hidden bg-primary border-t border-white/10 absolute w-full left-0 top-16 shadow-2xl z-40">
+            <div class="flex flex-col p-4 gap-2">
+                <a href="/recaps" class="flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
+                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                    <span class="font-heading uppercase tracking-wide">Recaps</span>
+                </a>
+                <a href="/standings" class="flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
+                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <span class="font-heading uppercase tracking-wide">Standings</span>
+                </a>
+                <a href="/topscorers" class="flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
+                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                    <span class="font-heading uppercase tracking-wide">Top Scorers</span>
+                </a>
+            </div>
         </div>
     </header>
 
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
-        <article class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
             <div class="relative w-full h-64 sm:h-72 bg-slate-900 flex items-center justify-center overflow-hidden">
                
-                <img src="${stadiumImage}" onerror="this.onerror=null;this.src='${fallbackImage}';" class="absolute inset-0 w-full h-full object-cover" alt="Stadium atmosphere for ${homeName} vs ${awayName} match">
+                <img src="${stadiumImage}" onerror="this.onerror=null;this.src='${fallbackImage}';" class="absolute inset-0 w-full h-full object-cover opacity-60" alt="Stadium atmosphere for ${homeName} vs ${awayName} match">
                
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
@@ -320,14 +426,14 @@ export async function onRequest(context) {
             </div>
 
             <div class="p-6 sm:p-10">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-200 dark:border-slate-800 pb-4">
                     <div class="flex items-center gap-3">
-                        <div class="bg-slate-800 p-2.5 rounded-xl text-emerald-400 shadow-inner">
+                        <div class="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl text-primary dark:text-emerald-400 shadow-inner">
                             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                         </div>
-                        <h1 class="text-base sm:text-lg font-black text-slate-200 uppercase tracking-widest">Tactical Analysis</h1>
+                        <h1 class="text-base sm:text-lg font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">Tactical Analysis</h1>
                     </div>
-                    <div class="flex items-center gap-2 text-slate-400 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                    <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         <span class="text-xs font-bold tracking-wide">${matchDateStr}</span>
                     </div>
@@ -340,9 +446,92 @@ export async function onRequest(context) {
         </article>
     </main>
 
-    <footer class="bg-slate-900 border-t border-slate-800 text-center py-6 text-slate-500 text-sm mt-auto">
-        <p>&copy; 2026 ScoreRecap. All rights reserved.</p>
+    <footer class="bg-primary text-white py-6 mt-auto">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-blue-100">
+            <p>&copy; 2026 ScoreRecap. All rights reserved.</p>
+        </div>
     </footer>
+
+    <script>
+        // سكربت خفيف جداً لصفحة المقال للتحكم في القوائم المنسدلة والوضع المظلم
+        document.addEventListener("DOMContentLoaded", () => {
+            // تفعيل زر الهامبرغر للموبايل
+            document.getElementById('btn-mobile-menu')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('mobile-nav-menu')?.classList.toggle('hidden');
+            });
+
+            // تفعيل قائمة اللغات
+            document.getElementById('btn-lang-dropdown')?.addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                document.getElementById('lang-options-menu')?.classList.toggle('show');
+            });
+
+            // إغلاق القوائم عند الضغط خارجها
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.custom-dropdown')) {
+                    document.getElementById('lang-options-menu')?.classList.remove('show');
+                }
+                if (!e.target.closest('#mobile-nav-menu') && !e.target.closest('#btn-mobile-menu')) {
+                    document.getElementById('mobile-nav-menu')?.classList.add('hidden');
+                }
+            });
+
+            // عند اختيار لغة، يتم حفظها والعودة للرئيسية لأن المقال يولد من السيرفر
+            document.querySelectorAll('.lang-opt').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    localStorage.setItem('site_lang', btn.getAttribute('data-lang'));
+                    window.location.href = '/';
+                });
+            });
+
+            // تفعيل الوضع المظلم
+            const htmlTag = document.documentElement;
+            const sunIcon = document.getElementById('theme-icon-sun');
+            const moonIcon = document.getElementById('theme-icon-moon');
+
+            function applyTheme(isDark) {
+                if(isDark) {
+                    htmlTag.classList.add('dark');
+                    sunIcon?.classList.remove('hidden');
+                    moonIcon?.classList.add('hidden');
+                } else {
+                    htmlTag.classList.remove('dark');
+                    sunIcon?.classList.add('hidden');
+                    moonIcon?.classList.remove('hidden');
+                }
+            }
+
+            // قراءة الثيم المحفوظ
+            const savedTheme = localStorage.getItem('app_theme');
+            if (savedTheme === 'dark' || (!savedTheme && htmlTag.classList.contains('dark'))) {
+                applyTheme(true);
+            } else {
+                applyTheme(false);
+            }
+
+            // زر تغيير الثيم
+            document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
+                const isDark = !htmlTag.classList.contains('dark');
+                localStorage.setItem('app_theme', isDark ? 'dark' : 'light');
+                applyTheme(isDark);
+            });
+
+            // قراءة اللغة المحفوظة لتحديث العلم في الأعلى
+            const savedLang = localStorage.getItem('site_lang') || 'en';
+            const langBtn = document.querySelector('.lang-opt[data-lang="' + savedLang + '"]');
+            if(langBtn) {
+                const flagEl = document.getElementById('current-lang-flag');
+                const textEl = document.getElementById('current-lang-text');
+                const codeEl = document.getElementById('current-lang-code');
+                if(flagEl) flagEl.src = langBtn.getAttribute('data-flag');
+                if(textEl) textEl.innerText = langBtn.getAttribute('data-name');
+                if(codeEl) codeEl.innerText = langBtn.getAttribute('data-code');
+                if(savedLang === 'ar') htmlTag.dir = 'rtl';
+            }
+        });
+    </script>
 </body>
 </html>`;
 
