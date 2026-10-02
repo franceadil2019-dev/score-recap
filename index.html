@@ -18,7 +18,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#013D72', // اللون الأزرق الداكن الجديد
+                        primary: '#013D72', // اللون الأزرق الداكن
                         primaryHover: '#012b52'
                     },
                     fontFamily: {
@@ -96,10 +96,8 @@
     <header class="bg-primary border-b-0 fixed w-full top-0 z-50 shadow-lg">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
+                <!-- تم حذف زر الـ Refresh من هنا بناءً على طلبك -->
                 <a href="/" class="text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase" id="logo-link">SCORE<span class="text-blue-200">RECAP</span></a>
-                <button id="btn-refresh" class="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all active:scale-95" aria-label="Refresh matches">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                </button>
             </div>
            
             <div class="flex items-center gap-2 md:gap-3">
@@ -204,7 +202,6 @@
             <div id="api-scores-container" class="space-y-4 min-h-[500px]" aria-live="polite"></div>
         </section>
 
-        <!-- قسم الترتيب مع العنوان والفقرة المدمجة -->
         <section id="page-standings" class="hidden space-y-6 lg:col-span-2 w-full overflow-hidden" dir="ltr">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm max-w-4xl mx-auto">
                 <h1 class="text-2xl sm:text-3xl font-heading font-black text-primary mb-4 uppercase tracking-wide">
@@ -217,12 +214,15 @@
             </div>
         </section>
 
-        <!-- قسم الهدافين مع العنوان والفقرة المدمجة -->
         <section id="page-topscorers" class="hidden space-y-6 lg:col-span-2 w-full" dir="ltr">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm max-w-4xl mx-auto">
-                <h1 class="text-2xl sm:text-3xl font-heading font-black text-primary mb-4 uppercase tracking-wide">
-                    Premier League Top Scorers
-                </h1>
+                <div class="flex items-center justify-between mb-4">
+                    <h1 class="text-2xl sm:text-3xl font-heading font-black text-primary uppercase tracking-wide flex items-center gap-2">
+                        🔥 Premier League Top Scorers
+                    </h1>
+                    <div id="topscorers-season-badge" class="hidden text-primary font-bold text-[10px] sm:text-sm bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800/30 whitespace-nowrap">
+                    </div>
+                </div>
                 <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed mb-8 font-medium">
                     Welcome to the official ScoreRecap Premier League top scorers tracker. Explore the complete Golden Boot rankings, featuring live goal stats, assists, and overall performance for the top attackers in English football this season.
                 </p>
@@ -393,6 +393,108 @@
                 });
             }, 60000);
         }
+
+        async function fetchReportsPage() {
+            const container = document.getElementById('reports-page-container');
+            const currentT = translations[currentLang] || translations['en'];
+            if(!container) return;
+           
+            if (allReportsCachedData.length === 0) {
+                container.innerHTML = `<div class="col-span-full flex justify-center py-10"><div class="spinner"></div></div>`;
+                try {
+                    const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/latest-reports?t=${new Date().getTime()}`, { headers: { "x-action": "latest-reports" }, timeout: 15000 });
+                    const reports = await res.json();
+                   
+                    if (reports.error) {
+                        container.innerHTML = `<p class="col-span-full text-sm text-red-500 text-center font-bold py-10">⚠️ ${reports.error}</p>`;
+                        return;
+                    }
+                    allReportsCachedData = reports;
+                } catch (err) {
+                    container.innerHTML = `<p class="col-span-full text-sm text-red-500 text-center py-10">Failed to load reports. Please try again later.</p>`;
+                    return;
+                }
+            }
+            currentReportPage = 1;
+            renderReports();
+        }
+
+        function renderReports() {
+            const container = document.getElementById('reports-page-container');
+            const currentT = translations[currentLang] || translations['en'];
+
+            if (!allReportsCachedData || allReportsCachedData.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-sm text-slate-500 text-center italic py-10" id="txt-no-reports">${currentT.noReports}</p>`;
+                return;
+            }
+
+            const totalPages = Math.ceil(allReportsCachedData.length / REPORTS_PER_PAGE);
+            const startIndex = (currentReportPage - 1) * REPORTS_PER_PAGE;
+            const endIndex = startIndex + REPORTS_PER_PAGE;
+            const itemsToShow = allReportsCachedData.slice(startIndex, endIndex);
+
+            let html = '';
+            itemsToShow.forEach(r => {
+                const names = r.title.split(' vs ');
+                const homeName = names[0] || 'Home';
+                const awayName = names[1] || 'Away';
+               
+                html += `
+                <a href="${r.url}" class="group block bg-white dark:bg-slate-800 rounded-2xl overflow-hidden transition-all duration-500 shadow-lg hover:shadow-2xl hover:-translate-y-3 border border-transparent hover:border-primary/50 relative">
+                    <div class="p-6 flex items-center justify-between bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-b border-slate-100 dark:border-slate-700/50 relative z-10">
+                        <div class="flex flex-col items-center gap-3 w-[40%]">
+                            <img src="${r.logoHome}" class="w-14 h-14 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500">
+                            <span class="text-xs font-heading font-black text-slate-700 dark:text-slate-200 text-center line-clamp-1 uppercase">${homeName}</span>
+                        </div>
+                        <div class="w-[20%] text-center flex flex-col items-center justify-center">
+                            <span class="text-[10px] font-black text-white bg-slate-300 dark:bg-slate-700 px-3 py-1 rounded-full uppercase tracking-widest group-hover:bg-primary transition-colors duration-500 shadow-inner">VS</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-3 w-[40%]">
+                            <img src="${r.logoAway}" class="w-14 h-14 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500">
+                            <span class="text-xs font-heading font-black text-slate-700 dark:text-slate-200 text-center line-clamp-1 uppercase">${awayName}</span>
+                        </div>
+                    </div>
+                    <div class="p-6 relative z-10 bg-white dark:bg-slate-800">
+                        <span class="text-[10px] font-black text-primary uppercase tracking-widest mb-2 block flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Tactical Analysis
+                        </span>
+                        <h3 class="text-sm sm:text-base font-body font-bold text-slate-800 dark:text-slate-100 line-clamp-2 leading-relaxed group-hover:text-primary transition-colors duration-300">${r.title}</h3>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                </a>
+                `;
+            });
+
+            if (totalPages > 1) {
+                html += `<div class="col-span-full flex justify-center items-center gap-2 mt-6" dir="ltr">`;
+               
+                html += `<button onclick="changeReportPage(${currentReportPage - 1})" class="px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${currentReportPage === 1 ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}" ${currentReportPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
+
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === currentReportPage) {
+                        html += `<button class="px-3 py-1.5 rounded-lg text-sm font-bold bg-primary text-white shadow-sm">${i}</button>`;
+                    } else {
+                        html += `<button onclick="changeReportPage(${i})" class="px-3 py-1.5 rounded-lg text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors">${i}</button>`;
+                    }
+                }
+
+                html += `<button onclick="changeReportPage(${currentReportPage + 1})" class="px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${currentReportPage === totalPages ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}" ${currentReportPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+               
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        window.changeReportPage = function(page) {
+            currentReportPage = page;
+            renderReports();
+            const titleElement = document.getElementById('title-reports-page');
+            if (titleElement) {
+                titleElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
 
         async function fetchLiveMatches(isManualRefresh = false) {
             const d = new Date(); d.setDate(d.getDate() + currentDateOffset);
