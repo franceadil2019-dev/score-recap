@@ -104,51 +104,82 @@
 
     <header class="bg-primary border-b-0 fixed w-full top-0 z-50 shadow-lg">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <!-- الشعار -->
             <div class="flex items-center gap-3">
                 <a href="/" class="text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase" id="logo-link">SCORE<span class="text-blue-200">RECAP</span></a>
             </div>
            
+            <!-- أزرار التحكم والروابط -->
             <div class="flex items-center gap-2 md:gap-3">
-                <a href="/recaps" class="static-link flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors mr-1 sm:mr-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-                    <span class="hidden sm:inline font-heading uppercase tracking-wide text-xs" id="txt-nav-reports">Recaps</span>
-                </a>
-               
-                <a href="/standings" class="static-link flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors mr-1 sm:mr-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    <span class="hidden sm:inline font-heading uppercase tracking-wide text-xs" id="txt-nav-standings">Standings</span>
-                </a>
+                
+                <!-- الروابط تظهر فقط في شاشات الكمبيوتر (md:flex) وتختفي في الموبايل (hidden) -->
+                <div class="hidden md:flex items-center gap-3 mr-2">
+                    <a href="/recaps" class="static-link flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        <span class="font-heading uppercase tracking-wide text-xs" id="txt-nav-reports">Recaps</span>
+                    </a>
+                   
+                    <a href="/standings" class="static-link flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        <span class="font-heading uppercase tracking-wide text-xs" id="txt-nav-standings">Standings</span>
+                    </a>
 
-                <a href="/topscorers" class="static-link flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors mr-1 sm:mr-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
-                    <span class="hidden sm:inline font-heading uppercase tracking-wide text-xs" id="txt-nav-topscorers">Top Scorers</span>
-                </a>
+                    <a href="/topscorers" class="static-link flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                        <span class="font-heading uppercase tracking-wide text-xs" id="txt-nav-topscorers">Top Scorers</span>
+                    </a>
+                </div>
 
+                <!-- زر الوضع المظلم (يظهر دائماً) -->
                 <button id="btn-theme-toggle" class="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white" aria-label="Toggle dark mode">
                     <svg id="theme-icon-sun" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
                     <svg id="theme-icon-moon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                 </button>
                 
-                <!-- قائمة اللغات المنسدلة المحدثة -->
-                <div class="custom-dropdown w-32 md:w-40">
-                    <button id="btn-lang-dropdown" class="drop-btn" aria-haspopup="true" aria-expanded="false" aria-controls="lang-options-menu">
+                <!-- قائمة اللغات (تظهر دائماً ولكن بحجم أصغر في الموبايل) -->
+                <div class="custom-dropdown w-[100px] md:w-40">
+                    <button id="btn-lang-dropdown" class="drop-btn px-2 md:px-4" aria-haspopup="true" aria-expanded="false" aria-controls="lang-options-menu">
                         <div class="flex items-center gap-2">
                             <img id="current-lang-flag" src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm shadow-sm" alt="">
-                            <span id="current-lang-text" class="truncate">English</span>
+                            <span id="current-lang-text" class="truncate hidden md:inline">English</span>
+                            <span id="current-lang-code" class="truncate md:hidden text-xs font-bold uppercase">EN</span>
                         </div>
                         <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div id="lang-options-menu" class="drop-options w-40">
-                        <button class="drop-opt lang-opt" data-lang="en" data-flag="https://flagcdn.com/16x12/us.png" data-name="English"><img src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm" alt=""> English</button>
-                        <button class="drop-opt lang-opt" data-lang="ar" data-flag="https://flagcdn.com/16x12/ma.png" data-name="العربية"><img src="https://flagcdn.com/16x12/ma.png" class="w-4 h-3 object-cover rounded-sm" alt=""> العربية</button>
-                        <button class="drop-opt lang-opt" data-lang="fr" data-flag="https://flagcdn.com/16x12/fr.png" data-name="Français"><img src="https://flagcdn.com/16x12/fr.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Français</button>
-                        <button class="drop-opt lang-opt" data-lang="es" data-flag="https://flagcdn.com/16x12/es.png" data-name="Español"><img src="https://flagcdn.com/16x12/es.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Español</button>
-                        <button class="drop-opt lang-opt" data-lang="pt" data-flag="https://flagcdn.com/16x12/pt.png" data-name="Português"><img src="https://flagcdn.com/16x12/pt.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Português</button>
-                        <button class="drop-opt lang-opt" data-lang="sv" data-flag="https://flagcdn.com/16x12/se.png" data-name="Svenska"><img src="https://flagcdn.com/16x12/se.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Svenska</button>
-                        <button class="drop-opt lang-opt" data-lang="no" data-flag="https://flagcdn.com/16x12/no.png" data-name="Norsk"><img src="https://flagcdn.com/16x12/no.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Norsk</button>
-                        <button class="drop-opt lang-opt" data-lang="da" data-flag="https://flagcdn.com/16x12/dk.png" data-name="Dansk"><img src="https://flagcdn.com/16x12/dk.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Dansk</button>
+                        <button class="drop-opt lang-opt" data-lang="en" data-flag="https://flagcdn.com/16x12/us.png" data-name="English" data-code="EN"><img src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm" alt=""> English</button>
+                        <button class="drop-opt lang-opt" data-lang="ar" data-flag="https://flagcdn.com/16x12/ma.png" data-name="العربية" data-code="AR"><img src="https://flagcdn.com/16x12/ma.png" class="w-4 h-3 object-cover rounded-sm" alt=""> العربية</button>
+                        <button class="drop-opt lang-opt" data-lang="fr" data-flag="https://flagcdn.com/16x12/fr.png" data-name="Français" data-code="FR"><img src="https://flagcdn.com/16x12/fr.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Français</button>
+                        <button class="drop-opt lang-opt" data-lang="es" data-flag="https://flagcdn.com/16x12/es.png" data-name="Español" data-code="ES"><img src="https://flagcdn.com/16x12/es.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Español</button>
+                        <button class="drop-opt lang-opt" data-lang="pt" data-flag="https://flagcdn.com/16x12/pt.png" data-name="Português" data-code="PT"><img src="https://flagcdn.com/16x12/pt.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Português</button>
+                        <button class="drop-opt lang-opt" data-lang="sv" data-flag="https://flagcdn.com/16x12/se.png" data-name="Svenska" data-code="SV"><img src="https://flagcdn.com/16x12/se.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Svenska</button>
+                        <button class="drop-opt lang-opt" data-lang="no" data-flag="https://flagcdn.com/16x12/no.png" data-name="Norsk" data-code="NO"><img src="https://flagcdn.com/16x12/no.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Norsk</button>
+                        <button class="drop-opt lang-opt" data-lang="da" data-flag="https://flagcdn.com/16x12/dk.png" data-name="Dansk" data-code="DA"><img src="https://flagcdn.com/16x12/dk.png" class="w-4 h-3 object-cover rounded-sm" alt=""> Dansk</button>
                     </div>
                 </div>
+
+                <!-- زر الهامبرغر (يظهر فقط في الموبايل) -->
+                <button id="btn-mobile-menu" class="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- القائمة المنسدلة الخاصة بالموبايل (مخفية افتراضياً) -->
+        <div id="mobile-nav-menu" class="hidden md:hidden bg-primary border-t border-white/10 absolute w-full left-0 top-16 shadow-2xl z-40">
+            <div class="flex flex-col p-4 gap-2">
+                <a href="/recaps" class="static-link mobile-nav-link flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
+                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                    <span class="font-heading uppercase tracking-wide" id="txt-mob-reports">Recaps</span>
+                </a>
+                <a href="/standings" class="static-link mobile-nav-link flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
+                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <span class="font-heading uppercase tracking-wide" id="txt-mob-standings">Standings</span>
+                </a>
+                <a href="/topscorers" class="static-link mobile-nav-link flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
+                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                    <span class="font-heading uppercase tracking-wide" id="txt-mob-topscorers">Top Scorers</span>
+                </a>
             </div>
         </div>
     </header>
@@ -435,6 +466,7 @@
         
         function toggleDropdown(menuId) {
             const menu = document.getElementById(menuId);
+            if(!menu) return;
             const isShown = menu.classList.contains('show');
             document.querySelectorAll('.drop-options').forEach(d => d.classList.remove('show'));
             if (!isShown) {
@@ -461,6 +493,11 @@
             safeSetText('link-game', t.gameZone || "Game Zone 🎮");
             safeSetText('txt-live-only', t.liveOnly || "Live Only");
             safeSetText('txt-nav-reports', t.navReports || "Recaps");
+            safeSetText('txt-mob-reports', t.navReports || "Recaps");
+            safeSetText('txt-nav-standings', t.standings || "Standings");
+            safeSetText('txt-mob-standings', t.standings || "Standings");
+            safeSetText('txt-nav-topscorers', t.topScorers || "Top Scorers");
+            safeSetText('txt-mob-topscorers', t.topScorers || "Top Scorers");
            
             const reportsTitle = document.getElementById('title-reports-page');
             if(reportsTitle) reportsTitle.innerHTML = `📰 ${t.titleReportsPage || "Latest Match Recaps"}`;
@@ -479,8 +516,12 @@
             const langToUse = savedLang || (translations[browserLang] ? browserLang : 'en');
             const btn = document.querySelector(`.lang-opt[data-lang="${langToUse}"]`);
             if (btn) {
-                document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag');
-                document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name');
+                const flagEl = document.getElementById('current-lang-flag');
+                const textEl = document.getElementById('current-lang-text');
+                const codeEl = document.getElementById('current-lang-code');
+                if(flagEl) flagEl.src = btn.getAttribute('data-flag');
+                if(textEl) textEl.innerText = btn.getAttribute('data-name');
+                if(codeEl) codeEl.innerText = btn.getAttribute('data-code');
             }
             changeLanguage(langToUse);
         }
@@ -1275,6 +1316,19 @@
             document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme);
             document.getElementById('btn-refresh')?.addEventListener('click', () => { allMatchesCached = []; fetchLiveMatches(true); });
             
+            // تفعيل زر الهامبرغر للموبايل
+            document.getElementById('btn-mobile-menu')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('mobile-nav-menu')?.classList.toggle('hidden');
+            });
+
+            // إغلاق قائمة الموبايل عند الضغط على أي رابط بداخلها
+            document.querySelectorAll('.mobile-nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    document.getElementById('mobile-nav-menu')?.classList.add('hidden');
+                });
+            });
+            
             document.getElementById('btn-lang-dropdown')?.addEventListener('click', (e) => { 
                 e.preventDefault(); 
                 e.stopPropagation(); 
@@ -1285,6 +1339,7 @@
                 btn.addEventListener('click', () => {
                     document.getElementById('current-lang-flag').src = btn.getAttribute('data-flag');
                     document.getElementById('current-lang-text').innerText = btn.getAttribute('data-name');
+                    document.getElementById('current-lang-code').innerText = btn.getAttribute('data-code');
                     changeLanguage(btn.getAttribute('data-lang'));
                     document.getElementById('lang-options-menu').classList.remove('show');
                 });
@@ -1311,6 +1366,10 @@
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.custom-dropdown')) {
                     document.querySelectorAll('.drop-options').forEach(d => d.classList.remove('show'));
+                }
+                // إغلاق قائمة الموبايل عند الضغط خارجها
+                if (!e.target.closest('#mobile-nav-menu') && !e.target.closest('#btn-mobile-menu')) {
+                    document.getElementById('mobile-nav-menu')?.classList.add('hidden');
                 }
             });
 
