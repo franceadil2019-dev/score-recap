@@ -20,13 +20,11 @@ export async function onRequest(context) {
     return new Response(JSON.stringify({ error: "API_SPORTS_KEY is missing" }), { status: 500, headers: corsHeaders });
   }
 
-  // 🛡️ دالة الحماية 1: التحقق الصارم من أن رقم المباراة يحتوي على أرقام فقط
   const isValidId = (id) => {
     return id && /^\d{1,10}$/.test(id);
   };
 
-  // 🛡️ دالة الحماية 2: قائمة الدوريات المسموح للذكاء الاصطناعي بتوليد تقارير لها
-  const ALLOWED_LEAGUES = ["39"]; 
+  const ALLOWED_LEAGUES = ["39"];
 
   async function getFromApiSports(endpoint, kvKey, ttlSeconds) {
     if (env.SPORTS_KV) {
@@ -75,30 +73,21 @@ export async function onRequest(context) {
   };
 
   try {
-    // --- كود جلب جدول الترتيب ---
     if (action.includes("standings")) {
       const leagueId = url.searchParams.get("league") || "39";
-      
       const date = new Date();
       const currentYear = date.getFullYear();
-      const season = date.getMonth() < 7 ? currentYear - 1 : currentYear; 
-      
+      const season = date.getMonth() < 7 ? currentYear - 1 : currentYear;
       const kvKey = `api_standings_${leagueId}_${season}`;
-      
       return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, kvKey, 3600);
     }
 
-    // --- كود جلب قائمة الهدافين ---
     if (action.includes("topscorers")) {
       const leagueId = url.searchParams.get("league") || "39";
-      
       const date = new Date();
       const currentYear = date.getFullYear();
-      const season = date.getMonth() < 7 ? currentYear - 1 : currentYear; 
-      
+      const season = date.getMonth() < 7 ? currentYear - 1 : currentYear;
       const kvKey = `api_topscorers_${leagueId}_${season}`;
-      
-      // جلب الهدافين وحفظهم في الكاش لمدة 24 ساعة (86400 ثانية) لتوفير الرصيد
       return await getFromApiSports(`players/topscorers?league=${leagueId}&season=${season}`, kvKey, 86400);
     }
 
@@ -110,7 +99,7 @@ export async function onRequest(context) {
         }
         return await getFromApiSports(`fixtures?id=${id}`, `api_fixture_id_${id}`, 60);
       }
-      
+     
       const date = url.searchParams.get("date") || new Date().toISOString().split('T')[0];
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
           return new Response(JSON.stringify({ error: "Invalid date format." }), { status: 400, headers: corsHeaders });
@@ -124,11 +113,9 @@ export async function onRequest(context) {
     if (action.includes("fetch-events") || action.includes("events")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       const status = url.searchParams.get("status");
-      
       if (!isValidId(fixtureId)) {
           return new Response(JSON.stringify({ error: "Invalid or missing fixture ID." }), { status: 400, headers: corsHeaders });
       }
-      
       const ttl = ['FT', 'AET', 'PEN'].includes(status) ? 86400 : 60;
       return await getFromApiSports(`fixtures/events?fixture=${fixtureId}`, `api_events_${fixtureId}`, ttl);
     }
@@ -136,18 +123,15 @@ export async function onRequest(context) {
     if (action.includes("fetch-stats") || action.includes("statistics")) {
       const fixtureId = url.searchParams.get("fixture") || url.searchParams.get("fixtureId");
       const status = url.searchParams.get("status");
-      
       if (!isValidId(fixtureId)) {
           return new Response(JSON.stringify({ error: "Invalid or missing fixture ID." }), { status: 400, headers: corsHeaders });
       }
-      
       const ttl = ['FT', 'AET', 'PEN'].includes(status) ? 86400 : 60;
       return await getFromApiSports(`fixtures/statistics?fixture=${fixtureId}`, `api_stats_${fixtureId}`, ttl);
     }
 
     if (action.includes("predict-match") || action.includes("predict")) {
       const leagueId = url.searchParams.get("leagueId");
-      
       if (leagueId && !ALLOWED_LEAGUES.includes(leagueId)) {
         return new Response(JSON.stringify({ error: "Predictions are currently restricted to specific leagues to manage resources." }), { status: 403, headers: corsHeaders });
       }
@@ -208,7 +192,6 @@ export async function onRequest(context) {
 
     if (action.includes("generate-article") || action.includes("article")) {
       const leagueId = url.searchParams.get("leagueId");
-      
       if (leagueId && !ALLOWED_LEAGUES.includes(leagueId)) {
         return new Response(JSON.stringify({ error: "Match recaps are currently restricted to specific leagues to manage resources." }), { status: 403, headers: corsHeaders });
       }
@@ -262,6 +245,7 @@ export async function onRequest(context) {
           }
       } catch (e) {}
 
+      // زيادة أساليب الكتابة إلى 15 أسلوباً
       const writingStyles = [
         "Style 1: Focus heavily on the tactical chess match between the managers, formations, defensive blocks, and pressing traps.",
         "Style 2: Write with high emotional drama and storytelling, focusing on the fans' perspective, tension, and the psychological impact of the goals.",
@@ -269,7 +253,15 @@ export async function onRequest(context) {
         "Style 4: Take a historical and macro perspective, analyzing what this specific result means for the clubs' ambitions, top-four race, or relegation battle.",
         "Style 5: Adopt a fast-paced, action-oriented match recap style, breaking down the flow of momentum based on the scoreline.",
         "Style 6: Focus on the physical duel, intensity, defensive resilience, and how grit won or lost the match.",
-        "Style 7: Write from a technical and data-driven perspective, analyzing efficiency in front of goal and possession value."
+        "Style 7: Write from a technical and data-driven perspective, analyzing efficiency in front of goal and possession value.",
+        "Style 8: Focus on the midfield battle, possession control, and how the game was won or lost in the center of the park.",
+        "Style 9: Highlight the impact of substitutions, tactical tweaks in the second half, and late match drama.",
+        "Style 10: Focus on goalkeeping heroics, defensive clearances, and the struggle to break down a resolute backline.",
+        "Style 11: Write a poetic, romanticized view of the beautiful game, focusing on the artistry of the goals and the passion on the pitch.",
+        "Style 12: Focus heavily on wing-play, crosses, full-back overlaps, and the exploitation of wide areas.",
+        "Style 13: Frame the narrative around the underdog fighting against the odds, or the heavy favorite dealing with immense pressure.",
+        "Style 14: Adopt a highly analytical, scout-like report focusing on player positioning, off-the-ball movement, and spatial awareness.",
+        "Style 15: Focus on the stadium atmosphere, how the crowd influenced the referee or the players, and the raw emotion of the fixture."
       ];
       const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
