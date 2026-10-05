@@ -46,7 +46,7 @@ function generateFAQSection() {
                 </div>
             </details>
         `;
-        
+       
         schemaData.mainEntity.push({
             "@type": "Question",
             "name": faq.q,
@@ -56,7 +56,7 @@ function generateFAQSection() {
 
     faqHTML += `</div></div>`;
     faqHTML += `<script type="application/ld+json">${JSON.stringify(schemaData)}<\/script>`;
-    
+   
     return faqHTML;
 }
 
@@ -74,6 +74,12 @@ async function fetchAndRenderStandings() {
             const leagueInfo = data.response[0].league;
             const standings = leagueInfo.standings[0];
             
+            // تعديل لون العنوان الرئيسي ليصبح أبيض في الوضع المظلم
+            const mainTitle = document.querySelector('#page-standings h1');
+            if(mainTitle) {
+                mainTitle.classList.add('dark:text-white');
+            }
+           
             let tableHTML = `
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
                 <!-- Header -->
@@ -109,9 +115,9 @@ async function fetchAndRenderStandings() {
 
             standings.forEach(team => {
                 let rankBg = "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
-                if (team.rank <= 4) rankBg = "bg-emerald-500 text-white shadow-md shadow-emerald-500/30"; 
-                else if (team.rank === 5) rankBg = "bg-blue-500 text-white shadow-md shadow-blue-500/30"; 
-                else if (team.rank >= 18) rankBg = "bg-red-500 text-white shadow-md shadow-red-500/30"; 
+                if (team.rank <= 4) rankBg = "bg-emerald-500 text-white shadow-md shadow-emerald-500/30";
+                else if (team.rank === 5) rankBg = "bg-blue-500 text-white shadow-md shadow-blue-500/30";
+                else if (team.rank >= 18) rankBg = "bg-red-500 text-white shadow-md shadow-red-500/30";
 
                 const teamName = typeof getTeamName === 'function' ? getTeamName(team.team.name, currentLang) : team.team.name;
 
@@ -135,7 +141,8 @@ async function fetchAndRenderStandings() {
                                 ${renderFormBoxes(team.form)}
                             </div>
                         </td>
-                        <td class="px-3 py-2.5 text-center font-black text-sm sm:text-base text-slate-800 dark:text-white">
+                        <!-- تم إضافة dark:text-white ليظهر الرقم باللون الأبيض في الوضع المظلم -->
+                        <td class="px-3 py-2.5 text-center font-black text-sm sm:text-base text-primary dark:text-white">
                             ${team.points}
                         </td>
                     </tr>
@@ -146,7 +153,7 @@ async function fetchAndRenderStandings() {
                         </tbody>
                     </table>
                 </div>
-                
+               
                 <!-- Legend -->
                 <div class="bg-slate-50 dark:bg-slate-950/50 p-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">
                     <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 flex-shrink-0"></span> Champions League</div>
@@ -154,7 +161,7 @@ async function fetchAndRenderStandings() {
                     <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500 flex-shrink-0"></span> Relegation</div>
                 </div>
             </div>`;
-            
+           
             // إضافة قسم الأسئلة الشائعة في النهاية
             tableHTML += generateFAQSection();
 
