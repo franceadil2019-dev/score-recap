@@ -355,15 +355,15 @@ export async function onRequest(context) {
 <body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-body flex flex-col min-h-screen transition-colors duration-200 pt-16">
    
     <header class="bg-primary border-b-0 fixed w-full top-0 z-50 shadow-lg">
-        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <a href="/" class="flex items-center gap-2 text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase" id="logo-link">
-                    <img src="/favicon.svg?v=2" alt="ScoreRecap Logo" class="w-7 h-7 md:w-9 md:h-9 shadow-sm">
-                    <span>SCORE<span class="text-blue-200">RECAP</span></span>
+        <div class="max-w-5xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center flex-shrink-0">
+                <a href="/" class="flex items-center gap-1.5 sm:gap-2 text-lg sm:text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase" id="logo-link">
+                    <img src="/favicon.svg?v=2" alt="ScoreRecap Logo" class="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 shadow-sm">
+                    <span class="truncate">SCORE<span class="text-blue-200">RECAP</span></span>
                 </a>
             </div>
            
-            <div class="flex items-center gap-2 md:gap-3">
+            <div class="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
                 <div class="hidden md:flex items-center gap-3 mr-2">
                     <a href="/recaps" class="flex items-center gap-1.5 text-sm font-bold text-blue-100 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
@@ -379,19 +379,19 @@ export async function onRequest(context) {
                     </a>
                 </div>
 
-                <button id="btn-theme-toggle" class="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white" aria-label="Toggle dark mode">
+                <button id="btn-theme-toggle" class="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white" aria-label="Toggle dark mode">
                     <svg id="theme-icon-sun" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
                     <svg id="theme-icon-moon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                 </button>
                 
-                <div class="custom-dropdown w-[100px] md:w-40">
-                    <button id="btn-lang-dropdown" class="drop-btn px-2 md:px-4" aria-haspopup="true" aria-expanded="false" aria-controls="lang-options-menu">
-                        <div class="flex items-center gap-2">
+                <div class="custom-dropdown w-[85px] sm:w-[100px] md:w-40">
+                    <button id="btn-lang-dropdown" class="drop-btn px-1.5 sm:px-2 md:px-4 text-xs sm:text-sm" aria-haspopup="true" aria-expanded="false" aria-controls="lang-options-menu">
+                        <div class="flex items-center gap-1.5 sm:gap-2">
                             <img id="current-lang-flag" src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm shadow-sm" alt="">
                             <span id="current-lang-text" class="truncate hidden md:inline">English</span>
-                            <span id="current-lang-code" class="truncate md:hidden text-xs font-bold uppercase">EN</span>
+                            <span id="current-lang-code" class="truncate md:hidden font-bold uppercase">EN</span>
                         </div>
-                        <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div id="lang-options-menu" class="drop-options w-40">
                         <button class="drop-opt lang-opt" data-lang="en" data-flag="https://flagcdn.com/16x12/us.png" data-name="English" data-code="EN"><img src="https://flagcdn.com/16x12/us.png" class="w-4 h-3 object-cover rounded-sm" alt=""> English</button>
@@ -405,7 +405,7 @@ export async function onRequest(context) {
                     </div>
                 </div>
 
-                <button id="btn-mobile-menu" class="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors focus:outline-none">
+                <button id="btn-mobile-menu" class="md:hidden p-1.5 sm:p-2 text-white hover:bg-white/10 rounded-lg transition-colors focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
             </div>
@@ -490,6 +490,10 @@ export async function onRequest(context) {
     </footer>
 
     <script>
+        let allReportsCachedData = []; 
+        let currentReportPage = 1;     
+        const REPORTS_PER_PAGE = 10;   
+
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('btn-mobile-menu')?.addEventListener('click', (e) => {
                 e.stopPropagation();
