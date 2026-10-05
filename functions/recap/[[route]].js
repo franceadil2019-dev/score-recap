@@ -222,7 +222,27 @@ export async function onRequest(context) {
             "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1520627702-832f05eb7d94?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1540755910-18e388cb2809?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1580929285093-45543c72e4b3?auto=format&fit=crop&w=1200&q=80"
+            "https://images.unsplash.com/photo-1580929285093-45543c72e4b3?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1518605368461-1e1252220a77?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1574629810360-7efbbcb27a4e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1589487391730-58f20eb2c308?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1518091043644-c1d44570a2c9?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1600250395378-9622269c9b0e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1511886929837-3e6d64c12519?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1543351017-ce54d012461f?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1508344928928-71e1b53a2eb0?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1563299796-b25e0a9e24fb?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1524015368236-fb8dc40bce31?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1431324155629-1a6bbe23b9d1?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1519068737630-e5bf200009d8?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1509564324749-472b15bf2830?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1200&q=80"
         ];
        
         const randomImageIndex = parseInt(fixtureId) % stadiumImages.length;
@@ -263,6 +283,7 @@ export async function onRequest(context) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="description" content="${description}">
     <link rel="canonical" href="${canonicalUrl}">
    
@@ -451,10 +472,9 @@ export async function onRequest(context) {
         </article>
     </main>
 
-    <!-- الفوتر الكامل تم إضافته هنا -->
     <footer class="bg-primary text-white py-6 mt-auto">
         <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-blue-100">
-            <p>© <span id="current-year">2026</span> ScoreRecap. All rights reserved.</p>
+            <p>&copy; 2026 ScoreRecap. All rights reserved.</p>
             <div class="flex flex-wrap justify-center gap-4 font-bold">
                 <a href="/game" class="hover:text-white transition-colors">Game Zone 🎮</a>
                 <span class="hidden md:inline text-blue-300">|</span>
