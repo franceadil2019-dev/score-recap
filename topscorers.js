@@ -50,7 +50,7 @@ function generateTopScorersFAQ() {
                 </div>
             </details>
         `;
-        
+       
         schemaData.mainEntity.push({
             "@type": "Question",
             "name": faq.q,
@@ -60,13 +60,13 @@ function generateTopScorersFAQ() {
 
     faqHTML += `</div></div>`;
     faqHTML += `<script type="application/ld+json">${JSON.stringify(schemaData)}<\/script>`;
-    
+   
     return faqHTML;
 }
 
 async function fetchAndRenderTopScorers() {
     const container = document.getElementById('topscorers-list-container');
-    if (!container || container.innerHTML.includes('flex items-center')) return; 
+    if (!container || container.innerHTML.includes('flex items-center')) return;
 
     container.innerHTML = `<div class="flex justify-center py-20"><div class="spinner"></div></div>`;
 
@@ -79,12 +79,18 @@ async function fetchAndRenderTopScorers() {
             const badge = document.getElementById('topscorers-season-badge');
             if(badge) {
                 badge.innerText = `Season ${seasonYear}`;
-                badge.classList.remove('hidden');
+                // أزرق ملكي في الفاتح، وأبيض في المظلم
+                badge.className = "text-primary dark:text-white font-bold text-[10px] sm:text-sm bg-blue-50 dark:bg-slate-800 px-3 py-1 rounded-full border border-blue-200 dark:border-slate-700 whitespace-nowrap";
+            }
+
+            // تعديل لون العنوان الرئيسي ليصبح أبيض في الوضع المظلم
+            const mainTitle = document.querySelector('#page-topscorers h1');
+            if(mainTitle) {
+                mainTitle.classList.add('dark:text-white');
             }
 
             const topPlayers = data.response.slice(0, 15);
-            
-            // تم حذف المربع الذي يحتوي على النص المكرر من هنا
+           
             let listHTML = `
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <!-- Header -->
@@ -104,18 +110,18 @@ async function fetchAndRenderTopScorers() {
             topPlayers.forEach((item, index) => {
                 const player = item.player;
                 const stats = item.statistics[0];
-                
+               
                 let rankClass = "text-slate-400";
                 if (index === 0) rankClass = "text-amber-500 text-lg";
-                else if (index === 1) rankClass = "text-slate-300 text-base";
-                else if (index === 2) rankClass = "text-amber-700 text-base";
+                else if (index === 1) rankClass = "text-slate-400 dark:text-slate-300 text-base";
+                else if (index === 2) rankClass = "text-amber-700 dark:text-amber-500 text-base";
 
                 const countryCode = getCountryCode(player.nationality);
                 const natText = player.nationality ? player.nationality.substring(0, 3).toUpperCase() : "N/A";
 
                 listHTML += `
                     <div class="flex items-center p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group">
-                        
+                       
                         <!-- Player Info -->
                         <div class="flex items-center gap-3 sm:gap-5 w-1/2 sm:w-2/5">
                             <span class="font-black w-4 text-center ${rankClass}">${index + 1}</span>
@@ -143,7 +149,8 @@ async function fetchAndRenderTopScorers() {
                             <div class="sm:hidden flex items-center mr-2" title="${stats.team.name}">
                                 <img src="${stats.team.logo}" class="w-5 h-5 object-contain">
                             </div>
-                            <span class="text-lg sm:text-xl font-black text-primary w-8 text-right pr-2">${stats.goals.total}</span>
+                            <!-- تم إضافة dark:text-white ليظهر الرقم باللون الأبيض في الوضع المظلم -->
+                            <span class="text-lg sm:text-xl font-black text-primary dark:text-white w-8 text-right pr-2">${stats.goals.total}</span>
                         </div>
 
                     </div>
@@ -151,7 +158,7 @@ async function fetchAndRenderTopScorers() {
             });
 
             listHTML += `</div></div>`;
-            
+           
             // إضافة قسم الأسئلة الشائعة في النهاية
             listHTML += generateTopScorersFAQ();
 
