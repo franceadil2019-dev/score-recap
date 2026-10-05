@@ -11,7 +11,6 @@ export async function onRequest(context) {
         return redirectToHome();
     }
 
-    // 🛡️ قائمة الدوريات المسموح بتوليد وعرض مقالات لها (مرونة للمستقبل)
     const ALLOWED_LEAGUES = ["39"];
 
     try {
@@ -45,7 +44,6 @@ export async function onRequest(context) {
         }
 
         if (!articleHTML && match) {
-            // التحقق مما إذا كان الدوري ضمن القائمة المسموحة
             if (!ALLOWED_LEAGUES.includes(String(match.league.id))) return redirectToHome();
            
             const status = match.fixture.status.short;
@@ -79,6 +77,7 @@ export async function onRequest(context) {
                     }
                 } catch (e) {}
 
+                // زيادة أساليب الكتابة إلى 15 أسلوباً
                 const writingStyles = [
                     "Style 1: Focus heavily on the tactical chess match between the managers, formations, defensive blocks, and pressing traps.",
                     "Style 2: Write with high emotional drama and storytelling, focusing on the fans' perspective, tension, and the psychological impact of the goals.",
@@ -86,7 +85,15 @@ export async function onRequest(context) {
                     "Style 4: Take a historical and macro perspective, analyzing what this specific result means for the clubs' ambitions, top-four race, or relegation battle.",
                     "Style 5: Adopt a fast-paced, action-oriented match recap style, breaking down the flow of momentum based on the scoreline.",
                     "Style 6: Focus on the physical duel, intensity, defensive resilience, and how grit won or lost the match.",
-                    "Style 7: Write from a technical and data-driven perspective, analyzing efficiency in front of goal and possession value."
+                    "Style 7: Write from a technical and data-driven perspective, analyzing efficiency in front of goal and possession value.",
+                    "Style 8: Focus on the midfield battle, possession control, and how the game was won or lost in the center of the park.",
+                    "Style 9: Highlight the impact of substitutions, tactical tweaks in the second half, and late match drama.",
+                    "Style 10: Focus on goalkeeping heroics, defensive clearances, and the struggle to break down a resolute backline.",
+                    "Style 11: Write a poetic, romanticized view of the beautiful game, focusing on the artistry of the goals and the passion on the pitch.",
+                    "Style 12: Focus heavily on wing-play, crosses, full-back overlaps, and the exploitation of wide areas.",
+                    "Style 13: Frame the narrative around the underdog fighting against the odds, or the heavy favorite dealing with immense pressure.",
+                    "Style 14: Adopt a highly analytical, scout-like report focusing on player positioning, off-the-ball movement, and spatial awareness.",
+                    "Style 15: Focus on the stadium atmosphere, how the crowd influenced the referee or the players, and the raw emotion of the fixture."
                 ];
                 const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
@@ -186,6 +193,7 @@ export async function onRequest(context) {
         const description = `Read the full match recap and tactical breakdown for ${matchStr}. Final Score: ${score}.`;
         const canonicalUrl = `${url.origin}${url.pathname}`;
 
+        // زيادة عدد صور الملاعب إلى 50 صورة
         const stadiumImages = [
             "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=1200&q=80",
@@ -216,7 +224,27 @@ export async function onRequest(context) {
             "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1520627702-832f05eb7d94?auto=format&fit=crop&w=1200&q=80",
             "https://images.unsplash.com/photo-1540755910-18e388cb2809?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1580929285093-45543c72e4b3?auto=format&fit=crop&w=1200&q=80"
+            "https://images.unsplash.com/photo-1580929285093-45543c72e4b3?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1518605368461-1e1252220a77?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1574629810360-7efbbcb27a4e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1589487391730-58f20eb2c308?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1518091043644-c1d44570a2c9?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1600250395378-9622269c9b0e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1511886929837-3e6d64c12519?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1543351017-ce54d012461f?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1508344928928-71e1b53a2eb0?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1563299796-b25e0a9e24fb?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1524015368236-fb8dc40bce31?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1431324155629-1a6bbe23b9d1?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1519068737630-e5bf200009d8?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1509564324749-472b15bf2830?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1200&q=80"
         ];
        
         const randomImageIndex = parseInt(fixtureId) % stadiumImages.length;
@@ -327,7 +355,6 @@ export async function onRequest(context) {
 </head>
 <body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-body flex flex-col min-h-screen transition-colors duration-200 pt-16">
    
-    <!-- Header مطابق تماماً للصفحة الرئيسية -->
     <header class="bg-primary border-b-0 fixed w-full top-0 z-50 shadow-lg">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -389,7 +416,7 @@ export async function onRequest(context) {
                     <span class="font-heading uppercase tracking-wide">Recaps</span>
                 </a>
                 <a href="/standings" class="flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
-                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     <span class="font-heading uppercase tracking-wide">Standings</span>
                 </a>
                 <a href="/topscorers" class="flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
@@ -453,22 +480,18 @@ export async function onRequest(context) {
     </footer>
 
     <script>
-        // سكربت خفيف جداً لصفحة المقال للتحكم في القوائم المنسدلة والوضع المظلم
         document.addEventListener("DOMContentLoaded", () => {
-            // تفعيل زر الهامبرغر للموبايل
             document.getElementById('btn-mobile-menu')?.addEventListener('click', (e) => {
                 e.stopPropagation();
                 document.getElementById('mobile-nav-menu')?.classList.toggle('hidden');
             });
 
-            // تفعيل قائمة اللغات
             document.getElementById('btn-lang-dropdown')?.addEventListener('click', (e) => { 
                 e.preventDefault(); 
                 e.stopPropagation(); 
                 document.getElementById('lang-options-menu')?.classList.toggle('show');
             });
 
-            // إغلاق القوائم عند الضغط خارجها
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.custom-dropdown')) {
                     document.getElementById('lang-options-menu')?.classList.remove('show');
@@ -478,7 +501,6 @@ export async function onRequest(context) {
                 }
             });
 
-            // عند اختيار لغة، يتم حفظها والعودة للرئيسية لأن المقال يولد من السيرفر
             document.querySelectorAll('.lang-opt').forEach(btn => {
                 btn.addEventListener('click', () => {
                     localStorage.setItem('site_lang', btn.getAttribute('data-lang'));
@@ -486,7 +508,6 @@ export async function onRequest(context) {
                 });
             });
 
-            // تفعيل الوضع المظلم
             const htmlTag = document.documentElement;
             const sunIcon = document.getElementById('theme-icon-sun');
             const moonIcon = document.getElementById('theme-icon-moon');
@@ -503,7 +524,6 @@ export async function onRequest(context) {
                 }
             }
 
-            // قراءة الثيم المحفوظ
             const savedTheme = localStorage.getItem('app_theme');
             if (savedTheme === 'dark' || (!savedTheme && htmlTag.classList.contains('dark'))) {
                 applyTheme(true);
@@ -511,14 +531,12 @@ export async function onRequest(context) {
                 applyTheme(false);
             }
 
-            // زر تغيير الثيم
             document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
                 const isDark = !htmlTag.classList.contains('dark');
                 localStorage.setItem('app_theme', isDark ? 'dark' : 'light');
                 applyTheme(isDark);
             });
 
-            // قراءة اللغة المحفوظة لتحديث العلم في الأعلى
             const savedLang = localStorage.getItem('site_lang') || 'en';
             const langBtn = document.querySelector('.lang-opt[data-lang="' + savedLang + '"]');
             if(langBtn) {
