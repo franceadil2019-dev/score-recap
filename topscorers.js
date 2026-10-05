@@ -64,9 +64,26 @@ function generateTopScorersFAQ() {
     return faqHTML;
 }
 
+// دالة مساعدة لرسم واجهة الخطأ مع زر إعادة التحميل
+function renderTopScorersErrorState(container) {
+    container.innerHTML = `
+        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-8 sm:p-12 text-center border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-4 shadow-sm transition-colors">
+            <div class="bg-slate-200 dark:bg-slate-700 p-4 rounded-full text-slate-500 dark:text-slate-400 mb-2">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <h3 class="text-lg sm:text-xl font-black text-slate-800 dark:text-white tracking-wide">Data Not Available</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">We couldn't load the top scorers at this moment. This might be due to a temporary network issue. Please try again.</p>
+            <button onclick="fetchAndRenderTopScorers()" class="mt-4 flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-md uppercase tracking-wider text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Reload Data
+            </button>
+        </div>
+    `;
+}
+
 async function fetchAndRenderTopScorers() {
     const container = document.getElementById('topscorers-list-container');
-    if (!container || container.innerHTML.includes('flex items-center')) return;
+    if (!container) return;
 
     container.innerHTML = `<div class="flex justify-center py-20"><div class="spinner"></div></div>`;
 
@@ -79,11 +96,9 @@ async function fetchAndRenderTopScorers() {
             const badge = document.getElementById('topscorers-season-badge');
             if(badge) {
                 badge.innerText = `Season ${seasonYear}`;
-                // أزرق ملكي في الفاتح، وأبيض في المظلم
                 badge.className = "text-primary dark:text-white font-bold text-[10px] sm:text-sm bg-blue-50 dark:bg-slate-800 px-3 py-1 rounded-full border border-blue-200 dark:border-slate-700 whitespace-nowrap";
             }
 
-            // تعديل لون العنوان الرئيسي ليصبح أبيض في الوضع المظلم
             const mainTitle = document.querySelector('#page-topscorers h1');
             if(mainTitle) {
                 mainTitle.classList.add('dark:text-white');
@@ -149,7 +164,6 @@ async function fetchAndRenderTopScorers() {
                             <div class="sm:hidden flex items-center mr-2" title="${stats.team.name}">
                                 <img src="${stats.team.logo}" class="w-5 h-5 object-contain">
                             </div>
-                            <!-- تم إضافة dark:text-white ليظهر الرقم باللون الأبيض في الوضع المظلم -->
                             <span class="text-lg sm:text-xl font-black text-primary dark:text-white w-8 text-right pr-2">${stats.goals.total}</span>
                         </div>
 
@@ -159,14 +173,14 @@ async function fetchAndRenderTopScorers() {
 
             listHTML += `</div></div>`;
            
-            // إضافة قسم الأسئلة الشائعة في النهاية
             listHTML += generateTopScorersFAQ();
-
             container.innerHTML = listHTML;
         } else {
-            container.innerHTML = `<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-10 text-center border border-slate-200 dark:border-slate-800"><p class="text-slate-500 font-bold">Top scorers data is not available at the moment.</p></div>`;
+            // استدعاء واجهة الخطأ مع زر إعادة التحميل
+            renderTopScorersErrorState(container);
         }
     } catch (error) {
-        container.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 rounded-2xl p-10 text-center border border-red-200 dark:border-red-800"><p class="text-red-500 font-bold">Error loading top scorers.</p></div>`;
+        // استدعاء واجهة الخطأ مع زر إعادة التحميل
+        renderTopScorersErrorState(container);
     }
 }
