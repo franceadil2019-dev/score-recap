@@ -283,7 +283,7 @@ export async function onRequest(context) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${title}</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
     <meta name="description" content="${description}">
     <link rel="canonical" href="${canonicalUrl}">
    
@@ -357,7 +357,10 @@ export async function onRequest(context) {
     <header class="bg-primary border-b-0 fixed w-full top-0 z-50 shadow-lg">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="/" class="text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase">SCORE<span class="text-blue-200">RECAP</span></a>
+                <a href="/" class="flex items-center gap-2 text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase" id="logo-link">
+                    <img src="/favicon.svg?v=2" alt="ScoreRecap Logo" class="w-7 h-7 md:w-9 md:h-9 shadow-sm">
+                    <span>SCORE<span class="text-blue-200">RECAP</span></span>
+                </a>
             </div>
            
             <div class="flex items-center gap-2 md:gap-3">
