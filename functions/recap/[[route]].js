@@ -438,17 +438,17 @@ export async function onRequest(context) {
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
                
-                <div class="relative z-10 flex items-center gap-4 sm:gap-16 w-full px-2 sm:px-4 justify-center">
-                    <div class="text-center w-[40%] sm:w-1/3 flex flex-col items-center">
-                        <img src="${homeLogo}" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-3" alt="${homeName} official logo">
+                <div class="relative z-10 flex items-center justify-between w-full px-4 sm:px-10">
+                    <div class="text-center w-[35%] sm:w-1/3 flex flex-col items-center">
+                        <img src="${homeLogo}" class="w-16 h-16 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-2 sm:mb-3" alt="${homeName} official logo">
                         <span class="font-bold text-xs sm:text-sm text-white drop-shadow-md leading-tight px-1">${homeName}</span>
                     </div>
-                    <div class="text-center w-[20%] sm:w-1/3 flex flex-col items-center justify-center">
-                        <div class="text-4xl sm:text-5xl font-black text-white drop-shadow-2xl mb-2 tracking-wider">${score}</div>
-                        <span class="bg-slate-900/80 text-emerald-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-500/50 backdrop-blur-sm whitespace-nowrap">Full Time</span>
+                    <div class="text-center w-[30%] sm:w-1/3 flex flex-col items-center justify-center">
+                        <div class="text-3xl sm:text-5xl font-black text-white drop-shadow-2xl mb-2 tracking-widest whitespace-nowrap">${score}</div>
+                        <span class="bg-slate-900/80 text-emerald-400 font-bold text-[9px] sm:text-xs uppercase tracking-widest px-2 sm:px-3 py-1 rounded-full border border-emerald-500/50 backdrop-blur-sm whitespace-nowrap">Full Time</span>
                     </div>
-                    <div class="text-center w-[40%] sm:w-1/3 flex flex-col items-center">
-                        <img src="${awayLogo}" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-3" alt="${awayName} official logo">
+                    <div class="text-center w-[35%] sm:w-1/3 flex flex-col items-center">
+                        <img src="${awayLogo}" class="w-16 h-16 sm:w-28 sm:h-28 object-contain drop-shadow-2xl mb-2 sm:mb-3" alt="${awayName} official logo">
                         <span class="font-bold text-xs sm:text-sm text-white drop-shadow-md leading-tight px-1">${awayName}</span>
                     </div>
                 </div>
@@ -490,10 +490,6 @@ export async function onRequest(context) {
     </footer>
 
     <script>
-        let allReportsCachedData = []; 
-        let currentReportPage = 1;     
-        const REPORTS_PER_PAGE = 10;   
-
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('btn-mobile-menu')?.addEventListener('click', (e) => {
                 e.stopPropagation();
