@@ -1,3 +1,13 @@
+أعتذر عن هذا التغيير غير المقصود في شكل الفوتر!
+
+لقد قمت بإعادة تصميم الفوتر إلى شكله الأصلي الأنيق (الذي يحتوي على روابط متباعدة
+بشكل جميل وخط فاصل | بين الروابط)، مع الحفاظ على جميع الميزات السابقة بالكامل
+(البطاقات السفلية، النص الوصفي لصفحة التقارير، الشعار، اللغات، الوضع المظلم،
+وغيرها).
+
+إليك ملف index.html كاملاً ومحدثاً بالشكل الصحيح للفوتر. قم بنسخه واستبداله في
+GitHub:
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr" id="html-tag" class="">
 <head>
@@ -966,6 +976,12 @@
                                 🎮 ${currentT.gameZone || "Play Games"}
                             </a>
                         </div>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-sm transition-colors text-left" dir="ltr">
+                        <h3 class="font-heading font-black text-lg mb-3 text-slate-800 dark:text-slate-100 uppercase">Welcome to ScoreRecap</h3>
+                        <p class="mb-3">Even when the pitch is quiet and there are no live fixtures matching your current selection, your football experience doesn't have to pause. What truly sets <strong>ScoreRecap</strong> apart from ordinary sports platforms is our commitment to going beyond the final whistle. We don't just deliver basic numbers; our advanced analytical system transforms raw match data into engaging narratives, deep tactical breakdowns, and comprehensive post-match reviews.</p>
+                        <p>Dive into our exclusive match recaps to uncover the hidden strategies and turning points behind recent Premier League clashes. You can also challenge your reflexes and football knowledge in our interactive Game Zone. Bookmark our page and check back later for lightning-fast real-time updates, live scores, and in-depth statistics tailored for the true football enthusiast.</p>
                     </div>
                 `;
                 return;
