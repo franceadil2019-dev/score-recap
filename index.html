@@ -105,7 +105,6 @@
 
     <header class="bg-primary border-b-0 fixed w-full top-0 z-50 shadow-lg">
         <div class="max-w-5xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between">
-            <!-- تم تصغير المسافات والخطوط للهواتف لمنع التداخل -->
             <div class="flex items-center flex-shrink-0">
                 <a href="/" class="flex items-center gap-1.5 sm:gap-2 text-lg sm:text-xl md:text-2xl font-heading font-black text-white tracking-tight uppercase" id="logo-link">
                     <img src="/favicon.svg?v=2" alt="ScoreRecap Logo" class="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 shadow-sm">
@@ -948,25 +947,32 @@
                 else if (currentDateOffset === 1) dynamicNoMatchesMsg = currentT.noMatchesTomorrow || "No scheduled matches for tomorrow.";
 
                 container.innerHTML = `
-                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center shadow-sm mb-6 transition-colors">
-                        <div class="text-4xl mb-3 animate-bounce">⚽</div>
-                        <p class="font-heading font-bold text-lg text-slate-700 dark:text-slate-200 mb-2">${dynamicNoMatchesMsg}</p>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Explore our latest tactical analysis or play some games while waiting for the next kick-off.</p>
-                       
-                        <div class="flex flex-col sm:flex-row justify-center gap-3">
-                            <a href="/recaps" class="static-link inline-flex items-center justify-center gap-2 bg-primary hover:bg-primaryHover text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-md">
-                                📰 ${currentT.navReports || "Read Recaps"}
-                            </a>
-                            <a href="/game" class="static-link inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-md">
-                                🎮 ${currentT.gameZone || "Play Games"}
-                            </a>
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 sm:p-8 shadow-sm transition-colors text-left" dir="ltr">
+                        <div class="mb-6 text-center sm:text-left">
+                            <h3 class="font-heading font-black text-xl text-primary dark:text-white uppercase tracking-wide mb-2">Welcome to ScoreRecap</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 font-medium">Beyond the final whistle — we convert raw match data into deep tactical analysis and engaging narratives.</p>
                         </div>
-                    </div>
 
-                    <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-sm transition-colors text-left" dir="ltr">
-                        <h3 class="font-heading font-black text-lg mb-3 text-slate-800 dark:text-slate-100 uppercase">Welcome to ScoreRecap</h3>
-                        <p class="mb-3">Even when the pitch is quiet and there are no live fixtures matching your current selection, your football experience doesn't have to pause. What truly sets <strong>ScoreRecap</strong> apart from ordinary sports platforms is our commitment to going beyond the final whistle. We don't just deliver basic numbers; our advanced analytical system transforms raw match data into engaging narratives, deep tactical breakdowns, and comprehensive post-match reviews.</p>
-                        <p>Dive into our exclusive match recaps to uncover the hidden strategies and turning points behind recent Premier League clashes. You can also challenge your reflexes and football knowledge in our interactive Game Zone. Bookmark our page and check back later for lightning-fast real-time updates, live scores, and in-depth statistics tailored for the true football enthusiast.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Card 1 -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                <div class="text-2xl mb-2">📊</div>
+                                <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">Tactical Match Recaps</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Uncover key strategies and turning points behind recent Premier League matches.</p>
+                            </div>
+                            <!-- Card 2 -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                <div class="text-2xl mb-2">🎮</div>
+                                <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">Interactive Game Zone</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Test your football knowledge and reflexes while waiting for the next kickoff.</p>
+                            </div>
+                            <!-- Card 3 -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                <div class="text-2xl mb-2">⚡</div>
+                                <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">Real-Time Coverage</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Lightning-fast live scores, team standings, and statistics tailored for true fans.</p>
+                            </div>
+                        </div>
                     </div>
                 `;
                 return;
