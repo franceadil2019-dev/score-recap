@@ -84,7 +84,8 @@ async function fetchAndRenderStandings() {
     container.innerHTML = `<div class="flex justify-center py-20"><div class="spinner"></div></div>`;
 
     try {
-        const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/standings?league=39`, { headers: { "x-action": "standings" }, timeout: 10000 });
+        // تم زيادة وقت الانتظار إلى 15 ثانية لتجنب الأخطاء السريعة
+        const res = await fetchWithTimeout(`${APP_CONFIG.workerUrl}/standings?league=39`, { headers: { "x-action": "standings" }, timeout: 15000 });
         const data = await res.json();
 
         if (data.response && data.response.length > 0) {
@@ -180,11 +181,9 @@ async function fetchAndRenderStandings() {
             tableHTML += generateFAQSection();
             container.innerHTML = tableHTML;
         } else {
-            // استدعاء واجهة الخطأ مع زر إعادة التحميل
             renderErrorState(container);
         }
     } catch (error) {
-        // استدعاء واجهة الخطأ مع زر إعادة التحميل
         renderErrorState(container);
     }
 }
