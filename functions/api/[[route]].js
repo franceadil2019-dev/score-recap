@@ -79,7 +79,7 @@ export async function onRequest(context) {
       const currentYear = date.getFullYear();
       const season = date.getMonth() < 7 ? currentYear - 1 : currentYear;
       const kvKey = `api_standings_${leagueId}_${season}`;
-      return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, kvKey, 3600);
+      return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, kvKey, 86400);
     }
 
     if (action.includes("topscorers")) {
