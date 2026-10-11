@@ -96,6 +96,7 @@ export async function onRequest(context) {
                 ];
                 const randomStyle = writingStyles[Math.floor(Math.random() * writingStyles.length)];
 
+                // تم تعديل الـ Prompt هنا لابتكار عناوين فرعية ديناميكية
                 const prompt = `Act as an elite sports journalist and senior tactical analyst. Write a comprehensive match recap for the fixture: ${match.teams.home.name} vs ${match.teams.away.name}. Final score: ${match.goals.home} - ${match.goals.away}.
                
                 Official Match Events: ${eventsStr}
@@ -120,16 +121,16 @@ export async function onRequest(context) {
                 <h2>[Generate a Catchy, Journalistic Main Title]</h2>
                 <p>[Punchy introduction summarizing the atmosphere and the final result.]</p>
                
-                <h3>Tactical Setup & Starting Lineups</h3>
+                <h3>[Generate a creative subtitle about the Tactical Setup & Lineups]</h3>
                 <p>[Deep dive into the expected tactical battle, formations, and philosophies based on the lineups. Expand on this to increase word count.]</p>
                
-                <h3>Match Flow & Key Moments</h3>
+                <h3>[Generate a creative subtitle about the Match Flow & Key Moments]</h3>
                 <p>[Analyze the goals and key events explicitly mentioned in the timeline. If events are sparse, focus on the physical battle and defensive resilience.]</p>
                
-                <h3>Broader Implications & Season Objectives</h3>
+                <h3>[Generate a creative subtitle about the Broader Implications & Season Objectives]</h3>
                 <p>[Discuss deeply what this result means for both clubs moving forward in the league. Expand on this to increase word count.]</p>
                
-                <h3>Final Thoughts</h3>
+                <h3>[Generate a creative subtitle for the Final Thoughts]</h3>
                 <p>[A strong concluding paragraph summarizing the tactical chess match.]</p>
                
                 Write the ENTIRE article perfectly in English. Ensure professional sports journalism phrasing. Return ONLY valid clean HTML code.`;
@@ -139,7 +140,7 @@ export async function onRequest(context) {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.35, topP: 0.9 }
+                        generationConfig: { temperature: 0.4, topP: 0.9 }
                     })
                 });
                
@@ -418,7 +419,7 @@ export async function onRequest(context) {
                     <span class="font-heading uppercase tracking-wide">Recaps</span>
                 </a>
                 <a href="/standings" class="flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
-                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     <span class="font-heading uppercase tracking-wide">Standings</span>
                 </a>
                 <a href="/topscorers" class="flex items-center gap-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-colors">
