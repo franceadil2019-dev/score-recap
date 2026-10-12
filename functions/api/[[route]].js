@@ -79,7 +79,7 @@ export async function onRequest(context) {
       const currentYear = date.getFullYear();
       const season = date.getMonth() < 7 ? currentYear - 1 : currentYear;
       const kvKey = `api_standings_${leagueId}_${season}`;
-      return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, kvKey, 86400);
+      return await getFromApiSports(`standings?league=${leagueId}&season=${season}`, kvKey, 3600);
     }
 
     if (action.includes("topscorers")) {
@@ -221,7 +221,7 @@ export async function onRequest(context) {
                       recent = recent.slice(0, 100);
                       await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                   }
-                  await env.SPORTS_KV.delete("cached_latest_recaps_v1");
+                  await env.SPORTS_KV.delete("cached_latest_recaps_v2");
               } catch (e) {}
           })());
           return new Response(JSON.stringify({ result: cachedArticle, source: "KV_CACHE" }), { headers: corsHeaders });
@@ -245,7 +245,6 @@ export async function onRequest(context) {
           }
       } catch (e) {}
 
-      // زيادة أساليب الكتابة إلى 15 أسلوباً
       const writingStyles = [
         "Style 1: Focus heavily on the tactical chess match between the managers, formations, defensive blocks, and pressing traps.",
         "Style 2: Write with high emotional drama and storytelling, focusing on the fans' perspective, tension, and the psychological impact of the goals.",
@@ -284,31 +283,22 @@ export async function onRequest(context) {
       - Break the text into short, readable paragraphs.
       - ${randomStyle}
      
-      STRUCTURE THE ARTICLE EXACTLY IN THIS HTML FORMAT (Do not use markdown wrappers like \`\`\`html):
+      FORMATTING RULES (CRITICAL):
+      - Return ONLY valid clean HTML code. Do not use markdown wrappers like \`\`\`html.
+      - Start the article with ONE main catchy journalistic title wrapped in <h2> tags.
+      - Divide the rest of the article into 3 or 4 sections.
+      - For EACH section, INVENT a highly creative, specific, and unique subtitle based on the actual match events (e.g., "Midfield Mastery", "Defensive Collapse", "The Turning Point"). Wrap these subtitles in <h3> tags.
+      - Do NOT use generic subtitles like "Tactical Setup" or "Match Flow". Be creative!
+      - Use <p> for paragraphs and <strong> for emphasis.
      
-      <h2>[Generate a Catchy, Journalistic Main Title]</h2>
-      <p>[Punchy introduction summarizing the atmosphere and the final result.]</p>
-     
-      <h3>Tactical Setup & Starting Lineups</h3>
-      <p>[Deep dive into the expected tactical battle, formations, and philosophies based on the lineups. Expand on this to increase word count.]</p>
-     
-      <h3>Match Flow & Key Moments</h3>
-      <p>[Analyze the goals and key events explicitly mentioned in the timeline. If events are sparse, focus on the physical battle and defensive resilience.]</p>
-     
-      <h3>Broader Implications & Season Objectives</h3>
-      <p>[Discuss deeply what this result means for both clubs moving forward in the league. Expand on this to increase word count.]</p>
-     
-      <h3>Final Thoughts</h3>
-      <p>[A strong concluding paragraph summarizing the tactical chess match.]</p>
-     
-      Write the ENTIRE article perfectly in ${targetLang}. Ensure professional sports journalism phrasing. Return ONLY valid clean HTML code.`;
+      Write the ENTIRE article perfectly in ${targetLang}. Ensure professional sports journalism phrasing.`;
 
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.35, topP: 0.9 }
+            generationConfig: { temperature: 0.6, topP: 0.9 }
         })
       });
 
@@ -332,7 +322,7 @@ export async function onRequest(context) {
                     recent = recent.slice(0, 100);
                     await env.SPORTS_KV.put("recent_generated_reports", JSON.stringify(recent));
                 }
-                await env.SPORTS_KV.delete("cached_latest_recaps_v1");
+                await env.SPORTS_KV.delete("cached_latest_recaps_v2");
             } catch (e) {}
         })());
       }
@@ -343,7 +333,8 @@ export async function onRequest(context) {
     if (action.includes("latest-reports")) {
       if (!env.SPORTS_KV) return new Response(JSON.stringify([]), { headers: corsHeaders });
 
-      const cachedList = await env.SPORTS_KV.get("cached_latest_recaps_v1");
+      // 🛠️ تم تغيير اسم الكاش إلى v2 لتجاهل الأخطاء القديمة
+      const cachedList = await env.SPORTS_KV.get("cached_latest_recaps_v2");
       if (cachedList && cachedList !== "[]" && cachedList.length > 5) {
         return new Response(cachedList, { headers: corsHeaders });
       }
@@ -369,7 +360,8 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "No reports found in database yet." }), { headers: corsHeaders });
       }
 
-      const fetchIds = fixtureIds.slice(0, 100);
+      // 🛠️ الإصلاح هنا: جلب 20 مباراة كحد أقصى لتجنب خطأ API-Sports
+      const fetchIds = fixtureIds.slice(0, 20);
 
       const res = await fetch(`https://v3.football.api-sports.io/fixtures?ids=${fetchIds.join('-')}`, {
         headers: { "x-apisports-key": env.API_SPORTS_KEY }
@@ -401,10 +393,61 @@ export async function onRequest(context) {
 
       if (reports.length > 0) {
           const responseText = JSON.stringify(reports);
-          waitUntil(env.SPORTS_KV.put("cached_latest_recaps_v1", responseText));
+          // 🛠️ حفظ الكاش بالاسم الجديد v2
+          waitUntil(env.SPORTS_KV.put("cached_latest_recaps_v2", responseText));
           return new Response(responseText, { headers: corsHeaders });
       } else {
           return new Response(JSON.stringify({ error: "Could not format reports." }), { headers: corsHeaders });
+      }
+    }
+
+    // --- كود جلب إحصائيات التصويت ---
+    if (action.includes("get-votes")) {
+      const fixtureId = url.searchParams.get("fixtureId");
+      if (!isValidId(fixtureId)) {
+          return new Response(JSON.stringify({ error: "Invalid fixture ID." }), { status: 400, headers: corsHeaders });
+      }
+
+      const kvKey = `votes_${fixtureId}`;
+      let votes = { home: 0, draw: 0, away: 0 };
+
+      if (env.SPORTS_KV) {
+        const cachedVotes = await env.SPORTS_KV.get(kvKey, "json");
+        if (cachedVotes) {
+          votes = cachedVotes;
+        }
+      }
+
+      return new Response(JSON.stringify({ votes }), { headers: corsHeaders });
+    }
+
+    // --- كود إرسال وحفظ تصويت جديد ---
+    if (action.includes("submit-vote") && request.method === "POST") {
+      try {
+        const body = await request.json();
+        const { fixtureId, choice } = body;
+
+        if (!isValidId(fixtureId) || !['home', 'draw', 'away'].includes(choice)) {
+            return new Response(JSON.stringify({ error: "Invalid data." }), { status: 400, headers: corsHeaders });
+        }
+
+        const kvKey = `votes_${fixtureId}`;
+        let votes = { home: 0, draw: 0, away: 0 };
+
+        if (env.SPORTS_KV) {
+          const currentVotes = await env.SPORTS_KV.get(kvKey, "json");
+          if (currentVotes) {
+            votes = currentVotes;
+          }
+          
+          votes[choice] += 1;
+
+          waitUntil(env.SPORTS_KV.put(kvKey, JSON.stringify(votes)));
+        }
+
+        return new Response(JSON.stringify({ success: true, votes }), { headers: corsHeaders });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: "Failed to process vote." }), { status: 500, headers: corsHeaders });
       }
     }
 
